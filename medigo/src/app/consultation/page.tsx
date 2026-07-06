@@ -7,10 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { api } from "@/lib/api";
 
 interface Doctor {
-  id: string;
   name: string;
   specialty: string;
-  initials: string;
   initials: string;
   slots: string[];
   consultationFee: number;
@@ -48,7 +46,7 @@ function ConsultationContent() {
   const [selectedDate, setSelectedDate] = useState(queryDate);
   const [selectedTime, setSelectedTime] = useState(queryTime);
   const [consultMode, setConsultMode] = useState<"video" | "audio" | "chat">(queryMode);
-  
+
   // Patient details state
   const [symptoms, setSymptoms] = useState("");
   const [doctorsList, setDoctorsList] = useState<Doctor[]>([]);
@@ -78,7 +76,7 @@ function ConsultationContent() {
             consultationFee: d.consultationFee || 0
           }));
           setDoctorsList(mapped);
-          
+
           if (!queryDoctorId || !mapped.find((doc: Doctor) => doc.id === queryDoctorId)) {
             if (mapped.length > 0) {
               setSelectedDoctorId(mapped[0].id);
@@ -98,7 +96,7 @@ function ConsultationContent() {
 
   const handleCheckoutRedirect = async () => {
     if (!selectedTime || !selectedDoctorId) return;
-    
+
     setIsProcessing(true);
     try {
       const isLoaded = await loadRazorpay();
@@ -143,23 +141,23 @@ function ConsultationContent() {
         description: "Telehealth Consultation",
         order_id: order.id,
         handler: async function (response: any) {
-           try {
-             await api.post("/api/v1/payments/verify", {
-               razorpay_order_id: response.razorpay_order_id,
-               razorpay_payment_id: response.razorpay_payment_id,
-               razorpay_signature: response.razorpay_signature,
-               appointmentDetails: {
-                 doctorId: selectedDoctorId,
-                 appointmentDate: selectedDate,
-                 appointmentTime: selectedTime,
-                 consultationType: consultMode
-               }
-             });
-             
-             router.push(`/consultation/result?status=success&doctor=${selectedDoctorId}&date=${encodeURIComponent(selectedDate)}&time=${encodeURIComponent(selectedTime)}&total=${fee}&mode=${consultMode}`);
-           } catch (err) {
-             alert("Payment verification failed. Please contact support.");
-           }
+          try {
+            await api.post("/api/v1/payments/verify", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              appointmentDetails: {
+                doctorId: selectedDoctorId,
+                appointmentDate: selectedDate,
+                appointmentTime: selectedTime,
+                consultationType: consultMode
+              }
+            });
+
+            router.push(`/consultation/result?status=success&doctor=${selectedDoctorId}&date=${encodeURIComponent(selectedDate)}&time=${encodeURIComponent(selectedTime)}&total=${fee}&mode=${consultMode}`);
+          } catch (err) {
+            alert("Payment verification failed. Please contact support.");
+          }
         },
         theme: {
           color: "#0F766E",
@@ -216,10 +214,10 @@ function ConsultationContent() {
       {/* Main Grid */}
       <section className="py-8 container-custom max-w-5xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* Left Column: Doctor Selection, Dates, Times */}
           <div className="lg:col-span-8 space-y-8 text-left">
-            
+
             {/* 1. Doctor Pick */}
             <div className="bg-white p-6 md:p-8 rounded-3xl border border-border/50 shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-text-tertiary uppercase tracking-wider flex items-center gap-2">
@@ -234,21 +232,20 @@ function ConsultationContent() {
                     <button
                       key={doc.id}
                       onClick={() => setSelectedDoctorId(doc.id)}
-                      className={`relative flex items-center gap-4 p-4 rounded-2xl border text-left transition-all ${
-                        selectedDoctorId === doc.id
-                          ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm"
-                          : "border-border hover:border-primary/30 hover:bg-slate-50"
-                      }`}
+                      className={`relative flex items-center gap-4 p-4 rounded-2xl border text-left transition-all ${selectedDoctorId === doc.id
+                        ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm"
+                        : "border-border hover:border-primary/30 hover:bg-slate-50"
+                        }`}
                     >
-                    <div className="w-10 h-10 rounded-full bg-primary-100 text-primary flex items-center justify-center font-heading font-extrabold text-sm shadow-inner shrink-0">
-                      {doc.initials}
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-text-primary">{doc.name}</h4>
-                      <p className="text-[10px] text-text-secondary mt-0.5">{doc.specialty}</p>
-                    </div>
-                  </button>
-                )))}
+                      <div className="w-10 h-10 rounded-full bg-primary-100 text-primary flex items-center justify-center font-heading font-extrabold text-sm shadow-inner shrink-0">
+                        {doc.initials}
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-text-primary">{doc.name}</h4>
+                        <p className="text-[10px] text-text-secondary mt-0.5">{doc.specialty}</p>
+                      </div>
+                    </button>
+                  )))}
               </div>
             </div>
 
@@ -270,11 +267,10 @@ function ConsultationContent() {
                     <button
                       key={mode.id}
                       onClick={() => setConsultMode(mode.id as any)}
-                      className={`p-4 rounded-2xl border text-left flex items-center gap-2.5 transition-all ${
-                        isSelected
-                          ? "bg-primary-50 border-primary ring-2 ring-primary/10"
-                          : "bg-background border-border hover:bg-white"
-                      }`}
+                      className={`p-4 rounded-2xl border text-left flex items-center gap-2.5 transition-all ${isSelected
+                        ? "bg-primary-50 border-primary ring-2 ring-primary/10"
+                        : "bg-background border-border hover:bg-white"
+                        }`}
                     >
                       <Icon className={`w-4 h-4 shrink-0 ${isSelected ? "text-primary" : "text-text-secondary"}`} />
                       <span className="text-xs font-bold text-text-primary">{mode.label}</span>
@@ -298,11 +294,10 @@ function ConsultationContent() {
                       setSelectedDate(date);
                       setSelectedTime("");
                     }}
-                    className={`py-3 rounded-xl border text-center text-xs font-bold transition-all ${
-                      selectedDate === date
-                        ? "bg-primary-100 text-primary-800 border-primary"
-                        : "bg-background border-border text-text-primary hover:bg-white"
-                    }`}
+                    className={`py-3 rounded-xl border text-center text-xs font-bold transition-all ${selectedDate === date
+                      ? "bg-primary-100 text-primary-800 border-primary"
+                      : "bg-background border-border text-text-primary hover:bg-white"
+                      }`}
                   >
                     {date.split(",")[0]}
                   </button>
@@ -321,11 +316,10 @@ function ConsultationContent() {
                   <button
                     key={time}
                     onClick={() => setSelectedTime(time)}
-                    className={`py-3 rounded-xl border text-center text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                      selectedTime === time
-                        ? "bg-primary text-white border-primary shadow-sm"
-                        : "bg-background border-border text-text-primary hover:border-primary/50"
-                    }`}
+                    className={`py-3 rounded-xl border text-center text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${selectedTime === time
+                      ? "bg-primary text-white border-primary shadow-sm"
+                      : "bg-background border-border text-text-primary hover:border-primary/50"
+                      }`}
                   >
                     <Clock className="w-4 h-4 shrink-0" />
                     {time}
@@ -396,7 +390,7 @@ function ConsultationContent() {
             >
               {isProcessing ? "Processing..." : "Proceed to payment"}
             </Button>
-            
+
             <div className="flex justify-center gap-4 text-[10px] text-text-tertiary">
               <span className="flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" />
