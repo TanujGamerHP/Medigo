@@ -17,3 +17,5 @@ backend/dist/
 backend/node_modules/
 medigo/.next/
 medigo/node_modules/
+
+# Trigger Vercel Build for Medigo Folder Update
