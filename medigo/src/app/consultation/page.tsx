@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { api } from "@/lib/api";
 
 interface Doctor {
+  id: string;
   name: string;
   specialty: string;
   initials: string;

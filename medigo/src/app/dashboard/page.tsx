@@ -49,8 +49,8 @@ export default function DashboardOverview() {
   // Dynamic states
   const [appointment, setAppointment] = useState<any>(null);
   const [latestAssessment, setLatestAssessment] = useState<any>(null);
-  const prescription = null;
-  const recentOrder = null;
+  const prescription: any = null;
+  const recentOrder: any = null;
   const notifications: any[] = [];
 
   const loadDashboard = async () => {

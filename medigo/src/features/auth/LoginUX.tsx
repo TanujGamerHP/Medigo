@@ -74,7 +74,7 @@ export function LoginUX() {
         id: "mock-id",
         email: firebaseEmail || "mock@medigo.com",
         role: "Patient",
-        profile: { firstName: firebaseName || "Patient" }
+        patient: { firstName: firebaseName || "Patient" }
       });
     }
   };

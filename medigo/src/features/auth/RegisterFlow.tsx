@@ -161,7 +161,8 @@ export function RegisterFlow() {
           id: "mock-id",
           email: firebaseEmail || email,
           role,
-          profile: { firstName: firebaseName || name }
+          patient: role === "Patient" ? { firstName: firebaseName || name } : undefined,
+          doctor: role === "Doctor" ? { firstName: firebaseName || name } : undefined,
         });
       }
       return null;
