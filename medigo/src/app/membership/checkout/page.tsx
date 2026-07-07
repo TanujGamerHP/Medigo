@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { ShieldCheck, Lock } from "lucide-react";
 
-export default function MembershipCheckoutPage() {
+function MembershipCheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { show } = useToast();
@@ -82,5 +82,17 @@ export default function MembershipCheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MembershipCheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="bg-background min-h-screen pt-32 pb-12 flex items-center justify-center">
+        <div className="text-text-secondary">Loading checkout...</div>
+      </div>
+    }>
+      <MembershipCheckoutContent />
+    </Suspense>
   );
 }
