@@ -24,12 +24,7 @@ async function bootstrap() {
 
   // Enable CORS with whitelisted settings
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'https://medigo.com',
-      'https://admin.medigo.com',
-    ],
+    origin: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL, 'http://localhost:3000'] : '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     preflightContinue: false,
     optionsSuccessStatus: 204,
