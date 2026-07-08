@@ -165,7 +165,7 @@ function MembershipCheckoutContent() {
                 <h3 className="text-lg font-bold text-slate-900 mb-4">Billing Summary</h3>
                 <div className="flex items-center justify-between py-2 border-b border-slate-100">
                   <span className="font-medium text-slate-700">{planName} Plan</span>
-                  <span className="font-bold text-slate-900">${price}.00</span>
+                  <span className="font-bold text-slate-900">₹{price}.00</span>
                 </div>
               </div>
 
@@ -173,7 +173,7 @@ function MembershipCheckoutContent() {
               <div>
                 <div className="flex items-center justify-between pt-2">
                   <h3 className="text-xl font-bold text-slate-900">Total Due Today</h3>
-                  <span className="text-3xl font-bold text-green-500">${price}.00</span>
+                  <span className="text-3xl font-bold text-green-500">₹{price}.00</span>
                 </div>
               </div>
 
@@ -203,7 +203,7 @@ function MembershipCheckoutContent() {
                     />
                   </div>
                   <label htmlFor="terms" className="text-sm text-slate-500 leading-relaxed cursor-pointer">
-                    By clicking Subscribe & Pay, you agree to our <a href="#" className="text-green-500 underline hover:text-green-600">Terms of Service</a> and acknowledge our <a href="#" className="text-green-500 underline hover:text-green-600">Privacy Policy</a>. You will be charged ${price}.00 monthly until canceled.
+                    By clicking Subscribe & Pay, you agree to our <a href="#" className="text-green-500 underline hover:text-green-600">Terms of Service</a> and acknowledge our <a href="#" className="text-green-500 underline hover:text-green-600">Privacy Policy</a>. You will be charged ₹{price}.00 monthly until canceled.
                   </label>
                 </div>
 

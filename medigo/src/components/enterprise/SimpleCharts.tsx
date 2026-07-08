@@ -89,7 +89,7 @@ export function AreaChart({ data, height = 240, color = "#22C55E" }: { data: Cha
             {activeIdx === i && (
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold shadow-md whitespace-nowrap z-30 pointer-events-none">
                 <span className="block text-slate-400 font-semibold">{d.label}</span>
-                <span className="text-sm font-bold text-primary-400">${d.value.toLocaleString()}</span>
+                <span className="text-sm font-bold text-primary-400">₹{d.value.toLocaleString()}</span>
               </div>
             )}
           </div>

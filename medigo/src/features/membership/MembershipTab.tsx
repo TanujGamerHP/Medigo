@@ -38,7 +38,7 @@ export function MembershipTab() {
       `-----------------------\n` +
       `Invoice ID: ${invId}\n` +
       `Billing Date: ${date}\n` +
-      `Paid Amount: $${amount}.00\n` +
+      `Paid Amount: ₹${amount}.00\n` +
       `Portal account: Sarah Miller\n` +
       `Status: SUCCESS / PAID\n` +
       `Thank you for taking care of your health with MediGo!\n`

@@ -82,7 +82,7 @@ export function DoctorProfile() {
               <label className="text-[10px] text-text-tertiary block font-bold uppercase">
                 Consultation Base Fee ($)
               </label>
-              <span className="text-xs font-bold text-primary">${consultationFee} / consult</span>
+              <span className="text-xs font-bold text-primary">₹{consultationFee} / consult</span>
             </div>
             <input
               type="range"
