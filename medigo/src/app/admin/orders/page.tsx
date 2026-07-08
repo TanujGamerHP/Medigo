@@ -110,7 +110,7 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Orders Table */}
-      <Card padding="none" className="overflow-hidden">
+      <Card className="overflow-hidden p-0">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-slate-50 border-b border-border">
