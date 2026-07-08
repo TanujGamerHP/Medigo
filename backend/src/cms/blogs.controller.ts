@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { CMSService } from './cms.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -6,7 +15,12 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { RequestUser } from '../common/decorators/user.decorator';
 import { CreateBlogDto } from './dto/create-blog.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('Blogs CMS Module')
 @Controller('api/v1/blogs')
@@ -14,7 +28,10 @@ export class BlogsController {
   constructor(private cmsService: CMSService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Retrieve all published blog posts', description: 'Lists active health blogs, authors, and publish timestamps.' })
+  @ApiOperation({
+    summary: 'Retrieve all published blog posts',
+    description: 'Lists active health blogs, authors, and publish timestamps.',
+  })
   @ApiResponse({ status: 200, description: 'Blog posts list fetched.' })
   async getAllBlogs() {
     const data = await this.cmsService.findAllBlogs();
@@ -25,7 +42,10 @@ export class BlogsController {
   }
 
   @Get(':slug')
-  @ApiOperation({ summary: 'Get blog post by SEO URL slug', description: 'Retrieves article details using the slug.' })
+  @ApiOperation({
+    summary: 'Get blog post by SEO URL slug',
+    description: 'Retrieves article details using the slug.',
+  })
   @ApiResponse({ status: 200, description: 'Blog details returned.' })
   @ApiResponse({ status: 404, description: 'Blog post not found.' })
   async getBlogBySlug(@Param('slug') slug: string) {
@@ -40,8 +60,14 @@ export class BlogsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.Admin)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create new blog post (Admin only)', description: 'Saves blog article details.' })
-  @ApiResponse({ status: 201, description: 'Blog article created successfully.' })
+  @ApiOperation({
+    summary: 'Create new blog post (Admin only)',
+    description: 'Saves blog article details.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Blog article created successfully.',
+  })
   async createBlog(
     @Body() dto: CreateBlogDto,
     @RequestUser('sub') userId: string,
@@ -65,7 +91,10 @@ export class BlogsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.Admin)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Modify an existing blog post (Admin only)', description: 'Updates title, content, or media links.' })
+  @ApiOperation({
+    summary: 'Modify an existing blog post (Admin only)',
+    description: 'Updates title, content, or media links.',
+  })
   @ApiResponse({ status: 200, description: 'Blog post updated successfully.' })
   @ApiResponse({ status: 404, description: 'Blog post not found.' })
   async updateBlog(
@@ -93,7 +122,10 @@ export class BlogsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.Admin)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Soft delete blog post (Admin only)', description: 'Marks blog as deleted.' })
+  @ApiOperation({
+    summary: 'Soft delete blog post (Admin only)',
+    description: 'Marks blog as deleted.',
+  })
   @ApiResponse({ status: 200, description: 'Blog deleted successfully.' })
   @ApiResponse({ status: 404, description: 'Blog post not found.' })
   async deleteBlog(

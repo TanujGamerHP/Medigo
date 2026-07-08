@@ -81,7 +81,7 @@ export function DoctorDashboard({ onSelectTab }: { onSelectTab: (tab: string) =>
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-primary-600" />
               <h3 className="font-heading text-sm font-bold text-text-primary">
-                Today's Virtual Appointments
+                Today&apos;s Virtual Appointments
               </h3>
             </div>
             <span className="text-[10px] text-primary bg-primary-50/50 border border-primary-200 px-2 py-0.5 rounded font-bold">
@@ -123,7 +123,7 @@ export function DoctorDashboard({ onSelectTab }: { onSelectTab: (tab: string) =>
               Consultation Fees Generated
             </h3>
             <p className="text-[10px] text-text-secondary mt-0.5 leading-relaxed">
-              Dr. Mitchell's payout trajectory (monthly payouts).
+              Dr. Mitchell&apos;s payout trajectory (monthly payouts).
             </p>
           </div>
           <div className="flex-1 flex items-center justify-center">

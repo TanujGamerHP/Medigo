@@ -1,4 +1,13 @@
-import { Controller, Get, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -6,7 +15,12 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('Admin Portal Module')
 @ApiBearerAuth()
@@ -17,7 +31,11 @@ export class AdminPortalController {
   constructor(private adminService: AdminService) {}
 
   @Get('dashboard')
-  @ApiOperation({ summary: 'Get Admin dashboard KPIs', description: 'Returns platform-wide metrics: total user roles, consultations, and revenue logs.' })
+  @ApiOperation({
+    summary: 'Get Admin dashboard KPIs',
+    description:
+      'Returns platform-wide metrics: total user roles, consultations, and revenue logs.',
+  })
   @ApiResponse({ status: 200, description: 'Metrics successfully aggregated.' })
   async getDashboard() {
     const data = await this.adminService.getDashboardStats();
@@ -28,8 +46,14 @@ export class AdminPortalController {
   }
 
   @Get('users')
-  @ApiOperation({ summary: 'List all registered system user accounts', description: 'Supports pagination, search by phone or email, and sorting.' })
-  @ApiResponse({ status: 200, description: 'Paginated user account logs returned.' })
+  @ApiOperation({
+    summary: 'List all registered system user accounts',
+    description: 'Supports pagination, search by phone or email, and sorting.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Paginated user account logs returned.',
+  })
   async getUsers(@Query() query: PaginationQueryDto) {
     const data = await this.adminService.getUsers(query);
     return {
@@ -39,7 +63,10 @@ export class AdminPortalController {
   }
 
   @Get('doctors')
-  @ApiOperation({ summary: 'List all registered clinic doctors', description: 'Returns full doctor profile details.' })
+  @ApiOperation({
+    summary: 'List all registered clinic doctors',
+    description: 'Returns full doctor profile details.',
+  })
   @ApiResponse({ status: 200, description: 'Doctors list fetched.' })
   async getDoctors() {
     const data = await this.adminService.getDoctors();
@@ -50,7 +77,10 @@ export class AdminPortalController {
   }
 
   @Get('patients')
-  @ApiOperation({ summary: 'List all registered patients', description: 'Returns full patient profiles.' })
+  @ApiOperation({
+    summary: 'List all registered patients',
+    description: 'Returns full patient profiles.',
+  })
   @ApiResponse({ status: 200, description: 'Patients list fetched.' })
   async getPatients() {
     const data = await this.adminService.getPatients();
@@ -61,7 +91,10 @@ export class AdminPortalController {
   }
 
   @Get('reports')
-  @ApiOperation({ summary: 'Get administrative audit log report', description: 'Fetches recent security and execution log traces.' })
+  @ApiOperation({
+    summary: 'Get administrative audit log report',
+    description: 'Fetches recent security and execution log traces.',
+  })
   @ApiResponse({ status: 200, description: 'Security audit logs returned.' })
   async getReports() {
     const data = await this.adminService.getReports();
@@ -72,13 +105,13 @@ export class AdminPortalController {
   }
 
   @Put('user/:id')
-  @ApiOperation({ summary: 'Update user status or permissions role', description: 'Modifies permissions of a user profile.' })
+  @ApiOperation({
+    summary: 'Update user status or permissions role',
+    description: 'Modifies permissions of a user profile.',
+  })
   @ApiResponse({ status: 200, description: 'User account updated.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
-  async updateUser(
-    @Param('id') id: string,
-    @Body() dto: UpdateUserDto,
-  ) {
+  async updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     const data = await this.adminService.updateUser(id, dto);
     return {
       message: 'User profile updated successfully',
@@ -87,7 +120,10 @@ export class AdminPortalController {
   }
 
   @Delete('user/:id')
-  @ApiOperation({ summary: 'Soft delete user account', description: 'Disables access and marks deletedAt timestamp.' })
+  @ApiOperation({
+    summary: 'Soft delete user account',
+    description: 'Disables access and marks deletedAt timestamp.',
+  })
   @ApiResponse({ status: 200, description: 'User soft-deleted successfully.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
   async removeUser(@Param('id') id: string) {

@@ -76,6 +76,11 @@ function SingleToast({ toast, onDismiss }: SingleToastProps) {
     requestAnimationFrame(() => setVisible(true));
   }, []);
 
+  const handleClose = () => {
+    setExiting(true);
+    setTimeout(() => onDismiss(toast.id), 300);
+  };
+
   // Auto-dismiss
   useEffect(() => {
     timerRef.current = setTimeout(() => {
@@ -84,13 +89,7 @@ function SingleToast({ toast, onDismiss }: SingleToastProps) {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toast.duration]);
-
-  const handleClose = useCallback(() => {
-    setExiting(true);
-    setTimeout(() => onDismiss(toast.id), 300);
-  }, [onDismiss, toast.id]);
+  }, [toast.duration, toast.id, onDismiss]);
 
   return (
     <div

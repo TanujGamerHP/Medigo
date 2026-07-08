@@ -1,4 +1,11 @@
-import { IsEmail, IsString, IsNotEmpty, IsOptional, IsEnum, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  MinLength,
+} from 'class-validator';
 import { UserRole } from '@prisma/client';
 
 export class RegisterDto {
@@ -13,7 +20,9 @@ export class RegisterDto {
   @MinLength(6, { message: 'Password must be at least 6 characters long' })
   password: string;
 
-  @IsEnum(UserRole, { message: 'Allowed roles: Patient, Doctor, Admin, Pharmacy, Lab' })
+  @IsEnum(UserRole, {
+    message: 'Allowed roles: Patient, Doctor, Admin, Pharmacy, Lab',
+  })
   @IsNotEmpty()
   role: UserRole;
 

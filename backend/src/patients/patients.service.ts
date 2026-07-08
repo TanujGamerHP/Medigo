@@ -78,15 +78,23 @@ export class PatientsService {
     return this.prisma.patient.update({
       where: { userId },
       data: {
-        firstName: dto.firstName !== undefined ? dto.firstName : patient.firstName,
+        firstName:
+          dto.firstName !== undefined ? dto.firstName : patient.firstName,
         lastName: dto.lastName !== undefined ? dto.lastName : patient.lastName,
         dob: dob !== undefined ? dob : patient.dob,
         gender: dto.gender !== undefined ? dto.gender : patient.gender,
         height: dto.height !== undefined ? dto.height : patient.height,
         weight: dto.weight !== undefined ? dto.weight : patient.weight,
-        bloodGroup: dto.bloodGroup !== undefined ? dto.bloodGroup : patient.bloodGroup,
-        emergencyContact: dto.emergencyContact !== undefined ? dto.emergencyContact : patient.emergencyContact,
-        profileImage: dto.profileImage !== undefined ? dto.profileImage : patient.profileImage,
+        bloodGroup:
+          dto.bloodGroup !== undefined ? dto.bloodGroup : patient.bloodGroup,
+        emergencyContact:
+          dto.emergencyContact !== undefined
+            ? dto.emergencyContact
+            : patient.emergencyContact,
+        profileImage:
+          dto.profileImage !== undefined
+            ? dto.profileImage
+            : patient.profileImage,
       },
     });
   }
@@ -126,9 +134,12 @@ export class PatientsService {
     });
 
     // Calculate BMI live
-    const bmi = patient.weight && patient.height
-      ? parseFloat((patient.weight / (patient.height * patient.height)).toFixed(2))
-      : null;
+    const bmi =
+      patient.weight && patient.height
+        ? parseFloat(
+            (patient.weight / (patient.height * patient.height)).toFixed(2),
+          )
+        : null;
 
     return {
       profile: {
@@ -137,23 +148,27 @@ export class PatientsService {
         bmi,
         status: patient.status,
       },
-      nextAppointment: nextAppointment ? {
-        id: nextAppointment.id,
-        doctor: `Dr. ${nextAppointment.doctor.firstName} ${nextAppointment.doctor.lastName}`,
-        date: nextAppointment.appointmentDate,
-        time: nextAppointment.appointmentTime,
-        type: nextAppointment.consultationType,
-      } : null,
-      activePrescriptions: activePrescriptions.map(pres => ({
+      nextAppointment: nextAppointment
+        ? {
+            id: nextAppointment.id,
+            doctor: `Dr. ${nextAppointment.doctor.firstName} ${nextAppointment.doctor.lastName}`,
+            date: nextAppointment.appointmentDate,
+            time: nextAppointment.appointmentTime,
+            type: nextAppointment.consultationType,
+          }
+        : null,
+      activePrescriptions: activePrescriptions.map((pres) => ({
         id: pres.id,
         doctor: `Dr. ${pres.doctor.firstName} ${pres.doctor.lastName}`,
         medications: pres.medications,
         instructions: pres.instructions,
       })),
-      activeMembership: activeMembership ? {
-        planName: activeMembership.planName,
-        expiryDate: activeMembership.expiryDate,
-      } : null,
+      activeMembership: activeMembership
+        ? {
+            planName: activeMembership.planName,
+            expiryDate: activeMembership.expiryDate,
+          }
+        : null,
     };
   }
 

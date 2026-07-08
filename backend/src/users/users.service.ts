@@ -17,7 +17,7 @@ export class UsersService {
         patient: {
           include: {
             memberships: true,
-          }
+          },
         },
         doctor: true,
       },
@@ -56,8 +56,9 @@ export class UsersService {
       if (updateData.gender) patientData.gender = updateData.gender;
       if (updateData.height) patientData.height = parseFloat(updateData.height);
       if (updateData.weight) patientData.weight = parseFloat(updateData.weight);
-      if (updateData.profileImage) patientData.profileImage = updateData.profileImage;
-      
+      if (updateData.profileImage)
+        patientData.profileImage = updateData.profileImage;
+
       await this.prisma.patient.upsert({
         where: { userId: id },
         update: patientData,
@@ -66,20 +67,29 @@ export class UsersService {
           firstName: updateData.firstName || '',
           lastName: updateData.lastName || '',
           ...patientData,
-        }
+        },
       });
     } else if (user.role === 'Doctor') {
       const doctorData: any = {};
-      if (updateData.firstName !== undefined) doctorData.firstName = updateData.firstName;
-      if (updateData.lastName !== undefined) doctorData.lastName = updateData.lastName;
-      if (updateData.specialization !== undefined) doctorData.specialization = updateData.specialization;
-      if (updateData.experience !== undefined) doctorData.experience = updateData.experience;
-      if (updateData.profileImage !== undefined) doctorData.profileImage = updateData.profileImage;
-      if (updateData.consultationFee !== undefined) doctorData.consultationFee = parseFloat(updateData.consultationFee);
-      if (updateData.bankName !== undefined) doctorData.bankName = updateData.bankName;
-      if (updateData.accountNumber !== undefined) doctorData.accountNumber = updateData.accountNumber;
-      if (updateData.ifscCode !== undefined) doctorData.ifscCode = updateData.ifscCode;
-      
+      if (updateData.firstName !== undefined)
+        doctorData.firstName = updateData.firstName;
+      if (updateData.lastName !== undefined)
+        doctorData.lastName = updateData.lastName;
+      if (updateData.specialization !== undefined)
+        doctorData.specialization = updateData.specialization;
+      if (updateData.experience !== undefined)
+        doctorData.experience = updateData.experience;
+      if (updateData.profileImage !== undefined)
+        doctorData.profileImage = updateData.profileImage;
+      if (updateData.consultationFee !== undefined)
+        doctorData.consultationFee = parseFloat(updateData.consultationFee);
+      if (updateData.bankName !== undefined)
+        doctorData.bankName = updateData.bankName;
+      if (updateData.accountNumber !== undefined)
+        doctorData.accountNumber = updateData.accountNumber;
+      if (updateData.ifscCode !== undefined)
+        doctorData.ifscCode = updateData.ifscCode;
+
       await this.prisma.doctor.upsert({
         where: { userId: id },
         update: doctorData,
@@ -90,7 +100,7 @@ export class UsersService {
           specialization: updateData.specialization || 'General',
           experience: updateData.experience || '0 years',
           ...doctorData,
-        }
+        },
       });
     }
 
@@ -119,7 +129,7 @@ export class UsersService {
         startDate,
         expiryDate,
         status: 'Active',
-      }
+      },
     });
 
     return this.findOne(userId);

@@ -8,15 +8,22 @@ import { RequestUser } from '../common/decorators/user.decorator';
 export class PaymentsController {
   constructor(
     private readonly paymentsService: PaymentsService,
-    private readonly appointmentsService: AppointmentsService
+    private readonly appointmentsService: AppointmentsService,
   ) {}
 
   @Post('create-order')
   @UseGuards(JwtAuthGuard)
-  async createOrder(@Body('amount') amount: number, @Body('currency') currency: string) {
+  async createOrder(
+    @Body('amount') amount: number,
+    @Body('currency') currency: string,
+  ) {
     // Standard price is 14900 INR or 149 USD. If amount is not passed, use 12400 INR as default.
-    const finalAmount = amount !== undefined && amount !== null ? amount : 12400;
-    const order = await this.paymentsService.createOrder(finalAmount, currency || 'INR'); 
+    const finalAmount =
+      amount !== undefined && amount !== null ? amount : 12400;
+    const order = await this.paymentsService.createOrder(
+      finalAmount,
+      currency || 'INR',
+    );
     return {
       success: true,
       data: order,
@@ -34,14 +41,14 @@ export class PaymentsController {
   ) {
     // 1. Verify Payment
     this.paymentsService.verifyPayment(orderId, paymentId, signature);
-    
+
     // 2. If valid, create the appointment
     const appointment = await this.appointmentsService.createForUser(
       userId,
       appointmentDetails.doctorId,
       appointmentDetails.appointmentDate,
       appointmentDetails.appointmentTime,
-      appointmentDetails.consultationType
+      appointmentDetails.consultationType,
     );
 
     return {

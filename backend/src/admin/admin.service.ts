@@ -8,12 +8,22 @@ export class AdminService {
   constructor(private prisma: PrismaService) {}
 
   async getDashboardStats() {
-    const totalUsers = await this.prisma.user.count({ where: { deletedAt: null } });
-    const totalPatients = await this.prisma.patient.count({ where: { deletedAt: null } });
-    const totalDoctors = await this.prisma.doctor.count({ where: { status: 'Verified', deletedAt: null } });
-    const pendingDoctors = await this.prisma.doctor.count({ where: { status: 'PendingCredentials', deletedAt: null } });
-    const totalAppointments = await this.prisma.appointment.count({ where: { deletedAt: null } });
-    
+    const totalUsers = await this.prisma.user.count({
+      where: { deletedAt: null },
+    });
+    const totalPatients = await this.prisma.patient.count({
+      where: { deletedAt: null },
+    });
+    const totalDoctors = await this.prisma.doctor.count({
+      where: { status: 'Verified', deletedAt: null },
+    });
+    const pendingDoctors = await this.prisma.doctor.count({
+      where: { status: 'PendingCredentials', deletedAt: null },
+    });
+    const totalAppointments = await this.prisma.appointment.count({
+      where: { deletedAt: null },
+    });
+
     // Realtime counts for completion metrics
     const completedConsultations = await this.prisma.appointment.count({
       where: { status: 'Completed', deletedAt: null },
@@ -29,7 +39,10 @@ export class AdminService {
     const activeMemberships = await this.prisma.membership.findMany({
       where: { status: 'Active', deletedAt: null },
     });
-    const totalEarnings = activeMemberships.reduce((sum, sub) => sum + sub.price, 0);
+    const totalEarnings = activeMemberships.reduce(
+      (sum, sub) => sum + sub.price,
+      0,
+    );
 
     return {
       totalUsers,

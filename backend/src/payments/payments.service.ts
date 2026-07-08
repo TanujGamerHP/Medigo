@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Razorpay from 'razorpay';
 import * as crypto from 'crypto';
@@ -10,7 +14,8 @@ export class PaymentsService {
   constructor(private configService: ConfigService) {
     this.razorpay = new Razorpay({
       key_id: this.configService.get<string>('RAZORPAY_KEY_ID') || 'dummy',
-      key_secret: this.configService.get<string>('RAZORPAY_KEY_SECRET') || 'dummy',
+      key_secret:
+        this.configService.get<string>('RAZORPAY_KEY_SECRET') || 'dummy',
     });
   }
 
@@ -30,7 +35,8 @@ export class PaymentsService {
   }
 
   verifyPayment(orderId: string, paymentId: string, signature: string) {
-    const secret = this.configService.get<string>('RAZORPAY_KEY_SECRET') || 'dummy';
+    const secret =
+      this.configService.get<string>('RAZORPAY_KEY_SECRET') || 'dummy';
     const generatedSignature = crypto
       .createHmac('sha256', secret)
       .update(orderId + '|' + paymentId)

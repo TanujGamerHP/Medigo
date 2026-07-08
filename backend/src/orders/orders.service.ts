@@ -1,21 +1,36 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService, private configService: ConfigService) {}
+  constructor(
+    private prisma: PrismaService,
+    private configService: ConfigService,
+  ) {}
 
-  async checkout(userId: string, items: { productId: string, quantity: number }[], shippingAddress: string, paymentMethod: string, orderId?: string, paymentId?: string, signature?: string) {
-    
+  async checkout(
+    userId: string,
+    items: { productId: string; quantity: number }[],
+    shippingAddress: string,
+    paymentMethod: string,
+    orderId?: string,
+    paymentId?: string,
+    signature?: string,
+  ) {
     // Verify Razorpay signature if online payment
     if (paymentMethod === 'Razorpay') {
       if (!orderId || !paymentId || !signature) {
         throw new BadRequestException('Missing Razorpay payment details');
       }
-      
-      const secret = this.configService.get<string>('RAZORPAY_KEY_SECRET') || 'dummy';
+
+      const secret =
+        this.configService.get<string>('RAZORPAY_KEY_SECRET') || 'dummy';
       const generatedSignature = crypto
         .createHmac('sha256', secret)
         .update(orderId + '|' + paymentId)
@@ -45,7 +60,9 @@ export class OrdersService {
     });
 
     if (!activeMembership) {
-      throw new BadRequestException('Checkout blocked: Membership Required. An active membership program is required to checkout.');
+      throw new BadRequestException(
+        'Checkout blocked: Membership Required. An active membership program is required to checkout.',
+      );
     }
 
     // 2. Check treatment recommendation approval in consultation
@@ -85,7 +102,9 @@ export class OrdersService {
       });
 
       if (!product || !product.isActive) {
-        throw new NotFoundException(`Product ${item.productId} not found or unavailable.`);
+        throw new NotFoundException(
+          `Product ${item.productId} not found or unavailable.`,
+        );
       }
 
       totalAmount += product.price * item.quantity;
@@ -107,11 +126,11 @@ export class OrdersService {
         createdBy: userId,
         items: {
           create: orderItemsData,
-        }
+        },
       },
       include: {
-        items: true
-      }
+        items: true,
+      },
     });
   }
 
@@ -158,9 +177,9 @@ export class OrdersService {
   async getAllOrders() {
     return this.prisma.order.findMany({
       where: { deletedAt: null },
-      include: { 
+      include: {
         items: { include: { product: true } },
-        patient: true 
+        patient: true,
       },
       orderBy: { createdAt: 'desc' },
     });

@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Param, Patch, Delete, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Patch,
+  Delete,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import { PrescriptionsService } from './prescriptions.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -56,7 +65,11 @@ export class PrescriptionsController {
     @Body('status') status: PrescriptionStatus,
     @RequestUser('sub') userId: string,
   ) {
-    const data = await this.prescriptionsService.updateStatus(id, status, userId);
+    const data = await this.prescriptionsService.updateStatus(
+      id,
+      status,
+      userId,
+    );
     return {
       message: 'Prescription status updated successfully',
       data,
@@ -65,10 +78,7 @@ export class PrescriptionsController {
 
   @Delete(':id')
   @Roles(UserRole.Doctor, UserRole.Admin)
-  async remove(
-    @Param('id') id: string,
-    @RequestUser('sub') userId: string,
-  ) {
+  async remove(@Param('id') id: string, @RequestUser('sub') userId: string) {
     const data = await this.prescriptionsService.softDelete(id, userId);
     return {
       message: 'Prescription record soft deleted successfully',

@@ -18,7 +18,10 @@ export class UsersController {
   }
 
   @Patch('profile')
-  async updateProfile(@RequestUser('sub') userId: string, @Body() updateData: any) {
+  async updateProfile(
+    @RequestUser('sub') userId: string,
+    @Body() updateData: any,
+  ) {
     const data = await this.usersService.updateProfile(userId, updateData);
     return {
       message: 'User profile updated successfully',
@@ -30,9 +33,13 @@ export class UsersController {
   async purchaseMembership(
     @RequestUser('sub') userId: string,
     @Body('planName') planName: string,
-    @Body('price') price: number
+    @Body('price') price: number,
   ) {
-    const data = await this.usersService.purchaseMembership(userId, planName, price);
+    const data = await this.usersService.purchaseMembership(
+      userId,
+      planName,
+      price,
+    );
     return {
       message: 'Membership purchased successfully',
       data,

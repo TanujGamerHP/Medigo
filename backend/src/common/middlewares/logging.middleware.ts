@@ -7,7 +7,9 @@ export class LoggingMiddleware implements NestMiddleware {
 
   use(req: Request, res: Response, next: NextFunction) {
     const startTime = Date.now();
-    const requestId = req.headers['x-request-id'] || `req-${Math.random().toString(36).substring(2, 9)}`;
+    const requestId =
+      req.headers['x-request-id'] ||
+      `req-${Math.random().toString(36).substring(2, 9)}`;
     req.headers['x-request-id'] = requestId;
 
     res.on('finish', () => {
@@ -22,7 +24,7 @@ export class LoggingMiddleware implements NestMiddleware {
       const role = user?.role || 'none';
 
       this.logger.log(
-        `[${requestId}] ${method} ${url} Status:${statusCode} Time:${duration}ms User:${userId} Role:${role}`
+        `[${requestId}] ${method} ${url} Status:${statusCode} Time:${duration}ms User:${userId} Role:${role}`,
       );
     });
 

@@ -6,7 +6,12 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { RequestUser } from '../common/decorators/user.decorator';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('Patient Portal Module')
 @ApiBearerAuth()
@@ -17,7 +22,11 @@ export class PatientPortalController {
   constructor(private patientsService: PatientsService) {}
 
   @Get('profile')
-  @ApiOperation({ summary: 'Get logged-in patient profile', description: 'Returns the personal and clinical profile details of the patient.' })
+  @ApiOperation({
+    summary: 'Get logged-in patient profile',
+    description:
+      'Returns the personal and clinical profile details of the patient.',
+  })
   @ApiResponse({ status: 200, description: 'Profile retrieved successfully.' })
   async getProfile(@RequestUser('sub') userId: string) {
     const data = await this.patientsService.findProfileByUserId(userId);
@@ -28,7 +37,11 @@ export class PatientPortalController {
   }
 
   @Put('profile')
-  @ApiOperation({ summary: 'Update patient profile info', description: 'Accepts customizable parameters like height, weight, and emergency details.' })
+  @ApiOperation({
+    summary: 'Update patient profile info',
+    description:
+      'Accepts customizable parameters like height, weight, and emergency details.',
+  })
   @ApiResponse({ status: 200, description: 'Profile updated successfully.' })
   async updateProfile(
     @RequestUser('sub') userId: string,
@@ -42,7 +55,11 @@ export class PatientPortalController {
   }
 
   @Get('dashboard')
-  @ApiOperation({ summary: 'Get patient dashboard summary KPIs', description: 'Fetches active prescriptions, upcoming appointments, BMI tracker, and status.' })
+  @ApiOperation({
+    summary: 'Get patient dashboard summary KPIs',
+    description:
+      'Fetches active prescriptions, upcoming appointments, BMI tracker, and status.',
+  })
   @ApiResponse({ status: 200, description: 'KPI dataset returned.' })
   async getDashboard(@RequestUser('sub') userId: string) {
     const data = await this.patientsService.getDashboardData(userId);
@@ -53,7 +70,10 @@ export class PatientPortalController {
   }
 
   @Get('appointments')
-  @ApiOperation({ summary: 'Get all patient consultations', description: 'Lists past and upcoming appointments of the user.' })
+  @ApiOperation({
+    summary: 'Get all patient consultations',
+    description: 'Lists past and upcoming appointments of the user.',
+  })
   @ApiResponse({ status: 200, description: 'Appointments list fetched.' })
   async getAppointments(@RequestUser('sub') userId: string) {
     const data = await this.patientsService.getPatientAppointments(userId);
@@ -64,7 +84,11 @@ export class PatientPortalController {
   }
 
   @Get('prescriptions')
-  @ApiOperation({ summary: 'Get patient prescriptions logs', description: 'Lists all issued, active, or refilled medication prescriptions.' })
+  @ApiOperation({
+    summary: 'Get patient prescriptions logs',
+    description:
+      'Lists all issued, active, or refilled medication prescriptions.',
+  })
   @ApiResponse({ status: 200, description: 'Prescriptions logs fetched.' })
   async getPrescriptions(@RequestUser('sub') userId: string) {
     const data = await this.patientsService.getPatientPrescriptions(userId);
@@ -75,7 +99,10 @@ export class PatientPortalController {
   }
 
   @Get('membership')
-  @ApiOperation({ summary: 'Get patient active membership tier details', description: 'Returns active plan history.' })
+  @ApiOperation({
+    summary: 'Get patient active membership tier details',
+    description: 'Returns active plan history.',
+  })
   @ApiResponse({ status: 200, description: 'Membership info retrieved.' })
   async getMembership(@RequestUser('sub') userId: string) {
     const data = await this.patientsService.getPatientMembership(userId);
@@ -86,7 +113,10 @@ export class PatientPortalController {
   }
 
   @Get('notifications')
-  @ApiOperation({ summary: 'Get patient account notifications', description: 'Lists all email or in-app alerts dispatched.' })
+  @ApiOperation({
+    summary: 'Get patient account notifications',
+    description: 'Lists all email or in-app alerts dispatched.',
+  })
   @ApiResponse({ status: 200, description: 'Alert logs compiled.' })
   async getNotifications(@RequestUser('sub') userId: string) {
     const data = await this.patientsService.getPatientNotifications(userId);

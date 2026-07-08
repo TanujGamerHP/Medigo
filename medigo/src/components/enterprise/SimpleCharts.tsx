@@ -183,34 +183,33 @@ export function DonutChart({ data, size = 160 }: { data: ChartDataPoint[]; size?
   const total = data.reduce((acc, curr) => acc + curr.value, 0);
   const colors = ["#22C55E", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6"];
 
-  let accumulatedPercent = 0;
+  let currentOffset = 0;
+  const segments = data.map(d => {
+    const pct = (d.value / total) * 100;
+    const offset = 100 - currentOffset;
+    currentOffset += pct;
+    return { ...d, pct, strokeDasharray: `${pct} ${100 - pct}`, strokeDashoffset: offset };
+  });
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
       <div className="relative" style={{ width: `${size}px`, height: `${size}px` }}>
         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
           <circle cx="18" cy="18" r="15.915" fill="none" stroke="#F1F5F9" strokeWidth="3" />
-          {data.map((d, i) => {
-            const pct = (d.value / total) * 100;
-            const strokeDasharray = `${pct} ${100 - pct}`;
-            const strokeDashoffset = 100 - accumulatedPercent;
-            accumulatedPercent += pct;
-
-            return (
+          {segments.map((seg, i) => (
               <circle
-                key={d.label}
+                key={seg.label}
                 cx="18"
                 cy="18"
                 r="15.915"
                 fill="none"
                 stroke={colors[i % colors.length]}
                 strokeWidth="3"
-                strokeDasharray={strokeDasharray}
-                strokeDashoffset={strokeDashoffset}
+                strokeDasharray={seg.strokeDasharray}
+                strokeDashoffset={seg.strokeDashoffset}
                 className="transition-all duration-500"
               />
-            );
-          })}
+            ))}
         </svg>
 
         {/* Centered Total */}

@@ -1,7 +1,23 @@
-import { Controller, Post, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
+  UseGuards,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiConsumes,
+  ApiBody,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('File Upload Module')
 @ApiBearerAuth()
@@ -11,7 +27,10 @@ export class UploadController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Upload file asset', description: 'Uploads images or PDFs up to 10MB.' })
+  @ApiOperation({
+    summary: 'Upload file asset',
+    description: 'Uploads images or PDFs up to 10MB.',
+  })
   @ApiBody({
     schema: {
       type: 'object',
@@ -24,7 +43,10 @@ export class UploadController {
     },
   })
   @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
-  @ApiResponse({ status: 400, description: 'Invalid file format or file size exceeded 10MB.' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid file format or file size exceeded 10MB.',
+  })
   async uploadFile(
     @UploadedFile(
       new ParseFilePipe({

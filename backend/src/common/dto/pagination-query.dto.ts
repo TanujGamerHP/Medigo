@@ -10,7 +10,12 @@ export class PaginationQueryDto {
   @Min(1)
   page?: number = 1;
 
-  @ApiPropertyOptional({ minimum: 1, maximum: 100, default: 10, description: 'Number of items per page' })
+  @ApiPropertyOptional({
+    minimum: 1,
+    maximum: 100,
+    default: 10,
+    description: 'Number of items per page',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -28,7 +33,11 @@ export class PaginationQueryDto {
   @IsString()
   sortBy?: string;
 
-  @ApiPropertyOptional({ enum: ['asc', 'desc'], default: 'desc', description: 'Sorting order' })
+  @ApiPropertyOptional({
+    enum: ['asc', 'desc'],
+    default: 'desc',
+    description: 'Sorting order',
+  })
   @IsOptional()
   @IsIn(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc' = 'desc';

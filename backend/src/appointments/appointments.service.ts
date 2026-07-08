@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { AppointmentStatus, PrescriptionStatus } from '@prisma/client';
 import { RealtimeService } from '../realtime/realtime.service';
@@ -22,29 +26,29 @@ export class AppointmentsService {
 
   async findByPatientUserId(userId: string) {
     return this.prisma.appointment.findMany({
-      where: { 
+      where: {
         deletedAt: null,
-        patient: { userId }
+        patient: { userId },
       },
       include: {
         patient: true,
         doctor: true,
       },
-      orderBy: { appointmentDate: 'asc' }
+      orderBy: { appointmentDate: 'asc' },
     });
   }
 
   async findByDoctorUserId(userId: string) {
     return this.prisma.appointment.findMany({
-      where: { 
+      where: {
         deletedAt: null,
-        doctor: { userId }
+        doctor: { userId },
       },
       include: {
         patient: true,
         doctor: true,
       },
-      orderBy: { appointmentDate: 'asc' }
+      orderBy: { appointmentDate: 'asc' },
     });
   }
 
@@ -66,17 +70,25 @@ export class AppointmentsService {
     return appointment;
   }
 
-  async createForUser(userId: string, doctorId: string, appointmentDate: string, appointmentTime: string, consultationType: string) {
+  async createForUser(
+    userId: string,
+    doctorId: string,
+    appointmentDate: string,
+    appointmentTime: string,
+    consultationType: string,
+  ) {
     const patient = await this.prisma.patient.findUnique({
       where: { userId },
     });
 
     if (!patient) {
-      throw new NotFoundException('Patient profile not found. Please complete registration.');
+      throw new NotFoundException(
+        'Patient profile not found. Please complete registration.',
+      );
     }
 
     const doctor = await this.prisma.doctor.findUnique({
-      where: { id: doctorId }
+      where: { id: doctorId },
     });
 
     const appointment = await this.prisma.appointment.create({
@@ -90,22 +102,29 @@ export class AppointmentsService {
         createdBy: userId,
       },
     });
-    
+
     if (doctor && doctor.userId) {
       await this.prisma.notification.create({
         data: {
           userId: doctor.userId,
-          title: "New Appointment Booked",
+          title: 'New Appointment Booked',
           message: `Patient ${patient.firstName} ${patient.lastName} has booked a ${consultationType} consultation on ${appointmentDate} at ${appointmentTime}.`,
-          type: "appointment"
-        }
+          type: 'appointment',
+        },
       });
     }
-    
+
     return appointment;
   }
 
-  async create(patientId: string, doctorId: string, appointmentDate: string, appointmentTime: string, consultationType: string, createdBy?: string) {
+  async create(
+    patientId: string,
+    doctorId: string,
+    appointmentDate: string,
+    appointmentTime: string,
+    consultationType: string,
+    createdBy?: string,
+  ) {
     return this.prisma.appointment.create({
       data: {
         patientId,
@@ -119,7 +138,12 @@ export class AppointmentsService {
     });
   }
 
-  async reschedule(id: string, appointmentDate: string, appointmentTime: string, updatedBy?: string) {
+  async reschedule(
+    id: string,
+    appointmentDate: string,
+    appointmentTime: string,
+    updatedBy?: string,
+  ) {
     const appointment = await this.findOne(id);
     return this.prisma.appointment.update({
       where: { id },
@@ -144,9 +168,9 @@ export class AppointmentsService {
       orderBy: { createdAt: 'asc' },
       include: {
         sender: {
-          select: { id: true, role: true }
-        }
-      }
+          select: { id: true, role: true },
+        },
+      },
     });
   }
 
@@ -155,17 +179,21 @@ export class AppointmentsService {
       data: {
         appointmentId,
         senderId,
-        text
+        text,
       },
       include: {
         sender: {
-          select: { id: true, role: true }
-        }
-      }
+          select: { id: true, role: true },
+        },
+      },
     });
   }
 
-  async updateStatus(id: string, status: AppointmentStatus, updatedBy?: string) {
+  async updateStatus(
+    id: string,
+    status: AppointmentStatus,
+    updatedBy?: string,
+  ) {
     const appointment = await this.prisma.appointment.findFirst({
       where: { id, deletedAt: null },
     });
@@ -211,13 +239,26 @@ export class AppointmentsService {
       additionalNotes,
     } = data;
 
-    if (!chiefComplaint || !diagnosis || !clinicalFindings || !treatmentRecommendation) {
-      throw new BadRequestException('Required fields missing: chiefComplaint, diagnosis, clinicalFindings, treatmentRecommendation');
+    if (
+      !chiefComplaint ||
+      !diagnosis ||
+      !clinicalFindings ||
+      !treatmentRecommendation
+    ) {
+      throw new BadRequestException(
+        'Required fields missing: chiefComplaint, diagnosis, clinicalFindings, treatmentRecommendation',
+      );
     }
 
-    const validRecommendations = ['Approved for Treatment', 'Requires Further Evaluation', 'Treatment Rejected'];
+    const validRecommendations = [
+      'Approved for Treatment',
+      'Requires Further Evaluation',
+      'Treatment Rejected',
+    ];
     if (!validRecommendations.includes(treatmentRecommendation)) {
-      throw new BadRequestException(`Invalid treatmentRecommendation. Must be one of: ${validRecommendations.join(', ')}`);
+      throw new BadRequestException(
+        `Invalid treatmentRecommendation. Must be one of: ${validRecommendations.join(', ')}`,
+      );
     }
 
     // 2. Run in a transaction
@@ -241,7 +282,9 @@ export class AppointmentsService {
 
       // Verify assigned doctor
       if (appointment.doctor.userId !== doctorUserId) {
-        throw new BadRequestException('Only the assigned doctor can complete this consultation');
+        throw new BadRequestException(
+          'Only the assigned doctor can complete this consultation',
+        );
       }
 
       // Check if consultation details already exist
@@ -314,7 +357,7 @@ export class AppointmentsService {
             message: `A new prescription has been generated for you by Dr. ${appointment.doctor.firstName} ${appointment.doctor.lastName}.`,
             type: 'prescription',
           },
-        })
+        }),
       );
 
       if (treatmentRecommendation === 'Approved for Treatment') {
@@ -323,7 +366,8 @@ export class AppointmentsService {
             data: {
               userId: appointment.patient.userId,
               title: 'Treatment Approved',
-              message: 'Congratulations! Your clinical treatment plan has been approved. You are now eligible to buy prescribed medications.',
+              message:
+                'Congratulations! Your clinical treatment plan has been approved. You are now eligible to buy prescribed medications.',
               type: 'treatment',
             },
           }),
@@ -331,10 +375,11 @@ export class AppointmentsService {
             data: {
               userId: appointment.patient.userId,
               title: 'Medicines Available',
-              message: 'Your prescribed medicines are available in your queue for checkout.',
+              message:
+                'Your prescribed medicines are available in your queue for checkout.',
               type: 'order_status',
             },
-          })
+          }),
         );
       }
 
@@ -347,7 +392,7 @@ export class AppointmentsService {
             message: `You have successfully completed the consultation and clinical report for patient ${appointment.patient.firstName} ${appointment.patient.lastName}.`,
             type: 'consultation',
           },
-        })
+        }),
       );
 
       // Admin notification (Find admin user, or just generic notifications log)
@@ -363,7 +408,7 @@ export class AppointmentsService {
               message: `Dr. ${appointment.doctor.firstName} ${appointment.doctor.lastName} completed consultation for patient ${appointment.patient.firstName} ${appointment.patient.lastName}.`,
               type: 'admin_alert',
             },
-          })
+          }),
         );
       }
 
@@ -385,18 +430,35 @@ export class AppointmentsService {
       // We will do it in a setTimeout/deferred block so it runs after transaction finishes committing.
       setTimeout(() => {
         // Emit events
-        this.realtimeService.emit('consultation.completed', { appointmentId: id, patientId: appointment.patientId, doctorId: appointment.doctorId });
-        this.realtimeService.emit('prescription.generated', { prescriptionId: prescription.id, patientId: appointment.patientId });
-        
+        this.realtimeService.emit('consultation.completed', {
+          appointmentId: id,
+          patientId: appointment.patientId,
+          doctorId: appointment.doctorId,
+        });
+        this.realtimeService.emit('prescription.generated', {
+          prescriptionId: prescription.id,
+          patientId: appointment.patientId,
+        });
+
         if (treatmentRecommendation === 'Approved for Treatment') {
-          this.realtimeService.emit('treatment.approved', { patientId: appointment.patientId });
-          this.realtimeService.emit('medicine.eligible', { patientId: appointment.patientId });
+          this.realtimeService.emit('treatment.approved', {
+            patientId: appointment.patientId,
+          });
+          this.realtimeService.emit('medicine.eligible', {
+            patientId: appointment.patientId,
+          });
         }
-        
+
         // Dynamic dashboard refresh trigger events
         // Broadcast patient/doctor specific updates
-        this.realtimeService.emit('patient.updated', { targetUserId: appointment.patient.userId, patientId: appointment.patientId });
-        this.realtimeService.emit('doctor.updated', { targetUserId: appointment.doctor.userId, doctorId: appointment.doctorId });
+        this.realtimeService.emit('patient.updated', {
+          targetUserId: appointment.patient.userId,
+          patientId: appointment.patientId,
+        });
+        this.realtimeService.emit('doctor.updated', {
+          targetUserId: appointment.doctor.userId,
+          doctorId: appointment.doctorId,
+        });
         this.realtimeService.emit('admin.updated', { role: 'Admin' });
       }, 50);
 

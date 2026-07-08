@@ -4,7 +4,12 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole, DoctorStatus } from '@prisma/client';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('Doctors Listing Module')
 @Controller('api/v1/doctors')
@@ -12,7 +17,11 @@ export class DoctorsController {
   constructor(private doctorsService: DoctorsService) {}
 
   @Get('availability')
-  @ApiOperation({ summary: 'Get doctor clinical availability hours', description: 'Lists working days, timeslots, and general status of all practitioners.' })
+  @ApiOperation({
+    summary: 'Get doctor clinical availability hours',
+    description:
+      'Lists working days, timeslots, and general status of all practitioners.',
+  })
   @ApiResponse({ status: 200, description: 'Availability logs fetched.' })
   async getAvailability() {
     const data = await this.doctorsService.getAvailability();
@@ -23,7 +32,10 @@ export class DoctorsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List all registered doctors', description: 'Returns a list of doctors and specialties.' })
+  @ApiOperation({
+    summary: 'List all registered doctors',
+    description: 'Returns a list of doctors and specialties.',
+  })
   @ApiResponse({ status: 200, description: 'Doctors list fetched.' })
   async getAll() {
     const data = await this.doctorsService.findAll();
@@ -34,7 +46,10 @@ export class DoctorsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get details of specific doctor profile', description: 'Retrieves info by doctor record ID.' })
+  @ApiOperation({
+    summary: 'Get details of specific doctor profile',
+    description: 'Retrieves info by doctor record ID.',
+  })
   @ApiResponse({ status: 200, description: 'Doctor profile returned.' })
   @ApiResponse({ status: 404, description: 'Doctor profile not found.' })
   async getOne(@Param('id') id: string) {
@@ -49,7 +64,10 @@ export class DoctorsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.Admin)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update doctor credential status (Admin only)', description: 'Locks, verifies, or suspends doctor profile.' })
+  @ApiOperation({
+    summary: 'Update doctor credential status (Admin only)',
+    description: 'Locks, verifies, or suspends doctor profile.',
+  })
   @ApiResponse({ status: 200, description: 'Doctor status updated.' })
   async updateStatus(
     @Param('id') id: string,

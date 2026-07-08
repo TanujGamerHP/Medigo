@@ -43,7 +43,7 @@ export class DoctorsService {
 
   async getAvailability() {
     const doctors = await this.findAll();
-    return doctors.map(doc => ({
+    return doctors.map((doc) => ({
       doctorId: doc.id,
       name: `Dr. ${doc.firstName} ${doc.lastName}`,
       specialization: doc.specialization,
@@ -102,7 +102,7 @@ export class DoctorsService {
         allTimeRevenue: appointmentsCount * (doctor.consultationFee || 0),
         monthlyRevenue: appointmentsCount * (doctor.consultationFee || 0), // Simplified to total for now
       },
-      upcomingConsultations: upcoming.map(app => ({
+      upcomingConsultations: upcoming.map((app) => ({
         id: app.id,
         patientName: `${app.patient.firstName} ${app.patient.lastName}`,
         date: app.appointmentDate,
@@ -128,7 +128,9 @@ export class DoctorsService {
       select: { patientId: true },
     });
 
-    const patientIds = Array.from(new Set(appointments.map(a => a.patientId)));
+    const patientIds = Array.from(
+      new Set(appointments.map((a) => a.patientId)),
+    );
 
     return this.prisma.patient.findMany({
       where: {
@@ -185,7 +187,9 @@ export class DoctorsService {
         specialization: data.specialization,
         qualification: data.qualification,
         experience: data.experience,
-        consultationFee: data.consultationFee ? parseFloat(data.consultationFee) : undefined,
+        consultationFee: data.consultationFee
+          ? parseFloat(data.consultationFee)
+          : undefined,
       },
     });
   }

@@ -1,4 +1,11 @@
-import { IsNumber, IsString, IsArray, IsOptional, Min, Max } from 'class-validator';
+import {
+  IsNumber,
+  IsString,
+  IsArray,
+  IsOptional,
+  Min,
+  Max,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SubmitAssessmentDto {
@@ -24,7 +31,10 @@ export class SubmitAssessmentDto {
   @Max(300)
   weight: number;
 
-  @ApiProperty({ example: ['Hypertension'], description: 'List of past medical conditions' })
+  @ApiProperty({
+    example: ['Hypertension'],
+    description: 'List of past medical conditions',
+  })
   @IsArray()
   @IsString({ each: true })
   healthHistory: string[];

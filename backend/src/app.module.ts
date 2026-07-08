@@ -26,10 +26,12 @@ import { RealtimeModule } from './realtime/realtime.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100, // max 100 requests per minute per IP
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100, // max 100 requests per minute per IP
+      },
+    ]),
     DatabaseModule,
     AuthModule,
     UsersModule,

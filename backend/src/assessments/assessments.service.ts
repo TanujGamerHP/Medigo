@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { SubmitAssessmentDto } from './dto/submit-assessment.dto';
 
@@ -12,7 +16,9 @@ export class AssessmentsService {
     });
 
     if (!patient) {
-      throw new NotFoundException('Patient profile not found. Complete profile intake first.');
+      throw new NotFoundException(
+        'Patient profile not found. Complete profile intake first.',
+      );
     }
 
     return {
@@ -28,21 +34,26 @@ export class AssessmentsService {
     });
 
     if (!patient) {
-      throw new NotFoundException('Patient profile not found. Complete profile intake first.');
+      throw new NotFoundException(
+        'Patient profile not found. Complete profile intake first.',
+      );
     }
 
     // BMI: weight (kg) / height^2 (m)
     const bmi = parseFloat((dto.weight / (dto.height * dto.height)).toFixed(2));
-    
+
     let result = 'Normal Weight';
-    let recommendation = 'Maintain a balanced diet and regular physical activity.';
-    
+    let recommendation =
+      'Maintain a balanced diet and regular physical activity.';
+
     if (bmi >= 30) {
       result = 'Obese';
-      recommendation = 'Recommended for Wegovy / Mounjaro medical weight management programs.';
+      recommendation =
+        'Recommended for Wegovy / Mounjaro medical weight management programs.';
     } else if (bmi >= 25) {
       result = 'Overweight';
-      recommendation = 'Recommended for Semaglutide (Ozempic) weight loss programs.';
+      recommendation =
+        'Recommended for Semaglutide (Ozempic) weight loss programs.';
     } else if (bmi < 18.5) {
       result = 'Underweight';
       recommendation = 'Recommended for personalized nutritional therapy.';
@@ -72,7 +83,11 @@ export class AssessmentsService {
     // Match 2 available doctors
     const matchedDoctors = await this.prisma.doctor.findMany({
       take: 2,
-      where: { deletedAt: null, availabilityStatus: 'Available', status: 'Verified' },
+      where: {
+        deletedAt: null,
+        availabilityStatus: 'Available',
+        status: 'Verified',
+      },
     });
 
     return {
@@ -81,7 +96,7 @@ export class AssessmentsService {
       result,
       recommendation,
       submittedAt: assessment.submittedAt,
-      matchedDoctors: matchedDoctors.map(doc => ({
+      matchedDoctors: matchedDoctors.map((doc) => ({
         id: doc.id,
         name: `Dr. ${doc.firstName} ${doc.lastName}`,
         specialization: doc.specialization,

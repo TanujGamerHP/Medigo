@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
@@ -24,7 +28,14 @@ export class CMSService {
     return page;
   }
 
-  async createPage(title: string, slug: string, content: string, seoTitle?: string, metaDescription?: string, createdBy?: string) {
+  async createPage(
+    title: string,
+    slug: string,
+    content: string,
+    seoTitle?: string,
+    metaDescription?: string,
+    createdBy?: string,
+  ) {
     const existing = await this.prisma.cMSPage.findUnique({
       where: { slug },
     });
@@ -36,7 +47,15 @@ export class CMSService {
     });
   }
 
-  async updatePage(id: string, title: string, slug: string, content: string, seoTitle?: string, metaDescription?: string, updatedBy?: string) {
+  async updatePage(
+    id: string,
+    title: string,
+    slug: string,
+    content: string,
+    seoTitle?: string,
+    metaDescription?: string,
+    updatedBy?: string,
+  ) {
     const page = await this.prisma.cMSPage.findFirst({
       where: { id, deletedAt: null },
     });
@@ -94,19 +113,46 @@ export class CMSService {
     return blog;
   }
 
-  async createBlog(title: string, slug: string, content: string, category: string, author: string, featuredImage?: string, createdBy?: string) {
+  async createBlog(
+    title: string,
+    slug: string,
+    content: string,
+    category: string,
+    author: string,
+    featuredImage?: string,
+    createdBy?: string,
+  ) {
     const existing = await this.prisma.blog.findUnique({
       where: { slug },
     });
     if (existing) {
-      throw new BadRequestException('Blog article with this slug already exists');
+      throw new BadRequestException(
+        'Blog article with this slug already exists',
+      );
     }
     return this.prisma.blog.create({
-      data: { title, slug, content, category, author, featuredImage, createdBy },
+      data: {
+        title,
+        slug,
+        content,
+        category,
+        author,
+        featuredImage,
+        createdBy,
+      },
     });
   }
 
-  async updateBlog(id: string, title: string, slug: string, content: string, category: string, author: string, featuredImage?: string, updatedBy?: string) {
+  async updateBlog(
+    id: string,
+    title: string,
+    slug: string,
+    content: string,
+    category: string,
+    author: string,
+    featuredImage?: string,
+    updatedBy?: string,
+  ) {
     const blog = await this.prisma.blog.findFirst({
       where: { id, deletedAt: null },
     });
@@ -115,7 +161,15 @@ export class CMSService {
     }
     return this.prisma.blog.update({
       where: { id },
-      data: { title, slug, content, category, author, featuredImage, updatedBy },
+      data: {
+        title,
+        slug,
+        content,
+        category,
+        author,
+        featuredImage,
+        updatedBy,
+      },
     });
   }
 
@@ -154,7 +208,12 @@ export class CMSService {
     });
   }
 
-  async createFaq(question: string, answer: string, category: string, createdBy?: string) {
+  async createFaq(
+    question: string,
+    answer: string,
+    category: string,
+    createdBy?: string,
+  ) {
     return this.prisma.fAQ.create({
       data: { question, answer, category, createdBy },
     });
@@ -182,9 +241,22 @@ export class CMSService {
     });
   }
 
-  async createMedia(fileName: string, fileType: string, fileSize: number, url: string, uploadedBy?: string) {
+  async createMedia(
+    fileName: string,
+    fileType: string,
+    fileSize: number,
+    url: string,
+    uploadedBy?: string,
+  ) {
     return this.prisma.media.create({
-      data: { fileName, fileType, fileSize, url, uploadedBy, createdBy: uploadedBy },
+      data: {
+        fileName,
+        fileType,
+        fileSize,
+        url,
+        uploadedBy,
+        createdBy: uploadedBy,
+      },
     });
   }
 

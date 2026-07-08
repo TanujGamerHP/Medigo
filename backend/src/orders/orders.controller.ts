@@ -5,7 +5,13 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { RequestUser } from '../common/decorators/user.decorator';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiBody,
+} from '@nestjs/swagger';
 
 @ApiTags('Orders Module')
 @Controller('api/v1/orders')
@@ -16,12 +22,22 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.Patient)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Checkout a cart', description: 'Creates an order for medications if prescription gate allows.' })
+  @ApiOperation({
+    summary: 'Checkout a cart',
+    description:
+      'Creates an order for medications if prescription gate allows.',
+  })
   @ApiResponse({ status: 201, description: 'Order created.' })
   @ApiBody({
     schema: {
       type: 'object',
-      required: ['items', 'shippingAddress', 'razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature'],
+      required: [
+        'items',
+        'shippingAddress',
+        'razorpay_order_id',
+        'razorpay_payment_id',
+        'razorpay_signature',
+      ],
       properties: {
         items: {
           type: 'array',
@@ -30,16 +46,16 @@ export class OrdersController {
             properties: {
               productId: { type: 'string' },
               quantity: { type: 'number' },
-            }
-          }
+            },
+          },
         },
         shippingAddress: { type: 'string' },
         paymentMethod: { type: 'string', enum: ['COD', 'Razorpay'] },
         razorpay_order_id: { type: 'string' },
         razorpay_payment_id: { type: 'string' },
         razorpay_signature: { type: 'string' },
-      }
-    }
+      },
+    },
   })
   async checkout(
     @RequestUser('sub') userId: string,
@@ -50,7 +66,15 @@ export class OrdersController {
     @Body('razorpay_payment_id') paymentId?: string,
     @Body('razorpay_signature') signature?: string,
   ) {
-    const data = await this.ordersService.checkout(userId, items, shippingAddress, paymentMethod, orderId, paymentId, signature);
+    const data = await this.ordersService.checkout(
+      userId,
+      items,
+      shippingAddress,
+      paymentMethod,
+      orderId,
+      paymentId,
+      signature,
+    );
     return {
       message: 'Order processed successfully',
       data,
@@ -61,7 +85,10 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.Patient)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Check store eligibility', description: 'Checks if patient has required membership to buy medicines.' })
+  @ApiOperation({
+    summary: 'Check store eligibility',
+    description: 'Checks if patient has required membership to buy medicines.',
+  })
   @ApiResponse({ status: 200, description: 'Eligibility returned.' })
   async checkEligibility(@RequestUser('sub') userId: string) {
     const data = await this.ordersService.checkEligibility(userId);
@@ -75,7 +102,10 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.Patient)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get order history', description: 'Retrieves all past orders of the patient.' })
+  @ApiOperation({
+    summary: 'Get order history',
+    description: 'Retrieves all past orders of the patient.',
+  })
   @ApiResponse({ status: 200, description: 'Order logs returned.' })
   async getHistory(@RequestUser('sub') userId: string) {
     const data = await this.ordersService.getHistory(userId);
@@ -89,7 +119,10 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.Admin)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all orders', description: 'Retrieves all orders for admin dashboard.' })
+  @ApiOperation({
+    summary: 'Get all orders',
+    description: 'Retrieves all orders for admin dashboard.',
+  })
   @ApiResponse({ status: 200, description: 'Order logs returned.' })
   async getAllOrders() {
     const data = await this.ordersService.getAllOrders();

@@ -8,7 +8,10 @@ export class UpdateUserDto {
   @IsEnum(UserRole)
   role?: UserRole;
 
-  @ApiProperty({ example: 'Active', description: 'Status update (Active, Deactivated)' })
+  @ApiProperty({
+    example: 'Active',
+    description: 'Status update (Active, Deactivated)',
+  })
   @IsOptional()
   @IsString()
   status?: string;

@@ -13,19 +13,22 @@ export class MembershipsService {
         name: 'Starter',
         price: 149.0,
         billing: 'monthly',
-        description: 'Basic access to medical team and GLP-1 intake prescriptions.',
+        description:
+          'Basic access to medical team and GLP-1 intake prescriptions.',
       },
       {
         name: 'Premium',
         price: 299.0,
         billing: 'monthly',
-        description: 'Standard access including live AI coaching and monthly check-ins.',
+        description:
+          'Standard access including live AI coaching and monthly check-ins.',
       },
       {
         name: 'Elite',
         price: 499.0,
         billing: 'monthly',
-        description: 'All-inclusive medical consultations, prioritised clinical response times.',
+        description:
+          'All-inclusive medical consultations, prioritised clinical response times.',
       },
     ];
   }

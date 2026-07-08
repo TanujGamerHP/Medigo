@@ -37,12 +37,18 @@ export class UpdateProfileDto {
   @IsString()
   bloodGroup?: string;
 
-  @ApiProperty({ example: '+15550199', description: 'Emergency contact number' })
+  @ApiProperty({
+    example: '+15550199',
+    description: 'Emergency contact number',
+  })
   @IsOptional()
   @IsString()
   emergencyContact?: string;
 
-  @ApiProperty({ example: 'https://example.com/avatar.jpg', description: 'Profile image public URL' })
+  @ApiProperty({
+    example: 'https://example.com/avatar.jpg',
+    description: 'Profile image public URL',
+  })
   @IsOptional()
   @IsString()
   profileImage?: string;

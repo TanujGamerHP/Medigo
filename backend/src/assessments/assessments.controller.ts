@@ -6,7 +6,12 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { RequestUser } from '../common/decorators/user.decorator';
 import { SubmitAssessmentDto } from './dto/submit-assessment.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('Assessments Module')
 @ApiBearerAuth()
@@ -17,7 +22,10 @@ export class AssessmentsController {
 
   @Post('start')
   @Roles(UserRole.Patient)
-  @ApiOperation({ summary: 'Start a new assessment session', description: 'Initiates a new multi-step AI assessment session.' })
+  @ApiOperation({
+    summary: 'Start a new assessment session',
+    description: 'Initiates a new multi-step AI assessment session.',
+  })
   @ApiResponse({ status: 201, description: 'Session successfully started.' })
   async start(@RequestUser('sub') userId: string) {
     const data = await this.assessmentsService.startSession(userId);
@@ -29,8 +37,15 @@ export class AssessmentsController {
 
   @Post('submit')
   @Roles(UserRole.Patient)
-  @ApiOperation({ summary: 'Submit completed assessment questionnaire', description: 'Accepts questionnaire criteria, computes BMI and matching plans/doctors.' })
-  @ApiResponse({ status: 201, description: 'Intake answers evaluated and saved successfully.' })
+  @ApiOperation({
+    summary: 'Submit completed assessment questionnaire',
+    description:
+      'Accepts questionnaire criteria, computes BMI and matching plans/doctors.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Intake answers evaluated and saved successfully.',
+  })
   @ApiResponse({ status: 400, description: 'Validation failed.' })
   async submit(
     @RequestUser('sub') userId: string,
@@ -45,7 +60,11 @@ export class AssessmentsController {
 
   @Get('history')
   @Roles(UserRole.Patient)
-  @ApiOperation({ summary: 'Get assessment history', description: 'Lists all past assessment records submitted by the logged-in patient.' })
+  @ApiOperation({
+    summary: 'Get assessment history',
+    description:
+      'Lists all past assessment records submitted by the logged-in patient.',
+  })
   @ApiResponse({ status: 200, description: 'Evaluation history fetched.' })
   async getHistory(@RequestUser('sub') userId: string) {
     const data = await this.assessmentsService.getHistory(userId);
@@ -57,13 +76,16 @@ export class AssessmentsController {
 
   @Get(':id')
   @Roles(UserRole.Patient)
-  @ApiOperation({ summary: 'Get details of specific assessment record', description: 'Retrieves a single past evaluation by record ID.' })
-  @ApiResponse({ status: 200, description: 'Evaluation record details returned.' })
+  @ApiOperation({
+    summary: 'Get details of specific assessment record',
+    description: 'Retrieves a single past evaluation by record ID.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Evaluation record details returned.',
+  })
   @ApiResponse({ status: 404, description: 'Record not found.' })
-  async getOne(
-    @Param('id') id: string,
-    @RequestUser('sub') userId: string,
-  ) {
+  async getOne(@Param('id') id: string, @RequestUser('sub') userId: string) {
     const data = await this.assessmentsService.getOne(id, userId);
     return {
       message: 'Assessment record details retrieved successfully',

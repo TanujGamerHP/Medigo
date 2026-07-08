@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
@@ -23,7 +28,13 @@ export class AuthService {
   // Helper to parse user-agent
   private parseUserAgent(ua: string) {
     const isMobile = /Mobile|Android|iP(hone|od|ad)/i.test(ua);
-    const browser = ua.includes('Firefox') ? 'Firefox' : ua.includes('Chrome') ? 'Chrome' : ua.includes('Safari') ? 'Safari' : 'Other';
+    const browser = ua.includes('Firefox')
+      ? 'Firefox'
+      : ua.includes('Chrome')
+        ? 'Chrome'
+        : ua.includes('Safari')
+          ? 'Safari'
+          : 'Other';
     return {
       browser,
       device: isMobile ? 'Mobile' : 'Desktop',
@@ -100,14 +111,16 @@ export class AuthService {
 
   async sendOtp(email: string, ipAddress?: string) {
     const emailNormalized = email.trim().toLowerCase();
-    
+
     // Check if user is locked
     const user = await this.prisma.user.findUnique({
       where: { email: emailNormalized },
     });
 
     if (user?.lockedUntil && new Date() < user.lockedUntil) {
-      throw new ForbiddenException(`Account temporarily locked. Please try again after ${user.lockedUntil.toLocaleTimeString()}`);
+      throw new ForbiddenException(
+        `Account temporarily locked. Please try again after ${user.lockedUntil.toLocaleTimeString()}`,
+      );
     }
 
     // Check resend limits
@@ -117,13 +130,18 @@ export class AuthService {
 
     if (activeOtp) {
       const cooldownSec = 30;
-      const elapsed = (Date.now() - new Date(activeOtp.lastResentAt).getTime()) / 1000;
+      const elapsed =
+        (Date.now() - new Date(activeOtp.lastResentAt).getTime()) / 1000;
       if (elapsed < cooldownSec) {
-        throw new BadRequestException(`Please wait ${Math.ceil(cooldownSec - elapsed)} seconds before requesting a new OTP`);
+        throw new BadRequestException(
+          `Please wait ${Math.ceil(cooldownSec - elapsed)} seconds before requesting a new OTP`,
+        );
       }
 
       if (activeOtp.resends >= 3) {
-        throw new BadRequestException('Maximum OTP requests reached. Please try again later.');
+        throw new BadRequestException(
+          'Maximum OTP requests reached. Please try again later.',
+        );
       }
     }
 
@@ -168,16 +186,20 @@ export class AuthService {
     };
   }
 
-  async verifyOtp(dto: VerifyOtpDto, ipAddress?: string, userAgentStr?: string) {
+  async verifyOtp(
+    dto: VerifyOtpDto,
+    ipAddress?: string,
+    userAgentStr?: string,
+  ) {
     const emailNormalized = dto.email.trim().toLowerCase();
-    
+
     // Check lock status
     const user = await this.prisma.user.findUnique({
       where: { email: emailNormalized },
       include: {
         patient: true,
         doctor: true,
-      }
+      },
     });
 
     if (!user) {
@@ -185,7 +207,9 @@ export class AuthService {
     }
 
     if (user.lockedUntil && new Date() < user.lockedUntil) {
-      throw new ForbiddenException('Account temporarily locked. Please wait before retrying.');
+      throw new ForbiddenException(
+        'Account temporarily locked. Please wait before retrying.',
+      );
     }
 
     const otpRecord = await this.prisma.oTPCode.findUnique({
@@ -206,12 +230,12 @@ export class AuthService {
 
     if (!isMatch) {
       const newAttempts = otpRecord.attempts + 1;
-      
+
       if (newAttempts >= 5) {
         // Lock account
         const lockDurationMin = 15;
         const lockedUntil = new Date(Date.now() + lockDurationMin * 60 * 1000);
-        
+
         await this.prisma.user.update({
           where: { id: user.id },
           data: {
@@ -232,7 +256,9 @@ export class AuthService {
           },
         });
 
-        throw new ForbiddenException(`Too many failed attempts. Account locked for ${lockDurationMin} minutes.`);
+        throw new ForbiddenException(
+          `Too many failed attempts. Account locked for ${lockDurationMin} minutes.`,
+        );
       }
 
       // Update attempt count
@@ -241,7 +267,9 @@ export class AuthService {
         data: { attempts: newAttempts },
       });
 
-      throw new BadRequestException(`Verification code is incorrect. ${5 - newAttempts} attempts remaining.`);
+      throw new BadRequestException(
+        `Verification code is incorrect. ${5 - newAttempts} attempts remaining.`,
+      );
     }
 
     // Success! Clear locks and delete OTP
@@ -267,10 +295,18 @@ export class AuthService {
     });
 
     // Generate tokens
-    const tokens = await this.generateTokens(user.id, user.email, user.role, session.id);
+    const tokens = await this.generateTokens(
+      user.id,
+      user.email,
+      user.role,
+      session.id,
+    );
 
     // Save hashed refresh token to session
-    const hashedRefreshToken = crypto.createHash('sha256').update(tokens.refreshToken).digest('hex');
+    const hashedRefreshToken = crypto
+      .createHash('sha256')
+      .update(tokens.refreshToken)
+      .digest('hex');
     await this.prisma.session.update({
       where: { id: session.id },
       data: { hashedRefreshToken },
@@ -318,11 +354,16 @@ export class AuthService {
     });
 
     if (!session || !session.isActive) {
-      throw new UnauthorizedException('Session has been revoked or is inactive');
+      throw new UnauthorizedException(
+        'Session has been revoked or is inactive',
+      );
     }
 
-    const incomingHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-    
+    const incomingHash = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
+
     // Check if token reuse detected
     if (session.hashedRefreshToken !== incomingHash) {
       // Hijack attempt! Invalidate entire session family
@@ -340,12 +381,22 @@ export class AuthService {
         },
       });
 
-      throw new ForbiddenException('Security alert: Refresh token reuse detected. Access revoked.');
+      throw new ForbiddenException(
+        'Security alert: Refresh token reuse detected. Access revoked.',
+      );
     }
 
     // Generate rotated tokens
-    const tokens = await this.generateTokens(session.userId, payload.email, payload.role, session.id);
-    const newHash = crypto.createHash('sha256').update(tokens.refreshToken).digest('hex');
+    const tokens = await this.generateTokens(
+      session.userId,
+      payload.email,
+      payload.role,
+      session.id,
+    );
+    const newHash = crypto
+      .createHash('sha256')
+      .update(tokens.refreshToken)
+      .digest('hex');
 
     await this.prisma.session.update({
       where: { id: session.id },
@@ -416,9 +467,14 @@ export class AuthService {
     });
   }
 
-  private async generateTokens(userId: string, email: string, role: UserRole, sessionId: string) {
+  private async generateTokens(
+    userId: string,
+    email: string,
+    role: UserRole,
+    sessionId: string,
+  ) {
     const payload = { sub: userId, email, role, sessionId };
-    
+
     const accessToken = await this.jwtService.signAsync(payload, {
       expiresIn: '15m',
     });

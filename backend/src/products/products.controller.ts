@@ -8,7 +8,11 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List all active products', description: 'Returns a list of all active medicines and wellness products.' })
+  @ApiOperation({
+    summary: 'List all active products',
+    description:
+      'Returns a list of all active medicines and wellness products.',
+  })
   @ApiResponse({ status: 200, description: 'Products fetched successfully.' })
   async getAllActive() {
     const data = await this.productsService.findAllActive();

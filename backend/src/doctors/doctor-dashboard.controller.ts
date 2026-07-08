@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Put, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
 import { PrescriptionsService } from '../prescriptions/prescriptions.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -8,7 +16,12 @@ import { UserRole } from '@prisma/client';
 import { RequestUser } from '../common/decorators/user.decorator';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { UpdateAvailabilityDto } from './dto/update-availability.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('Doctor Dashboard Module')
 @ApiBearerAuth()
@@ -22,8 +35,15 @@ export class DoctorDashboardController {
   ) {}
 
   @Get('dashboard')
-  @ApiOperation({ summary: 'Get doctor dashboard KPIs', description: 'Returns upcoming appointments count, pending assessments, and clinic profile status.' })
-  @ApiResponse({ status: 200, description: 'Dashboard metrics successfully returned.' })
+  @ApiOperation({
+    summary: 'Get doctor dashboard KPIs',
+    description:
+      'Returns upcoming appointments count, pending assessments, and clinic profile status.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Dashboard metrics successfully returned.',
+  })
   async getDashboard(@RequestUser('sub') userId: string) {
     const data = await this.doctorsService.getDashboardData(userId);
     return {
@@ -33,7 +53,11 @@ export class DoctorDashboardController {
   }
 
   @Get('appointments')
-  @ApiOperation({ summary: 'List all consultations scheduled with this doctor', description: 'Returns list of appointments with linked patient name and date.' })
+  @ApiOperation({
+    summary: 'List all consultations scheduled with this doctor',
+    description:
+      'Returns list of appointments with linked patient name and date.',
+  })
   @ApiResponse({ status: 200, description: 'Appointments list fetched.' })
   async getAppointments(@RequestUser('sub') userId: string) {
     const data = await this.doctorsService.getDoctorAppointments(userId);
@@ -44,7 +68,10 @@ export class DoctorDashboardController {
   }
 
   @Get('patients')
-  @ApiOperation({ summary: 'List all unique patients seen by this doctor', description: 'Returns a list of patients.' })
+  @ApiOperation({
+    summary: 'List all unique patients seen by this doctor',
+    description: 'Returns a list of patients.',
+  })
   @ApiResponse({ status: 200, description: 'Unique patients list fetched.' })
   async getPatients(@RequestUser('sub') userId: string) {
     const data = await this.doctorsService.getDoctorPatients(userId);
@@ -55,14 +82,23 @@ export class DoctorDashboardController {
   }
 
   @Get('patient/:id')
-  @ApiOperation({ summary: 'Get detailed history and prescriptions of a patient', description: 'Retrieves patient timeline specific to this doctor.' })
-  @ApiResponse({ status: 200, description: 'Patient details and history returned.' })
+  @ApiOperation({
+    summary: 'Get detailed history and prescriptions of a patient',
+    description: 'Retrieves patient timeline specific to this doctor.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Patient details and history returned.',
+  })
   @ApiResponse({ status: 404, description: 'Patient not found.' })
   async getPatientDetails(
     @RequestUser('sub') userId: string,
     @Param('id') patientId: string,
   ) {
-    const data = await this.doctorsService.getDoctorPatientDetails(userId, patientId);
+    const data = await this.doctorsService.getDoctorPatientDetails(
+      userId,
+      patientId,
+    );
     return {
       message: 'Patient records and history retrieved successfully',
       data,
@@ -70,8 +106,15 @@ export class DoctorDashboardController {
   }
 
   @Post('prescriptions')
-  @ApiOperation({ summary: 'Issue a new prescription for a patient', description: 'Records diagnosis, medication instructions, and check-up follow-up.' })
-  @ApiResponse({ status: 201, description: 'Prescription created successfully.' })
+  @ApiOperation({
+    summary: 'Issue a new prescription for a patient',
+    description:
+      'Records diagnosis, medication instructions, and check-up follow-up.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Prescription created successfully.',
+  })
   async createPrescription(
     @RequestUser('sub') userId: string,
     @Body() dto: CreatePrescriptionDto,
@@ -96,8 +139,14 @@ export class DoctorDashboardController {
   }
 
   @Put('prescriptions/:id')
-  @ApiOperation({ summary: 'Modify an active prescription', description: 'Updates diagnosis or dosage directions.' })
-  @ApiResponse({ status: 200, description: 'Prescription updated successfully.' })
+  @ApiOperation({
+    summary: 'Modify an active prescription',
+    description: 'Updates diagnosis or dosage directions.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Prescription updated successfully.',
+  })
   @ApiResponse({ status: 404, description: 'Prescription not found.' })
   async updatePrescription(
     @RequestUser('sub') userId: string,
@@ -120,7 +169,10 @@ export class DoctorDashboardController {
   }
 
   @Get('availability')
-  @ApiOperation({ summary: 'Get current practitioner schedule status', description: 'Returns Available/Busy/OutOfOffice.' })
+  @ApiOperation({
+    summary: 'Get current practitioner schedule status',
+    description: 'Returns Available/Busy/OutOfOffice.',
+  })
   @ApiResponse({ status: 200, description: 'Availability status fetched.' })
   async getAvailability(@RequestUser('sub') userId: string) {
     const doctor = await this.doctorsService.findProfileByUserId(userId);
@@ -133,13 +185,22 @@ export class DoctorDashboardController {
   }
 
   @Put('availability')
-  @ApiOperation({ summary: 'Update practitioner schedule status', description: 'Updates state to Available, Busy, or OutOfOffice.' })
-  @ApiResponse({ status: 200, description: 'Availability status updated successfully.' })
+  @ApiOperation({
+    summary: 'Update practitioner schedule status',
+    description: 'Updates state to Available, Busy, or OutOfOffice.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Availability status updated successfully.',
+  })
   async updateAvailability(
     @RequestUser('sub') userId: string,
     @Body() dto: UpdateAvailabilityDto,
   ) {
-    const data = await this.doctorsService.updateAvailability(userId, dto.status);
+    const data = await this.doctorsService.updateAvailability(
+      userId,
+      dto.status,
+    );
     return {
       message: 'Practitioner availability status updated successfully',
       data,
@@ -147,12 +208,12 @@ export class DoctorDashboardController {
   }
 
   @Put('profile')
-  @ApiOperation({ summary: 'Update practitioner profile and fee', description: 'Updates specialization, experience, and consultation fee.' })
+  @ApiOperation({
+    summary: 'Update practitioner profile and fee',
+    description: 'Updates specialization, experience, and consultation fee.',
+  })
   @ApiResponse({ status: 200, description: 'Profile updated successfully.' })
-  async updateProfile(
-    @RequestUser('sub') userId: string,
-    @Body() dto: any,
-  ) {
+  async updateProfile(@RequestUser('sub') userId: string, @Body() dto: any) {
     const data = await this.doctorsService.updateProfile(userId, dto);
     return {
       message: 'Practitioner profile updated successfully',

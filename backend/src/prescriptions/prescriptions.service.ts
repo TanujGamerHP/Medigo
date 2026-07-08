@@ -80,7 +80,11 @@ export class PrescriptionsService {
     });
   }
 
-  async updateStatus(id: string, status: PrescriptionStatus, updatedBy?: string) {
+  async updateStatus(
+    id: string,
+    status: PrescriptionStatus,
+    updatedBy?: string,
+  ) {
     const prescription = await this.prisma.prescription.findFirst({
       where: { id, deletedAt: null },
     });
