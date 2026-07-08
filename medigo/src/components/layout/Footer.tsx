@@ -175,9 +175,9 @@ export function Footer() {
 
     {/* ---- Main Footer Grid ---- */}
     <div className="container-custom py-12 lg:py-16" suppressHydrationWarning>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8" suppressHydrationWarning>
+      <div className="flex flex-col lg:flex-row gap-10 lg:gap-16" suppressHydrationWarning>
         {/* Column 1 — Brand */}
-        <div className="sm:col-span-2 lg:col-span-1" suppressHydrationWarning>
+        <div className="w-full lg:w-2/5" suppressHydrationWarning>
           <Link
             href="/"
             id="footer-logo"
@@ -188,7 +188,7 @@ export function Footer() {
               MediGo
             </span>
           </Link>
-          <p className="text-white/60 text-sm leading-relaxed mb-6 max-w-xs">
+          <p className="text-white/60 text-sm leading-relaxed mb-6 max-w-sm">
             Doctor-led, AI-powered GLP-1 weight management — making premium
             healthcare accessible to everyone, everywhere.
           </p>
@@ -215,25 +215,27 @@ export function Footer() {
         </div>
 
         {/* Columns 2-4 — Links */}
-        {FOOTER_COLUMNS.map((col) => (
-          <div key={col.title} suppressHydrationWarning>
-            <h4 className="text-sm font-heading font-semibold uppercase tracking-wider text-white/80 mb-4">
-              {col.title}
-            </h4>
-            <ul className="space-y-2.5">
-              {col.links.map((link) => (
-                <li key={link.href + link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-white/55 hover:text-primary transition-colors duration-200"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        <div className="w-full lg:w-3/5 grid grid-cols-2 sm:grid-cols-3 gap-8 lg:gap-10">
+          {FOOTER_COLUMNS.map((col) => (
+            <div key={col.title} suppressHydrationWarning>
+              <h4 className="text-sm font-heading font-semibold uppercase tracking-wider text-white/80 mb-4">
+                {col.title}
+              </h4>
+              <ul className="space-y-2.5">
+                {col.links.map((link) => (
+                  <li key={link.href + link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-white/55 hover:text-primary transition-colors duration-200"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
 
