@@ -22,6 +22,10 @@ export default function DoctorProfileSetup() {
     specialization: "",
     experience: "",
     profileImage: "",
+    consultationFee: "",
+    bankName: "",
+    accountNumber: "",
+    ifscCode: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -119,6 +123,40 @@ export default function DoctorProfileSetup() {
               <option value="10-15 years">10-15 years</option>
               <option value="15+ years">15+ years</option>
             </select>
+          </div>
+
+          <div className="pt-4 border-t border-border mt-4">
+            <h3 className="font-semibold text-text-primary mb-4">Financial Details</h3>
+            <Input
+              label="Consultation Fee (₹)"
+              type="number"
+              min="0"
+              value={formData.consultationFee}
+              onChange={(e) => setFormData({ ...formData, consultationFee: e.target.value })}
+              required
+              className="mb-4"
+            />
+
+            <div className="space-y-4">
+              <Input
+                label="Bank Name"
+                value={formData.bankName}
+                onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                required
+              />
+              <Input
+                label="Account Number"
+                value={formData.accountNumber}
+                onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
+                required
+              />
+              <Input
+                label="IFSC Code"
+                value={formData.ifscCode}
+                onChange={(e) => setFormData({ ...formData, ifscCode: e.target.value })}
+                required
+              />
+            </div>
           </div>
 
           <Button type="submit" variant="primary" fullWidth className="mt-8 h-12 text-sm" isLoading={loading}>

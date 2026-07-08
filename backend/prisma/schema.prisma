@@ -120,6 +120,9 @@ model Doctor {
   bio                String?
   profileImage       String?
   consultationFee    Float          @default(0)
+  bankName           String?
+  accountNumber      String?
+  ifscCode           String?
   availabilityStatus String         @default("Available")
   status             DoctorStatus   @default(PendingCredentials)
   
@@ -400,6 +403,7 @@ model Order {
   totalAmount   Float
   status        String      @default("Pending") // Pending, Paid, Shipped, Delivered, Cancelled
   paymentId     String?
+  paymentMethod String      @default("Razorpay")
   shippingAddress String?
   
   // Audits

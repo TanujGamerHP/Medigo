@@ -185,7 +185,7 @@ export default function PricingPage() {
                 <div className="pt-8">
                   <Link
                     id={`pricing-btn-${plan.id}`}
-                    href={`/assessment?plan=${plan.id}&period=${billingPeriod}`}
+                    href={`/membership/checkout?plan=${plan.id}&period=${billingPeriod}`}
                     className={`w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all duration-200 hover:scale-[1.02] ${
                       plan.popular
                         ? "gradient-cta text-white shadow-glow"

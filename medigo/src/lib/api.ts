@@ -82,41 +82,53 @@ export const api = {
     }
   },
 
+  refreshTokenPromise: null as Promise<boolean> | null,
+
   async handleTokenRefresh(): Promise<boolean> {
-    const { refreshToken } = this.getTokens();
-    if (!refreshToken) {
-      this.clearTokens();
-      return false;
+    if (this.refreshTokenPromise) {
+      return this.refreshTokenPromise;
     }
 
-    try {
-      const url = `${API_BASE_URL}/api/v1/auth/refresh-token`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
-
-      if (!response.ok) {
+    this.refreshTokenPromise = (async () => {
+      const { refreshToken } = this.getTokens();
+      if (!refreshToken) {
         this.clearTokens();
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login?expired=true';
-        }
         return false;
       }
 
-      const json = await response.json();
-      if (json.success && json.data) {
-        this.setTokens(json.data.accessToken, json.data.refreshToken);
-        return true;
-      }
+      try {
+        const url = `${API_BASE_URL}/api/v1/auth/refresh-token`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        });
 
-      this.clearTokens();
-      return false;
-    } catch {
-      this.clearTokens();
-      return false;
-    }
+        if (!response.ok) {
+          this.clearTokens();
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login?expired=true';
+          }
+          return false;
+        }
+
+        const json = await response.json();
+        if (json.success && json.data) {
+          this.setTokens(json.data.accessToken, json.data.refreshToken);
+          return true;
+        }
+
+        this.clearTokens();
+        return false;
+      } catch {
+        this.clearTokens();
+        return false;
+      } finally {
+        this.refreshTokenPromise = null;
+      }
+    })();
+
+    return this.refreshTokenPromise;
   },
 
   get(endpoint: string, options: RequestOptions = {}) {

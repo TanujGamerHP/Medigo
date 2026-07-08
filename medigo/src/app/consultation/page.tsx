@@ -95,6 +95,27 @@ function ConsultationContent() {
     return doctorsList.find(d => d.id === selectedDoctorId) || doctorsList[0];
   }, [selectedDoctorId, doctorsList]);
 
+  const filteredSlots = useMemo(() => {
+    if (!selectedDoctor?.slots) return [];
+    if (selectedDate !== AVAILABLE_DATES[0]) return selectedDoctor.slots;
+    
+    const now = new Date();
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+    
+    return selectedDoctor.slots.filter(slot => {
+      const [time, period] = slot.split(" ");
+      let [hours, minutes] = time.split(":").map(Number);
+      
+      if (period === "PM" && hours !== 12) hours += 12;
+      if (period === "AM" && hours === 12) hours = 0;
+      
+      if (hours > currentHours) return true;
+      if (hours === currentHours && minutes > currentMinutes) return true;
+      return false;
+    });
+  }, [selectedDoctor, selectedDate]);
+
   const handleCheckoutRedirect = async () => {
     if (!selectedTime || !selectedDoctorId) return;
 
@@ -313,19 +334,25 @@ function ConsultationContent() {
                 4. Choose Available Time Slot
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {selectedDoctor?.slots?.map((time) => (
-                  <button
-                    key={time}
-                    onClick={() => setSelectedTime(time)}
-                    className={`py-3 rounded-xl border text-center text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${selectedTime === time
-                      ? "bg-primary text-white border-primary shadow-sm"
-                      : "bg-background border-border text-text-primary hover:border-primary/50"
-                      }`}
-                  >
-                    <Clock className="w-4 h-4 shrink-0" />
-                    {time}
-                  </button>
-                ))}
+                {filteredSlots.length > 0 ? (
+                  filteredSlots.map((time) => (
+                    <button
+                      key={time}
+                      onClick={() => setSelectedTime(time)}
+                      className={`py-3 rounded-xl border text-center text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${selectedTime === time
+                        ? "bg-primary text-white border-primary shadow-sm"
+                        : "bg-background border-border text-text-primary hover:border-primary/50"
+                        }`}
+                    >
+                      <Clock className="w-4 h-4 shrink-0" />
+                      {time}
+                    </button>
+                  ))
+                ) : (
+                  <div className="col-span-full py-4 text-center text-xs text-text-secondary">
+                    No time slots available for this date.
+                  </div>
+                )}
               </div>
             </div>
 

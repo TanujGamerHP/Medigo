@@ -24,7 +24,10 @@ export default function DoctorProfilePage() {
     experience: doctor.experience || "0 years",
     clinicInfo: doctor.clinicInfo || "MediGo Virtual Clinic",
     languages: doctor.languages || "English",
-    consultationFee: doctor.consultationFee || 0
+    consultationFee: doctor.consultationFee || 0,
+    bankName: doctor.bankName || "",
+    accountNumber: doctor.accountNumber || "",
+    ifscCode: doctor.ifscCode || ""
   });
 
   const initials = doctor.firstName ? `${doctor.firstName[0]}${doctor.lastName?.[0] || ""}` : "DR";
@@ -158,6 +161,16 @@ export default function DoctorProfilePage() {
                   <span className="text-text-primary font-bold">₹{profile.consultationFee}</span>
                 </div>
               </div>
+
+              <div className="flex gap-2.5 items-start">
+                <ShieldCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-[9px] text-text-tertiary block font-bold uppercase">Bank Details</span>
+                  <span className="text-text-primary font-bold">{profile.bankName}</span>
+                  <span className="text-text-secondary font-medium block">A/C: {profile.accountNumber}</span>
+                  <span className="text-text-secondary font-medium block">IFSC: {profile.ifscCode}</span>
+                </div>
+              </div>
             </div>
 
             {!isEditing && (
@@ -245,6 +258,39 @@ export default function DoctorProfilePage() {
                       type="number"
                       value={form.consultationFee}
                       onChange={(e) => setForm({ ...form, consultationFee: parseFloat(e.target.value) || 0 })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label htmlFor="prof-bank" className="text-xs font-bold text-text-secondary uppercase">Bank Name</label>
+                    <input
+                      id="prof-bank"
+                      type="text"
+                      value={form.bankName}
+                      onChange={(e) => setForm({ ...form, bankName: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label htmlFor="prof-account" className="text-xs font-bold text-text-secondary uppercase">Account Number</label>
+                    <input
+                      id="prof-account"
+                      type="text"
+                      value={form.accountNumber}
+                      onChange={(e) => setForm({ ...form, accountNumber: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label htmlFor="prof-ifsc" className="text-xs font-bold text-text-secondary uppercase">IFSC Code</label>
+                    <input
+                      id="prof-ifsc"
+                      type="text"
+                      value={form.ifscCode}
+                      onChange={(e) => setForm({ ...form, ifscCode: e.target.value })}
                       className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
                     />
                   </div>

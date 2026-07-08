@@ -91,7 +91,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           )
         )}
 
-        {children && <span>{children}</span>}
+        {children && <span className="flex items-center justify-center gap-1.5">{children}</span>}
 
         {!isLoading && rightIcon && (
           <span className="shrink-0" aria-hidden="true">
