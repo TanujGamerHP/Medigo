@@ -135,7 +135,7 @@ function MembershipCheckoutContent() {
                 {features.map((feat, idx) => (
                   <div key={idx} className="flex gap-4">
                     <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-primary border border-slate-100">
-                      {React.cloneElement(feat.icon as React.ReactElement, { className: "w-6 h-6" })}
+                      {React.cloneElement(feat.icon as React.ReactElement<any>, { className: "w-6 h-6" })}
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-900">{feat.title}</h4>
