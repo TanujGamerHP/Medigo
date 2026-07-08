@@ -12,7 +12,7 @@ import { auth, googleProvider, appleProvider } from "@/lib/firebase";
 import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from "firebase/auth";
 import { useRole } from "@/features/shared/RoleProvider";
 
-type RegisterRole = "Patient" | "Doctor" | "Pharmacy" | "Lab";
+type RegisterRole = "Patient" | "Doctor" | "Admin" | "Pharmacy" | "Lab";
 
 export function RegisterFlow() {
   const router = useRouter();
@@ -74,7 +74,7 @@ export function RegisterFlow() {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (role === "Patient" || role === "Doctor") {
+    if (role === "Patient" || role === "Doctor" || role === "Admin") {
       if (!name.trim()) newErrors.name = "Full name is required";
     } else {
       if (!facilityName.trim()) newErrors.facilityName = "Facility name is required";
@@ -122,7 +122,7 @@ export function RegisterFlow() {
         phone: phone || "555-123-4567",
         password: "OAuthSecurePassword123!", 
         role,
-        name: firebaseName || (role === "Doctor" || role === "Patient" ? name : facilityName),
+        name: firebaseName || (role === "Doctor" || role === "Patient" || role === "Admin" ? name : facilityName),
       };
 
       if (role === "Doctor") {
@@ -163,6 +163,7 @@ export function RegisterFlow() {
           role,
           patient: role === "Patient" ? { firstName: firebaseName || name } : undefined,
           doctor: role === "Doctor" ? { firstName: firebaseName || name } : undefined,
+          // Add admin block if you want but it doesn't have a profile yet
         });
       }
       return null;
@@ -184,11 +185,11 @@ export function RegisterFlow() {
       // Update profile name
       if (userCredential.user) {
         await updateProfile(userCredential.user, {
-          displayName: role === "Doctor" || role === "Patient" ? name : facilityName
+          displayName: role === "Doctor" || role === "Patient" || role === "Admin" ? name : facilityName
         });
       }
 
-      await syncWithBackend(email, role === "Doctor" || role === "Patient" ? name : facilityName, false);
+      await syncWithBackend(email, role === "Doctor" || role === "Patient" || role === "Admin" ? name : facilityName, false);
       
       setSubmitting(false);
       setStep("success");
@@ -262,6 +263,7 @@ export function RegisterFlow() {
               >
                 <option value="Patient">Patient Portal User</option>
                 <option value="Doctor">Board-Certified Doctor / Clinician</option>
+                <option value="Admin">System Administrator</option>
                 <option value="Pharmacy">Pharmacy Fulfillment Partner</option>
                 <option value="Lab">CLIA Diagnostic Lab Partner</option>
               </select>
@@ -269,7 +271,7 @@ export function RegisterFlow() {
 
             {/* General Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {role === "Patient" || role === "Doctor" ? (
+              {role === "Patient" || role === "Doctor" || role === "Admin" ? (
                 <div className="space-y-1.5">
                   <label htmlFor="name-input" className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Full Name *</label>
                   <input
