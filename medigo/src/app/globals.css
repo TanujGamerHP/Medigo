@@ -196,19 +196,7 @@ body {
   overflow-x: hidden;
 }
 
-button:hover,
-button:hover * {
-  background-color: #1be21b !important;
-  color: #ffffff !important;
-  border-color: #1be21b !important;
-}
 
-/* Specific override for profile/action buttons */
-.btn-hover-brand:hover {
-  background-color: #1be21b !important;
-  border-color: #1be21b !important;
-  color: #ffffff !important;
-}
 
 
 ::selection {
