@@ -58,7 +58,7 @@ function MembershipCheckoutContent() {
       show("Initializing payment...", "info");
       
       const orderRes = await api.post("/api/v1/payments/create-order", {
-        amount: price * 83 * 100, 
+        amount: price, 
         currency: "INR"
       });
 
