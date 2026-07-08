@@ -5,7 +5,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
-import { ShieldCheck, Lock, CheckCircle, ArrowRight, CreditCard, Stethoscope, Pill, MessageSquare } from "lucide-react";
+import { 
+  ShieldCheck, 
+  Lock, 
+  CheckCircle, 
+  ArrowRight, 
+  Star,
+  BrainCircuit,
+  Truck,
+  FileText,
+  Headset,
+  Shield
+} from "lucide-react";
 
 declare global {
   interface Window {
@@ -18,9 +29,10 @@ function MembershipCheckoutContent() {
   const searchParams = useSearchParams();
   const { show } = useToast();
   const [isSending, setIsSending] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(true);
 
   // Read raw plan name, but normalize it to capitalized form for API validation
-  const rawPlanName = searchParams.get("plan") || "Premium";
+  const rawPlanName = searchParams.get("plan") || "Starter";
   const planName = rawPlanName.charAt(0).toUpperCase() + rawPlanName.slice(1).toLowerCase();
   
   const price = planName === "Elite" ? 499 : planName === "Premium" ? 299 : 149;
@@ -35,13 +47,16 @@ function MembershipCheckoutContent() {
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!termsAccepted) {
+      show("Please accept the Terms of Service and Privacy Policy", "error");
+      return;
+    }
+    
     setIsSending(true);
 
     try {
       show("Initializing payment...", "info");
       
-      // Create Razorpay Order
-      // Price is in USD, converting to INR roughly (83) and then to paise (100)
       const orderRes = await api.post("/api/v1/payments/create-order", {
         amount: price * 83 * 100, 
         currency: "INR"
@@ -62,9 +77,8 @@ function MembershipCheckoutContent() {
           try {
             show("Processing your subscription...", "info");
             
-            // On success, activate membership in our database
             const res = await api.post("/api/v1/membership/subscribe", {
-              planName, // Now it's properly capitalized
+              planName, 
               price,
             });
 
@@ -77,7 +91,7 @@ function MembershipCheckoutContent() {
           }
         },
         theme: {
-          color: "#059669", // Primary green color
+          color: "#22c55e", // Primary green color
         },
       };
 
@@ -94,133 +108,183 @@ function MembershipCheckoutContent() {
     }
   };
 
-  const features = planName === "Elite" ? [
-    { icon: <Stethoscope />, title: "Unlimited Consultations", desc: "24/7 access to top-tier specialists" },
-    { icon: <Pill />, title: "Free Next-Day Rx", desc: "Medications delivered at no extra cost" },
-    { icon: <MessageSquare />, title: "Dedicated AI Concierge", desc: "Personalized daily health monitoring" }
-  ] : planName === "Premium" ? [
-    { icon: <Stethoscope />, title: "Monthly Consultations", desc: "Up to 4 specialist visits per month" },
-    { icon: <Pill />, title: "Free Standard Rx", desc: "Medications delivered in 3-5 days" },
-    { icon: <MessageSquare />, title: "AI Health Coaching", desc: "Weekly check-ins and insights" }
-  ] : [
-    { icon: <Stethoscope />, title: "Basic Access", desc: "1 general consultation per month" },
-    { icon: <Pill />, title: "Discounted Pharmacy", desc: "15% off all medication deliveries" },
-    { icon: <MessageSquare />, title: "Health Portal", desc: "Access to medical records and AI bot" }
+  const features = [
+    { icon: <BrainCircuit />, title: "AI Health Coaching", desc: "Personalized insights and guidance." },
+    { icon: <Truck />, title: "Direct Pharmacy Shipping", desc: "Medicines delivered to your doorstep." },
+    { icon: <FileText />, title: "Health Records", desc: "Securely store and manage your records." },
+    { icon: <Headset />, title: "Priority Support", desc: "Get faster responses from our team." }
   ];
 
   return (
-    <div className="bg-slate-50 min-h-screen pt-28 pb-16">
-      <div className="container-custom max-w-5xl mx-auto">
-        <div className="text-center mb-10">
-          <h1 className="font-heading text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
-            Complete Your Upgrade
+    <div className="bg-[#fafafa] min-h-screen pt-24 pb-16 font-sans">
+      <div className="container-custom max-w-6xl mx-auto px-4">
+        
+        {/* Header Section */}
+        <div className="text-center mb-10 space-y-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-50 text-green-600 text-sm font-semibold border border-green-100">
+            <CheckCircle className="w-4 h-4" />
+            STEP 2 OF 2
+          </div>
+          <h1 className="font-heading text-4xl md:text-[40px] font-bold text-slate-900 tracking-tight">
+            Confirm Your {planName} Membership
           </h1>
-          <p className="mt-4 text-slate-600 max-w-2xl mx-auto text-lg">
-            You're just one step away from unlocking premium healthcare features. Securely complete your purchase to access MediGo {planName}.
+          <p className="text-slate-500 max-w-2xl mx-auto text-base">
+            Get exclusive access to clinical consultations, AI health coaching, and<br className="hidden md:block"/> direct pharmacy shipping.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Left Column - Benefits & Value */}
-          <div className="space-y-8 order-2 lg:order-1">
-            <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
-              <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                <span className="bg-primary/10 text-primary p-2 rounded-xl">
-                  <CheckCircle className="w-5 h-5" />
-                </span>
-                What's included in {planName}
-              </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6 lg:gap-8 max-w-5xl mx-auto">
+          
+          {/* Left Panel - Checkout Form */}
+          <div className="bg-white rounded-3xl p-8 md:p-10 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-fit">
+            <div className="space-y-8">
               
-              <div className="space-y-6">
-                {features.map((feat, idx) => (
-                  <div key={idx} className="flex gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-primary border border-slate-100">
-                      {React.cloneElement(feat.icon as React.ReactElement<any>, { className: "w-6 h-6" })}
+              {/* Your Plan */}
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Your Plan</h3>
+                <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-white shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-white shrink-0">
+                      <Star className="w-6 h-6 fill-current" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-900">{feat.title}</h4>
-                      <p className="text-sm text-slate-500 mt-1">{feat.desc}</p>
+                      <h4 className="font-bold text-green-500 text-lg">{planName} Plan</h4>
+                      <p className="text-sm text-slate-500">Billed monthly • Cancel anytime</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
-              <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
-              <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl"></div>
-              
-              <div className="relative z-10 flex flex-col gap-4">
-                <h3 className="font-heading text-2xl font-bold">100% Satisfaction Guarantee</h3>
-                <p className="text-slate-300 text-sm leading-relaxed">
-                  We're confident in the quality of our care. If you're not completely satisfied with your {planName} membership within the first 30 days, we'll refund your payment in full. No questions asked.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Checkout Form */}
-          <div className="order-1 lg:order-2">
-            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/50 sticky top-32">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold text-slate-900">Order Summary</h2>
-                <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
-                  {planName} Tier
+                  {planName === "Starter" && (
+                    <div className="hidden sm:block px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded-full">
+                      Most Popular
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="space-y-4 mb-8">
-                <div className="flex justify-between items-center py-4 border-b border-dashed border-slate-200">
-                  <span className="text-slate-600 font-medium">{planName} Membership (Monthly)</span>
+              {/* Billing Summary */}
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Billing Summary</h3>
+                <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                  <span className="font-medium text-slate-700">{planName} Plan</span>
                   <span className="font-bold text-slate-900">${price}.00</span>
                 </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-slate-500 text-sm">Setup Fee</span>
-                  <span className="text-primary font-medium text-sm">Waived</span>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-slate-500 text-sm">Taxes</span>
-                  <span className="text-slate-500 text-sm">Calculated at checkout</span>
+              </div>
+
+              {/* Total Due Today */}
+              <div>
+                <div className="flex items-center justify-between pt-2">
+                  <h3 className="text-xl font-bold text-slate-900">Total Due Today</h3>
+                  <span className="text-3xl font-bold text-green-500">${price}.00</span>
                 </div>
               </div>
 
-              <div className="bg-slate-50 rounded-2xl p-6 mb-8 flex items-center justify-between border border-slate-100">
-                <span className="font-bold text-slate-900 text-lg">Total Today</span>
-                <div className="text-right">
-                  <span className="text-3xl font-heading font-black text-primary">${price}</span>
-                  <span className="text-slate-500 text-sm block">/month</span>
+              {/* Secure Checkout Alert */}
+              <div className="bg-green-50/50 border border-green-100 rounded-xl p-4 flex items-start gap-4">
+                <Lock className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                <div className="flex-grow">
+                  <h4 className="font-bold text-slate-900 text-sm">Secure & Safe Checkout</h4>
+                  <p className="text-slate-500 text-sm mt-0.5">Your payment information is encrypted and secure.</p>
+                </div>
+                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-white border border-green-100 rounded-full text-green-600 text-xs font-bold whitespace-nowrap">
+                  <Lock className="w-3 h-3" />
+                  256-bit SSL
                 </div>
               </div>
 
-              <form onSubmit={handleSubscribe} className="space-y-6">
+              {/* Form & Actions */}
+              <form onSubmit={handleSubscribe} className="space-y-6 pt-2">
+                <div className="flex items-start gap-3">
+                  <div className="flex items-center h-5 mt-0.5">
+                    <input
+                      id="terms"
+                      type="checkbox"
+                      checked={termsAccepted}
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      className="w-5 h-5 text-green-500 bg-white border-slate-300 rounded focus:ring-green-500 focus:ring-2 cursor-pointer accent-green-500"
+                    />
+                  </div>
+                  <label htmlFor="terms" className="text-sm text-slate-500 leading-relaxed cursor-pointer">
+                    By clicking Subscribe & Pay, you agree to our <a href="#" className="text-green-500 underline hover:text-green-600">Terms of Service</a> and acknowledge our <a href="#" className="text-green-500 underline hover:text-green-600">Privacy Policy</a>. You will be charged ${price}.00 monthly until canceled.
+                  </label>
+                </div>
+
                 <Button
                   type="submit"
                   isLoading={isSending}
                   fullWidth
-                  className="py-4 rounded-2xl font-bold text-lg bg-slate-900 hover:bg-slate-800 text-white flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-slate-900/20"
+                  className="py-4 h-auto rounded-xl font-bold text-lg bg-[#16a34a] hover:bg-[#15803d] text-white flex items-center justify-between px-6 transition-all shadow-md shadow-green-500/20"
                 >
-                  <CreditCard className="w-5 h-5" />
-                  Proceed to Payment
+                  <span className="flex items-center gap-2">
+                    <Lock className="w-5 h-5" />
+                    Subscribe & Pay Securely
+                  </span>
+                  <ArrowRight className="w-5 h-5" />
                 </Button>
                 
-                <p className="text-xs text-slate-500 text-center leading-relaxed max-w-xs mx-auto">
-                  By clicking proceed, you agree to our Terms of Service and monthly recurring billing. You can cancel anytime.
-                </p>
+                <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
+                  <Shield className="w-4 h-4" />
+                  Cancel anytime from your dashboard. No hidden fees.
+                </div>
               </form>
-
-              <div className="mt-8 flex items-center justify-center gap-6 pt-6 border-t border-slate-100">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400">
-                  <Lock className="w-4 h-4 text-slate-400" />
-                  256-bit Secure
-                </div>
-                <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400">
-                  <ShieldCheck className="w-4 h-4 text-slate-400" />
-                  HIPAA Compliant
-                </div>
-              </div>
             </div>
           </div>
+
+          {/* Right Panel - Features */}
+          <div className="bg-[#f2fbf5] rounded-3xl p-8 md:p-10 border border-[#e6f4eb] h-fit">
+            <div className="flex flex-col items-center text-center mb-8">
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-green-500 mb-4 shadow-sm">
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M4.5 9.5l3 3l4.5-9l4.5 9l3-3V19h-15V9.5z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">What You Get with {planName}</h3>
+            </div>
+
+            <div className="space-y-6">
+              {features.map((feat, idx) => (
+                <div key={idx} className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#e2f5e8] flex items-center justify-center text-green-600">
+                    {React.cloneElement(feat.icon as React.ReactElement<any>, { className: "w-5 h-5" })}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-[15px]">{feat.title}</h4>
+                    <p className="text-sm text-slate-500 mt-0.5">{feat.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10 pt-8 border-t border-green-900/5 text-center">
+              <p className="text-sm font-semibold text-slate-900 mb-4">Trusted by 10,000+ users</p>
+              <div className="flex items-center justify-center gap-4">
+                <div className="flex -space-x-2">
+                  {[1,2,3,4,5].map((i) => (
+                    <img key={i} className="w-8 h-8 rounded-full border-2 border-white object-cover" src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" />
+                  ))}
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 rounded-full text-sm font-bold">
+                  <Star className="w-3.5 h-3.5 fill-current" />
+                  4.8/5
+                </div>
+              </div>
+              <p className="text-sm text-slate-500 mt-3 font-medium">Your health. Our priority.</p>
+            </div>
+          </div>
+
         </div>
+
+        {/* Footer */}
+        <div className="mt-12 flex items-center justify-center gap-6 text-sm font-medium text-slate-400">
+          <div className="flex items-center gap-2">
+            <Lock className="w-4 h-4 text-green-500" />
+            256-bit Secure Checkout
+          </div>
+          <div className="w-px h-4 bg-slate-200"></div>
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-green-500" />
+            HIPAA Compliant
+          </div>
+        </div>
+        
       </div>
     </div>
   );
@@ -229,8 +293,8 @@ function MembershipCheckoutContent() {
 export default function MembershipCheckoutPage() {
   return (
     <Suspense fallback={
-      <div className="bg-slate-50 min-h-screen pt-32 pb-12 flex flex-col items-center justify-center gap-4">
-        <div className="w-12 h-12 border-4 border-slate-200 border-t-primary rounded-full animate-spin"></div>
+      <div className="bg-[#fafafa] min-h-screen pt-32 pb-12 flex flex-col items-center justify-center gap-4">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-green-500 rounded-full animate-spin"></div>
         <div className="text-slate-500 font-medium animate-pulse">Loading secure checkout...</div>
       </div>
     }>
