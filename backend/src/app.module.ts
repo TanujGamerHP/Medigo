@@ -16,6 +16,7 @@ import { CMSModule } from './cms/cms.module';
 import { AssessmentsModule } from './assessments/assessments.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { UploadModule } from './upload/upload.module';
+import { ReviewsModule } from './reviews/reviews.module';
 import { AdminModule } from './admin/admin.module';
 import { LoggingMiddleware } from './common/middlewares/logging.middleware';
 import { ProductsModule } from './products/products.module';
@@ -49,6 +50,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     OrdersModule,
     PaymentsModule,
     RealtimeModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [

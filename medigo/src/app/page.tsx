@@ -890,38 +890,22 @@ function BenefitsGrid() {
    9. SUCCESS STORIES
    ============================================ */
 function SuccessStories() {
-  const stories = [
-    {
-      name: "Jennifer M.",
-      age: 34,
-      weightLost: "19 kg",
-      duration: "6 months",
-      quote:
-        "MediGo changed my life. My doctor was incredibly supportive, and the GLP-1 medication made all the difference. I finally feel in control.",
-      rating: 5,
-      image: "https://i.pravatar.cc/150?img=47",
-    },
-    {
-      name: "Robert K.",
-      age: 48,
-      weightLost: "29 kg",
-      duration: "9 months",
-      quote:
-        "After years of failed diets, I found MediGo. The AI assessment matched me with the perfect doctor and treatment plan. Best decision I ever made.",
-      rating: 5,
-      image: "https://i.pravatar.cc/150?img=11",
-    },
-    {
-      name: "Maria S.",
-      age: 41,
-      weightLost: "17 kg",
-      duration: "5 months",
-      quote:
-        "The convenience of telehealth combined with real medical expertise is unbeatable. My doctor adjusts my treatment based on real data, not guesswork.",
-      rating: 5,
-      image: "https://i.pravatar.cc/150?img=32",
-    },
-  ];
+  const [stories, setStories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const res = await api.request("/api/v1/reviews/public");
+        setStories(res.data || []);
+      } catch (err) {
+        console.error("Failed to load reviews", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStories();
+  }, []);
 
   return (
     <Section className="bg-background" id="success-stories">
@@ -932,54 +916,92 @@ function SuccessStories() {
           subtitle="Thousands have transformed their health with MediGo's doctor-led programs."
         />
 
-        <motion.div
-          variants={staggerContainer}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8"
-        >
-          {stories.map((story) => (
-            <motion.div
-              key={story.name}
-              variants={fadeInUp}
-              className="p-6 lg:p-8 rounded-2xl bg-white border border-border hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-            >
-              {/* Stars */}
-              <div className="flex gap-1 mb-4">
-                {Array.from({ length: story.rating }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className="w-5 h-5 fill-warning text-warning"
-                  />
-                ))}
-              </div>
-
-              <blockquote className="text-text-secondary leading-relaxed italic">
-                &ldquo;{story.quote}&rdquo;
-              </blockquote>
-
-              <div className="mt-6 pt-6 border-t border-border-light flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                    <img src={story.image} alt={story.name} className="w-full h-full object-cover" />
+        {loading ? (
+          <div className="text-center text-text-tertiary">Loading testimonials...</div>
+        ) : stories.length === 0 ? (
+          <div className="text-center text-text-tertiary">No featured reviews yet.</div>
+        ) : (
+          <motion.div
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8"
+          >
+            {stories.map((story) => (
+              <motion.div
+                key={story.id}
+                variants={fadeInUp}
+                className="p-6 lg:p-8 rounded-2xl bg-white border border-border hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              >
+                {/* Images Before/After Preview */}
+                {(story.beforeImage || story.afterImage) && (
+                  <div className="flex gap-2 mb-4 h-24 overflow-hidden rounded-xl bg-slate-100">
+                    {story.beforeImage && (
+                      <div className="flex-1 relative group">
+                        <img src={story.beforeImage} alt="Before" className="w-full h-full object-cover" />
+                        <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1 rounded">Before</span>
+                      </div>
+                    )}
+                    {story.afterImage && (
+                      <div className="flex-1 relative group">
+                        <img src={story.afterImage} alt="After" className="w-full h-full object-cover" />
+                        <span className="absolute bottom-1 right-1 bg-green-500/80 text-white text-[10px] px-1 rounded">After</span>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="font-heading font-bold text-text-primary">
-                      {story.name}
+                )}
+
+                {/* Stars */}
+                <div className="flex gap-1 mb-4">
+                  {Array.from({ length: story.rating }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className="w-5 h-5 fill-warning text-warning"
+                    />
+                  ))}
+                </div>
+
+                <blockquote className="text-text-secondary leading-relaxed italic text-sm">
+                  &ldquo;{story.reviewText}&rdquo;
+                </blockquote>
+
+                <div className="mt-6 pt-6 border-t border-border-light flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {story.profileImage ? (
+                       <img src={story.profileImage} alt={story.patientName} className="w-10 h-10 rounded-full object-cover border border-border" />
+                    ) : (
+                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                         {story.patientName?.charAt(0)}
+                       </div>
+                    )}
+                    <div>
+                      <p className="font-heading font-bold text-text-primary text-sm">
+                        {story.patientName}
+                      </p>
+                      <p className="text-[10px] text-text-tertiary">Age {story.age}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold text-green-600">
+                      -{story.weightLossKg}kg
                     </p>
-                    <p className="text-sm text-text-tertiary">Age {story.age}</p>
+                    <p className="text-[10px] text-text-tertiary">
+                      in {story.durationMonths} months
+                    </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold gradient-text">
-                    -{story.weightLost}
-                  </p>
-                  <p className="text-sm text-text-tertiary">
-                    in {story.duration}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        <div className="mt-12 text-center">
+          <Button
+            variant="outline"
+            onClick={() => window.location.href = "/reviews"}
+            className="font-bold border-primary text-primary hover:bg-primary/5"
+          >
+            See All 5-Star Reviews
+          </Button>
+        </div>
       </div>
     </Section>
   );
