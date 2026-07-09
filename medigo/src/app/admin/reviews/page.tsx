@@ -47,15 +47,21 @@ export default function AdminReviewsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // In a real app, upload this file to the backend or Firebase
-    // For now, we simulate a mock URL if there is no upload endpoint easily accessible,
-    // or use FileReader for local preview if needed.
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData(prev => ({ ...prev, [fieldName]: reader.result as string }));
-      show("Image loaded successfully", "success");
-    };
-    reader.readAsDataURL(file);
+    try {
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+      
+      const res = await api.post("/api/v1/upload", uploadData);
+      if (res.success && res.data?.url) {
+        setFormData(prev => ({ ...prev, [fieldName]: res.data.url }));
+        show("Image uploaded successfully", "success");
+      } else {
+        throw new Error("Upload failed");
+      }
+    } catch (err) {
+      console.error(err);
+      show("Failed to upload image. Please try a smaller image (Max 10MB).", "error");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
