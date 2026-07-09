@@ -3,8 +3,22 @@
 import React, { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import { Star } from "lucide-react";
-import { Section, SectionHeading } from "@/components/ui/Section";
+
 import { Button } from "@/components/ui/Button";
+
+function Section({ children, className = "", id = "" }: { children: React.ReactNode; className?: string; id?: string; }) {
+  return <section id={id} className={`py-20 lg:py-32 relative ${className}`}>{children}</section>;
+}
+
+function SectionHeading({ title, subtitle, badge, centered = true }: { title: string; subtitle?: string; badge?: string; centered?: boolean; }) {
+  return (
+    <div className={`mb-16 ${centered ? "text-center" : "text-left"}`}>
+      {badge && <span className="inline-block py-1.5 px-4 rounded-full bg-primary-50 text-primary-700 font-bold text-sm tracking-wider uppercase mb-4">{badge}</span>}
+      <h2 className="text-3xl lg:text-5xl font-heading font-black text-text-primary mb-6 leading-tight">{title}</h2>
+      {subtitle && <p className="text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed">{subtitle}</p>}
+    </div>
+  );
+}
 
 export default function ReviewsPage() {
   const [activeTab, setActiveTab] = useState<number>(5);
