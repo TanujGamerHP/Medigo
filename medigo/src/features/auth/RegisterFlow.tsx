@@ -154,17 +154,10 @@ export function RegisterFlow() {
         }
       }
       return res;
-    } catch (err) {
+    } catch (err: any) {
       console.error("Backend Sync Error:", err);
       if (autoLogin) {
-        loginUser("mock-access-token", "mock-refresh-token", {
-          id: "mock-id",
-          email: firebaseEmail || email,
-          role,
-          patient: role === "Patient" ? { firstName: firebaseName || name } : undefined,
-          doctor: role === "Doctor" ? { firstName: firebaseName || name } : undefined,
-          // Add admin block if you want but it doesn't have a profile yet
-        });
+        throw new Error(err.message || "Could not connect to the server.");
       }
       return null;
     }

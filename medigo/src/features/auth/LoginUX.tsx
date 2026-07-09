@@ -67,15 +67,9 @@ export function LoginUX() {
         const { accessToken, refreshToken, user } = verifyRes.data;
         loginUser(accessToken, refreshToken, user);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Backend Sync Error:", err);
-      // Fallback: If backend is down, we still log them in locally for testing
-      loginUser("mock-access-token", "mock-refresh-token", {
-        id: "mock-id",
-        email: firebaseEmail || "mock@medigo.com",
-        role: "Patient",
-        patient: { firstName: firebaseName || "Patient" }
-      });
+      throw new Error(err.message || "Could not connect to the server.");
     }
   };
 

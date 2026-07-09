@@ -28,7 +28,8 @@ export const api = {
   },
 
   async request(endpoint: string, options: RequestOptions = {}) {
-    const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    const baseUrl = API_BASE_URL.replace(/\/$/, '');
+    const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     const { accessToken } = this.getTokens();
 
     const headers: Record<string, string> = {
