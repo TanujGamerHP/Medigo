@@ -222,9 +222,9 @@ export default function AdminReviewsPage() {
               </button>
             </div>
             
-            {/* Scrollable Content */}
-            <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
-              <form id="reviewForm" onSubmit={handleSubmit} className="space-y-6 text-sm">
+            {/* Form */}
+            <form id="reviewForm" onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 overflow-y-auto flex-1 custom-scrollbar space-y-6 text-sm">
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-2">
@@ -301,15 +301,14 @@ export default function AdminReviewsPage() {
                     </label>
                   </div>
                 </div>
-              </form>
-            </div>
-            
-            {/* Sticky Footer */}
-            <div className="px-6 py-4 border-t border-border bg-slate-50 flex items-center justify-end gap-3 shrink-0 rounded-b-2xl">
-              <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto">Cancel</Button>
-              <Button type="submit" form="reviewForm" className="w-full sm:w-auto shadow-md">Save Review</Button>
-            </div>
-            
+              </div>
+
+              {/* Sticky Footer */}
+              <div className="px-6 py-4 border-t border-border bg-slate-50 flex items-center justify-end gap-3 shrink-0 rounded-b-2xl">
+                <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto">Cancel</Button>
+                <Button type="submit" className="w-full sm:w-auto shadow-md">Save Review</Button>
+              </div>
+            </form>
           </div>
         </div>
       )}
