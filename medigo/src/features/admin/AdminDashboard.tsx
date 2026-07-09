@@ -13,7 +13,7 @@ interface TeamMember {
 }
 
 const initialTeam: TeamMember[] = [
-  { id: "t01", name: "Sarah Jenkins", email: "sarah.j@medigo.com", role: "Admin", status: "Active" },
+  { id: "t01", name: "Lucky Malik", email: "lucky.m@medigo.com", role: "Admin", status: "Active" },
   { id: "t02", name: "Marc Peterson", email: "marc.p@medigo.com", role: "CareCoordinator", status: "Active" },
   { id: "t03", name: "Emily Watson", email: "emily.w@medigo.com", role: "Pharmacist", status: "Active" },
   { id: "t04", name: "David Vance", email: "david.v@medigo.com", role: "LabTechnician", status: "Active" },

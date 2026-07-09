@@ -65,7 +65,7 @@ export default function BlogCMSPage() {
       id: `b-${Math.floor(100 + Math.random() * 900)}`,
       title,
       category,
-      author: "Sarah Jenkins",
+      author: "Lucky Malik",
       status,
       publishedDate: status === "Published" ? new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "--",
       updatedDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),

@@ -235,10 +235,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="flex items-center gap-3 border-l border-border pl-4">
             <div className="w-8 h-8 rounded-full bg-primary-100 text-primary font-heading font-extrabold text-xs flex items-center justify-center shadow-inner shrink-0">
-              AD
+              LM
             </div>
             <div className="hidden sm:block text-left">
-              <p className="text-xs font-bold text-text-primary leading-none">Sarah Jenkins</p>
+              <p className="text-xs font-bold text-text-primary leading-none">Lucky Malik</p>
               <p className="text-[10px] text-text-secondary mt-1 leading-none">Super Administrator</p>
             </div>
           </div>
