@@ -12,7 +12,7 @@ import { api } from "@/lib/api";
 export default function DoctorProfilePage() {
   const router = useRouter();
   const { show } = useToast();
-  const { user, logoutUser } = useRole();
+  const { user, logoutUser, refreshProfile } = useRole();
   const [isEditing, setIsEditing] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -34,7 +34,7 @@ export default function DoctorProfilePage() {
 
   const [form, setForm] = useState({ ...profile });
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -42,7 +42,17 @@ export default function DoctorProfilePage() {
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = () => setAvatarPreview(reader.result as string);
+      reader.onloadend = async () => {
+        const base64 = reader.result as string;
+        setAvatarPreview(base64);
+        try {
+          await api.patch("/api/v1/users/profile", { profileImage: base64 });
+          await refreshProfile();
+          show("Profile photo updated successfully.", "success");
+        } catch (err) {
+          show("Failed to save profile photo.", "error");
+        }
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -50,7 +60,20 @@ export default function DoctorProfilePage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.put("/api/v1/doctor/profile", form);
+      const payload = {
+        firstName: form.name.replace("Dr. ", "").split(" ")[0] || "",
+        lastName: form.name.replace("Dr. ", "").split(" ").slice(1).join(" ") || "",
+        specialization: form.specialization,
+        qualification: form.qualification,
+        experience: form.experience,
+        clinicInfo: form.clinicInfo,
+        consultationFee: form.consultationFee,
+        bankName: form.bankName,
+        accountNumber: form.accountNumber,
+        ifscCode: form.ifscCode,
+      };
+      await api.patch("/api/v1/users/profile", payload);
+      await refreshProfile();
       setProfile({ ...form });
       setIsEditing(false);
       show("Clinician profile updated successfully.", "success");

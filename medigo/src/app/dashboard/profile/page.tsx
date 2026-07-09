@@ -14,7 +14,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { user, logoutUser } = useRole();
+  const { user, logoutUser, refreshProfile } = useRole();
   const patient = user?.patient || {};
   
   const [profile, setProfile] = useState({
@@ -32,7 +32,7 @@ export default function ProfilePage() {
 
   const [form, setForm] = useState({ ...profile });
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -40,16 +40,39 @@ export default function ProfilePage() {
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = () => setAvatarPreview(reader.result as string);
+      reader.onloadend = async () => {
+        const base64 = reader.result as string;
+        setAvatarPreview(base64);
+        try {
+          await api.patch("/api/v1/users/profile", { profileImage: base64 });
+          await refreshProfile();
+          show("Profile photo updated successfully.", "success");
+        } catch (err) {
+          show("Failed to save profile photo.", "error");
+        }
+      };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setProfile({ ...form });
-    setIsEditing(false);
-    show("Profile updated successfully.", "success");
+    try {
+      await api.patch("/api/v1/users/profile", {
+        firstName: form.name.split(" ")[0] || "",
+        lastName: form.name.split(" ").slice(1).join(" ") || "",
+        phone: form.phone,
+        gender: form.gender,
+        height: form.height.replace(" cm", ""),
+        weight: form.weight.replace(" kg", ""),
+      });
+      await refreshProfile();
+      setProfile({ ...form });
+      setIsEditing(false);
+      show("Profile updated successfully.", "success");
+    } catch (err) {
+      show("Failed to update profile.", "error");
+    }
   };
 
   return (
