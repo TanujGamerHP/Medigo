@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import {
   ApiTags,
   ApiOperation,
@@ -58,14 +60,22 @@ export class UploadController {
     )
     file: Express.Multer.File,
   ) {
+    const uploadDir = path.join(process.cwd(), 'uploads');
+    await fs.mkdir(uploadDir, { recursive: true });
+    
+    const fileName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    const filePath = path.join(uploadDir, fileName);
+    
+    await fs.writeFile(filePath, file.buffer);
+    
+    const baseUrl = process.env.API_URL || 'http://localhost:5000';
     return {
       message: 'File uploaded successfully',
       data: {
         originalName: file.originalname,
         mimeType: file.mimetype,
         sizeBytes: file.size,
-        // Mock public URL for demo purposes
-        url: `/uploads/${Date.now()}-${file.originalname}`,
+        url: `${baseUrl}/uploads/${fileName}`,
       },
     };
   }
