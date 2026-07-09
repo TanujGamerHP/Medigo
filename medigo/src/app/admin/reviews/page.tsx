@@ -60,6 +60,13 @@ export default function AdminReviewsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Manual validation to prevent silent failures on mobile due to out-of-view required fields
+    if (!formData.patientName || !formData.age || !formData.weightLossKg || !formData.durationMonths || !formData.reviewText) {
+      show("Please fill out all required fields (Name, Age, Weight Loss, Duration, and Text).", "error");
+      return;
+    }
+
     try {
       if (formData.id) {
         await api.patch(`/api/v1/reviews/${formData.id}`, formData);
@@ -199,90 +206,110 @@ export default function AdminReviewsPage() {
 
       {/* Modal Overlay */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
-            <h2 className="text-xl font-heading font-bold text-text-primary mb-6">
-              {formData.id ? "Edit Review" : "Add New Review"}
-            </h2>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-2 sm:p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl max-h-[95vh] overflow-hidden">
             
-            <form onSubmit={handleSubmit} className="space-y-6 text-sm">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="font-bold text-text-primary block">Patient Name</label>
-                  <input required value={formData.patientName} onChange={e => setFormData({...formData, patientName: e.target.value})} className="w-full p-3 rounded-xl border focus:border-primary outline-none" />
+            {/* Sticky Header */}
+            <div className="px-6 py-4 border-b border-border/60 bg-slate-50 flex items-center justify-between shrink-0">
+              <h2 className="text-xl font-heading font-extrabold text-text-primary">
+                {formData.id ? "Edit Review" : "Add New Review"}
+              </h2>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="text-text-tertiary hover:text-text-primary p-1 bg-white rounded-full shadow-sm border border-border"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Scrollable Content */}
+            <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
+              <form id="reviewForm" onSubmit={handleSubmit} className="space-y-6 text-sm">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <div className="space-y-2">
+                    <label className="font-bold text-text-primary block">Patient Name <span className="text-error">*</span></label>
+                    <input value={formData.patientName} onChange={e => setFormData({...formData, patientName: e.target.value})} placeholder="e.g. John Doe" className="w-full p-3 rounded-xl border focus:border-primary outline-none transition-colors" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-bold text-text-primary block">Age <span className="text-error">*</span></label>
+                    <input type="number" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} placeholder="e.g. 45" className="w-full p-3 rounded-xl border focus:border-primary outline-none transition-colors" />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="font-bold text-text-primary block">Age</label>
-                  <input required type="number" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} className="w-full p-3 rounded-xl border focus:border-primary outline-none" />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="font-bold text-text-primary block">Weight Loss (kg)</label>
-                  <input required type="number" step="0.1" value={formData.weightLossKg} onChange={e => setFormData({...formData, weightLossKg: e.target.value})} className="w-full p-3 rounded-xl border focus:border-primary outline-none" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <div className="space-y-2">
+                    <label className="font-bold text-text-primary block">Weight Loss (kg) <span className="text-error">*</span></label>
+                    <input type="number" step="0.1" value={formData.weightLossKg} onChange={e => setFormData({...formData, weightLossKg: e.target.value})} placeholder="e.g. 12.5" className="w-full p-3 rounded-xl border focus:border-primary outline-none transition-colors" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-bold text-text-primary block">Duration (Months) <span className="text-error">*</span></label>
+                    <input type="number" value={formData.durationMonths} onChange={e => setFormData({...formData, durationMonths: e.target.value})} placeholder="e.g. 3" className="w-full p-3 rounded-xl border focus:border-primary outline-none transition-colors" />
+                  </div>
                 </div>
+
                 <div className="space-y-2">
-                  <label className="font-bold text-text-primary block">Duration (Months)</label>
-                  <input required type="number" value={formData.durationMonths} onChange={e => setFormData({...formData, durationMonths: e.target.value})} className="w-full p-3 rounded-xl border focus:border-primary outline-none" />
+                  <label className="font-bold text-text-primary block">Review Text <span className="text-error">*</span></label>
+                  <textarea rows={4} value={formData.reviewText} onChange={e => setFormData({...formData, reviewText: e.target.value})} placeholder="Enter the patient's testimonial here..." className="w-full p-3 rounded-xl border focus:border-primary outline-none transition-colors resize-none"></textarea>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="font-bold text-text-primary block">Review Text</label>
-                <textarea required rows={4} value={formData.reviewText} onChange={e => setFormData({...formData, reviewText: e.target.value})} className="w-full p-3 rounded-xl border focus:border-primary outline-none"></textarea>
-              </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Images */}
+                  {[
+                    { key: "profileImage", label: "Profile Photo" },
+                    { key: "beforeImage", label: "Before Photo" },
+                    { key: "afterImage", label: "After Photo" },
+                  ].map(img => (
+                    <div key={img.key} className="space-y-2">
+                      <label className="font-bold text-text-primary block">{img.label}</label>
+                      <label className="flex flex-col items-center justify-center w-full h-32 sm:h-24 border-2 border-dashed border-border rounded-xl cursor-pointer hover:bg-slate-50 transition-colors overflow-hidden relative group">
+                        {(formData as any)[img.key] ? (
+                          <>
+                            <img src={(formData as any)[img.key]} alt="Upload preview" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                              <Edit className="w-5 h-5" />
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center text-text-tertiary text-xs">
+                            <Upload className="w-5 h-5 mb-2 sm:mb-1" />
+                            <span className="font-semibold">Upload Image</span>
+                          </div>
+                        )}
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, img.key)} />
+                      </label>
+                    </div>
+                  ))}
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Images */}
-                {[
-                  { key: "profileImage", label: "Profile Photo" },
-                  { key: "beforeImage", label: "Before Photo" },
-                  { key: "afterImage", label: "After Photo" },
-                ].map(img => (
-                  <div key={img.key} className="space-y-2">
-                    <label className="font-bold text-text-primary block">{img.label}</label>
-                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-xl cursor-pointer hover:bg-slate-50 transition-colors overflow-hidden">
-                      {(formData as any)[img.key] ? (
-                        <img src={(formData as any)[img.key]} alt="Upload preview" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="flex flex-col items-center text-text-tertiary text-xs">
-                          <Upload className="w-5 h-5 mb-1" />
-                          <span>Upload Image</span>
-                        </div>
-                      )}
-                      <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, img.key)} />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-border-light">
+                  <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
+                    <div className="space-y-1">
+                      <label className="font-bold text-text-primary block text-xs">Star Rating</label>
+                      <select value={formData.rating} onChange={e => setFormData({...formData, rating: e.target.value})} className="p-2.5 rounded-lg border font-bold text-sm bg-white outline-none focus:border-primary w-full sm:w-auto">
+                        <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                        <option value="4">⭐⭐⭐⭐ (4)</option>
+                        <option value="3">⭐⭐⭐ (3)</option>
+                        <option value="2">⭐⭐ (2)</option>
+                        <option value="1">⭐ (1)</option>
+                      </select>
+                    </div>
+                    
+                    <label className="flex items-center gap-2 cursor-pointer mt-0 sm:mt-5 bg-slate-50 p-2.5 sm:p-0 rounded-lg sm:bg-transparent">
+                      <input type="checkbox" checked={formData.isSelectedForHome} onChange={e => setFormData({...formData, isSelectedForHome: e.target.checked})} className="w-5 h-5 rounded border-border text-primary focus:ring-primary accent-primary" />
+                      <span className="font-bold text-text-primary text-sm">Feature on Home Page</span>
                     </label>
                   </div>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between pt-4 border-t border-border-light">
-                <div className="flex gap-6 items-center">
-                  <div className="space-y-1">
-                    <label className="font-bold text-text-primary block text-xs">Star Rating</label>
-                    <select value={formData.rating} onChange={e => setFormData({...formData, rating: e.target.value})} className="p-2 rounded-lg border font-bold text-sm bg-white outline-none focus:border-primary">
-                      <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                      <option value="4">⭐⭐⭐⭐ (4)</option>
-                      <option value="3">⭐⭐⭐ (3)</option>
-                      <option value="2">⭐⭐ (2)</option>
-                      <option value="1">⭐ (1)</option>
-                    </select>
-                  </div>
-                  
-                  <label className="flex items-center gap-2 cursor-pointer mt-5">
-                    <input type="checkbox" checked={formData.isSelectedForHome} onChange={e => setFormData({...formData, isSelectedForHome: e.target.checked})} className="w-5 h-5 rounded border-border text-primary focus:ring-primary accent-primary" />
-                    <span className="font-bold text-text-primary text-sm">Feature on Home Page</span>
-                  </label>
                 </div>
-
-                <div className="flex gap-2">
-                  <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                  <Button type="submit">Save Review</Button>
-                </div>
-              </div>
-
-            </form>
+              </form>
+            </div>
+            
+            {/* Sticky Footer */}
+            <div className="px-6 py-4 border-t border-border bg-slate-50 flex items-center justify-end gap-3 shrink-0 rounded-b-2xl">
+              <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto">Cancel</Button>
+              <Button type="submit" form="reviewForm" className="w-full sm:w-auto shadow-md">Save Review</Button>
+            </div>
+            
           </div>
         </div>
       )}
