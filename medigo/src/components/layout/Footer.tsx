@@ -183,7 +183,6 @@ export function Footer() {
             id="footer-logo"
             className="inline-flex items-center gap-2 mb-4"
           >
-            <span className="inline-flex h-3 w-3 rounded-full bg-primary" />
             <span className="text-xl font-heading font-bold text-white">
               MediGo
             </span>

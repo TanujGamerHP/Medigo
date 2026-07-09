@@ -91,10 +91,6 @@ export function Navbar() {
           className="flex items-center gap-2 select-none"
           onClick={closeMobile}
         >
-          <span className="relative flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-40" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
-          </span>
           <span className="text-xl lg:text-2xl font-heading font-bold gradient-text">
             MediGo
           </span>
@@ -196,7 +192,6 @@ export function Navbar() {
             className="flex items-center gap-2"
             onClick={closeMobile}
           >
-            <span className="inline-flex h-3 w-3 rounded-full bg-primary" />
             <span className="text-xl font-heading font-bold gradient-text">MediGo</span>
           </Link>
         </div>

@@ -128,11 +128,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           >
             {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-          <Link href="/" className="flex items-center gap-2 select-none">
-            <span className="relative flex h-3 w-3">
-              <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
-            </span>
-            <span className="text-xl font-heading font-bold text-text-primary">
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-xl font-heading font-bold gradient-text">
               MediGo
             </span>
           </Link>
