@@ -115,8 +115,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
 
           <div className="flex items-center gap-3 border-l border-border pl-4">
-            <div className="w-8 h-8 rounded-full bg-primary-100 text-primary font-heading font-extrabold text-xs flex items-center justify-center shadow-inner shrink-0">
-              {initials}
+            <div className="w-8 h-8 rounded-full bg-primary-100 text-primary font-heading font-extrabold text-xs flex items-center justify-center shadow-inner shrink-0 overflow-hidden">
+              {patient.profileImage ? (
+                <img src={patient.profileImage} alt={name} className="w-full h-full object-cover" />
+              ) : (
+                initials
+              )}
             </div>
             <div className="hidden sm:block text-left">
               <p className="text-xs font-bold text-text-primary leading-none">{name}</p>

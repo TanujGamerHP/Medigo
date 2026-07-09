@@ -105,6 +105,8 @@ export default function ProfilePage() {
               <div className="w-20 h-20 rounded-full bg-primary-100 text-primary font-heading font-extrabold text-2xl flex items-center justify-center shadow-inner overflow-hidden">
                 {avatarPreview ? (
                   <img src={avatarPreview} alt="Profile" className="w-full h-full object-cover" />
+                ) : patient.profileImage ? (
+                  <img src={patient.profileImage} alt="Profile" className="w-full h-full object-cover" />
                 ) : initials}
               </div>
               {/* Camera hover overlay */}
