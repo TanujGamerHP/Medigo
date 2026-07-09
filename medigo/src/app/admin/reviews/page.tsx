@@ -49,9 +49,13 @@ export default function AdminReviewsPage() {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
         const img = new window.Image();
-        img.src = event.target?.result as string;
         img.onload = () => {
+          if (img.width === 0 || img.height === 0) {
+            resolve(dataUrl);
+            return;
+          }
           const canvas = document.createElement('canvas');
           const MAX_WIDTH = 800;
           const MAX_HEIGHT = 800;
@@ -72,10 +76,20 @@ export default function AdminReviewsPage() {
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.8));
+          if (!ctx) {
+            resolve(dataUrl);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.8);
+          if (compressed.length < 50) {
+            resolve(dataUrl);
+          } else {
+            resolve(compressed);
+          }
         };
-        img.onerror = (error) => reject(error);
+        img.onerror = () => resolve(dataUrl); // fallback to original if error
+        img.src = dataUrl;
       };
       reader.onerror = (error) => reject(error);
     });
@@ -92,6 +106,8 @@ export default function AdminReviewsPage() {
     } catch (err) {
       console.error(err);
       show("Failed to process image.", "error");
+    } finally {
+      e.target.value = ''; // Allow re-uploading the same file
     }
   };
 
