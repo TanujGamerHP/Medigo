@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Calendar, Clock, Video, Lock, ShieldCheck, Plus, Check, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -19,7 +19,23 @@ interface ScheduledTimeSlot {
 export default function DoctorAppointmentsPage() {
   const { show } = useToast();
   const router = useRouter();
-  const [selectedDay, setSelectedDay] = useState("July 4, 2026");
+  const [selectedDay, setSelectedDay] = useState("Loading...");
+  const [calendarDays, setCalendarDays] = useState<{name: string, date: string, fullDate: string}[]>([]);
+
+  useEffect(() => {
+    const today = new Date();
+    const days = Array.from({ length: 7 }).map((_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      return {
+        name: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        fullDate: d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+      };
+    });
+    setCalendarDays(days);
+    setSelectedDay(days[0].fullDate);
+  }, []);
   const [slots, setSlots] = useState<ScheduledTimeSlot[]>([
     { id: "1", time: "09:00 AM", status: "Available" },
     { id: "2", time: "10:00 AM", status: "Available" },
@@ -44,15 +60,7 @@ export default function DoctorAppointmentsPage() {
     show("Weekly clinical availability updated successfully.", "success");
   };
 
-  const calendarDays = [
-    { name: "Sat", date: "Jul 4", active: true },
-    { name: "Sun", date: "Jul 5", active: false },
-    { name: "Mon", date: "Jul 6", active: false },
-    { name: "Tue", date: "Jul 7", active: false },
-    { name: "Wed", date: "Jul 8", active: false },
-    { name: "Thu", date: "Jul 9", active: false },
-    { name: "Fri", date: "Jul 10", active: false },
-  ];
+
 
   return (
     <div className="space-y-6">
@@ -88,9 +96,9 @@ export default function DoctorAppointmentsPage() {
               {calendarDays.map((d, i) => (
                 <button
                   key={i}
-                  onClick={() => setSelectedDay(`${d.name === "Sat" ? "July 4" : d.name === "Sun" ? "July 5" : "July 6"}, 2026`)}
+                  onClick={() => setSelectedDay(d.fullDate)}
                   className={`p-3 rounded-xl flex flex-col items-center gap-1 transition-all ${
-                    d.active
+                    d.fullDate === selectedDay
                       ? "bg-slate-900 text-white font-bold"
                       : "hover:bg-slate-50 text-text-secondary"
                   }`}
