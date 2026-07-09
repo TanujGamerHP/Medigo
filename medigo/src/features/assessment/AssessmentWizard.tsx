@@ -435,7 +435,7 @@ export function AssessmentWizard() {
           {activeStepId === "result" && (
             <div className="space-y-8 text-center py-2">
               
-              {!hasContraindications ? (
+              {(!hasContraindications && bmiDetails.bmi >= 27) ? (
                 <>
                   <div className="space-y-2">
                     <span className="px-3 py-1 rounded-full bg-primary-50 text-primary-700 text-xs font-bold uppercase tracking-wider">
@@ -488,24 +488,28 @@ export function AssessmentWizard() {
                   </div>
                 </>
               ) : (
-                /* Contraindicated Warning */
+                /* Disqualified Warning */
                 <div className="space-y-6">
                   <div className="w-16 h-16 rounded-full bg-red-100 text-error flex items-center justify-center mx-auto shadow-sm">
                     <AlertTriangle className="w-10 h-10" />
                   </div>
                   <div className="space-y-2">
                     <h3 className="font-heading font-bold text-xl text-text-primary">
-                      Contraindications Identified
+                      Eligibility Requirements Not Met
                     </h3>
                     <p className="text-xs text-text-secondary leading-relaxed max-w-sm mx-auto">
-                      Your assessment indicates clinical warnings regarding family thyroid cancer history or pregnancy/lactation. Safety is our priority.
+                      {hasContraindications 
+                        ? "Your assessment indicates clinical warnings regarding family thyroid cancer history or pregnancy/lactation. Safety is our priority."
+                        : "Your calculated BMI is under 27. Clinical guidelines require a BMI of 27 or higher for GLP-1 prescription eligibility."}
                     </p>
                   </div>
 
                   <div className="p-4 rounded-xl bg-red-50/50 border border-error-200 text-left text-xs text-error-800 space-y-1">
                     <p className="font-bold text-text-primary">Medical Directive:</p>
                     <p className="text-text-secondary leading-relaxed text-[11px]">
-                      We recommend scheduling a clinical consultation with local endocrinology providers to audit non-peptide weight programs.
+                      {hasContraindications
+                        ? "We recommend scheduling a clinical consultation with local endocrinology providers to audit non-peptide weight programs."
+                        : "Focus on maintaining a balanced diet and regular exercise. GLP-1 medications are reserved for clinical obesity or overweight categories with comorbidities."}
                     </p>
                   </div>
                 </div>
