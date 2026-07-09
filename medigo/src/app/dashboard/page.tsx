@@ -61,15 +61,18 @@ export default function DashboardOverview() {
       ]);
       
       if (apptsRes.success && apptsRes.data && apptsRes.data.length > 0) {
-        const appt = apptsRes.data[0];
-        setAppointment({
-          doctorName: `Dr. ${appt.doctor?.firstName || ''} ${appt.doctor?.lastName || ''}`.trim(),
-          specialization: appt.doctor?.specialization || "General",
-          date: appt.appointmentDate,
-          time: appt.appointmentTime,
-          type: appt.consultationType,
-          initials: `${appt.doctor?.firstName?.[0] || 'D'}${appt.doctor?.lastName?.[0] || 'R'}`.toUpperCase()
-        });
+        const upcomingAppt = apptsRes.data.find((a: any) => a.status === 'Pending' || a.status === 'Scheduled');
+        if (upcomingAppt) {
+          const appt = upcomingAppt;
+          setAppointment({
+            doctorName: `Dr. ${appt.doctor?.firstName || ''} ${appt.doctor?.lastName || ''}`.trim() || 'Unknown Doctor',
+            specialization: appt.doctor?.specialization || "General",
+            date: new Date(appt.appointmentDate).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' }),
+            time: appt.appointmentTime,
+            type: appt.consultationType,
+            initials: `${appt.doctor?.firstName?.[0] || 'D'}${appt.doctor?.lastName?.[0] || 'R'}`.toUpperCase()
+          });
+        }
       }
       
       if (assessRes.success && assessRes.data && assessRes.data.length > 0) {

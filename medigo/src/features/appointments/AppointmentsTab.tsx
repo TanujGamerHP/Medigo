@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Video, Calendar, Clock, AlertTriangle, ArrowRight, CheckCircle2, UserCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { api } from "@/lib/api";
 
 interface Appointment {
   id: string;
@@ -16,12 +17,42 @@ interface Appointment {
 
 export function AppointmentsTab() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [showReschedule, setShowReschedule] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
   const [rescheduleDate, setRescheduleDate] = useState("July 5, 2026");
   const [rescheduleTime, setRescheduleTime] = useState("1:30 PM");
   const [successMsg, setSuccessMsg] = useState("");
+
+  const fetchAppointments = async () => {
+    try {
+      const res = await api.get("/api/v1/appointments");
+      if (res.success && res.data) {
+        // Map backend appointment format to UI format
+        const mapped = res.data.map((apt: any) => {
+          return {
+            id: apt.id,
+            doctorName: apt.doctor ? `Dr. ${apt.doctor.firstName} ${apt.doctor.lastName}` : "Unknown Doctor",
+            specialty: apt.doctor ? apt.doctor.specialization : "General",
+            date: new Date(apt.appointmentDate).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' }),
+            time: apt.appointmentTime,
+            status: apt.status.toLowerCase() === "scheduled" ? "upcoming" : apt.status.toLowerCase(),
+            meetingLink: apt.meetingLink,
+          };
+        });
+        setAppointments(mapped);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
 
   const handleConfirmReschedule = () => {
     const updated = appointments.map((apt) => {
@@ -60,7 +91,11 @@ export function AppointmentsTab() {
         {/* Left Column: Upcoming visit */}
         <div className="lg:col-span-8 space-y-6">
           
-          {activeApt ? (
+          {loading ? (
+            <div className="bg-white p-8 rounded-3xl border border-border/50 text-center">
+              Loading appointments...
+            </div>
+          ) : activeApt ? (
             <div className="bg-white p-6 md:p-8 rounded-3xl border border-border/50 shadow-sm space-y-6">
               
               <div className="flex justify-between items-start border-b border-border-light pb-5">
