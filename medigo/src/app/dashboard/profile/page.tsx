@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
 import { useRole } from "@/features/shared/RoleProvider";
+import { api } from "@/lib/api";
 
 export default function ProfilePage() {
   const { show } = useToast();
