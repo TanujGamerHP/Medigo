@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { api } from "@/lib/api";
 import { AdvancedTable, TableColumn } from "@/components/enterprise/AdvancedTable";
 import { Users, Clock, AlertTriangle, ArrowRight, Star } from "lucide-react";
 
@@ -18,7 +19,56 @@ export interface QueuePatient {
 const mockPatients: QueuePatient[] = [];
 
 export function PatientQueue({ onSelectPatient }: { onSelectPatient: (patientId: string) => void }) {
-  const [patients, setPatients] = useState<QueuePatient[]>(mockPatients);
+  const [patients, setPatients] = useState<QueuePatient[]>([]);
+
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const response = await api.request("/api/v1/appointments");
+        if (response.data) {
+          const queue = response.data.map((app: any) => {
+            const p = app.patient || {};
+            
+            let age = 35;
+            if (p.dob) {
+              const diff = new Date().getTime() - new Date(p.dob).getTime();
+              age = Math.floor(diff / 31557600000);
+            }
+
+            let bmi = 22.5;
+            if (p.weight && p.height) {
+              const heightM = p.height / 100;
+              bmi = Number((p.weight / (heightM * heightM)).toFixed(1));
+            }
+
+            const diffMs = new Date().getTime() - new Date(app.createdAt).getTime();
+            const diffMins = Math.max(1, Math.floor(diffMs / 60000));
+            const waitingTime = diffMins > 60 ? `${Math.floor(diffMins/60)} hrs ${diffMins%60} mins` : `${diffMins} mins`;
+            
+            let status = "Waiting";
+            if (app.status === "Pending") status = "Waiting";
+            if (app.status === "Completed") status = "Completed";
+            if (app.status === "Confirmed") status = "In Consult";
+            
+            return {
+              id: p.id || app.id,
+              name: `${p.firstName || 'Unknown'} ${p.lastName || ''}`.trim(),
+              age,
+              gender: p.gender || "Unspecified",
+              bmi,
+              type: app.consultationType || "Consultation",
+              status,
+              waitingTime
+            };
+          });
+          setPatients(queue);
+        }
+      } catch (err) {
+        console.error("Failed to load patient queue:", err);
+      }
+    };
+    fetchPatients();
+  }, []);
 
   const columns: TableColumn<QueuePatient>[] = [
     {
