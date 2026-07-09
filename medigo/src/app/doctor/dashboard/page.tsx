@@ -274,14 +274,14 @@ export default function DoctorDashboardOverview() {
                       </span>
                     </div>
 
-                    <div className="flex gap-2 self-start sm:self-center shrink-0">
-                      <Link href={`/doctor/patients`}>
-                        <Button variant="outline" size="sm" className="text-xs font-bold border-border text-text-primary hover:bg-slate-50">
+                    <div className="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto mt-2 sm:mt-0 shrink-0">
+                      <Link href={`/doctor/patients`} className="w-full sm:w-auto">
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs font-bold border-border text-text-primary hover:bg-slate-50">
                           View Profile
                         </Button>
                       </Link>
-                      <Link href={`/consultation/room/${app.id}`}>
-                        <Button size="sm" className="text-xs font-bold" rightIcon={<Video className="w-3.5 h-3.5" />}>
+                      <Link href={`/consultation/room/${app.id}`} className="w-full sm:w-auto">
+                        <Button size="sm" className="w-full sm:w-auto text-xs font-bold" rightIcon={<Video className="w-3.5 h-3.5" />}>
                           Start Consult
                         </Button>
                       </Link>
