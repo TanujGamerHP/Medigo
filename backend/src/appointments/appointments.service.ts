@@ -104,13 +104,17 @@ export class AppointmentsService {
     });
 
     if (doctor && doctor.userId) {
-      await this.prisma.notification.create({
+      const notif = await this.prisma.notification.create({
         data: {
           userId: doctor.userId,
           title: 'New Appointment Booked',
           message: `Patient ${patient.firstName} ${patient.lastName} has booked a ${consultationType} consultation on ${appointmentDate} at ${appointmentTime}.`,
           type: 'appointment',
         },
+      });
+      this.realtimeService.emit('notification.new', {
+        targetUserId: doctor.userId,
+        notification: notif,
       });
     }
 
@@ -196,16 +200,34 @@ export class AppointmentsService {
   ) {
     const appointment = await this.prisma.appointment.findFirst({
       where: { id, deletedAt: null },
+      include: { doctor: true, patient: true },
     });
 
     if (!appointment) {
       throw new NotFoundException('Appointment record not found');
     }
 
-    return this.prisma.appointment.update({
+    const updated = await this.prisma.appointment.update({
       where: { id },
       data: { status, updatedBy },
     });
+
+    if (status === AppointmentStatus.Confirmed && appointment.patient?.userId) {
+      const notif = await this.prisma.notification.create({
+        data: {
+          userId: appointment.patient.userId,
+          title: 'Consultation Started',
+          message: `Dr. ${appointment.doctor.firstName} has started the consultation. Please join the video room now.`,
+          type: 'consultation',
+        },
+      });
+      this.realtimeService.emit('notification.new', {
+        targetUserId: appointment.patient.userId,
+        notification: notif,
+      });
+    }
+
+    return updated;
   }
 
   async softDelete(id: string, updatedBy?: string) {
@@ -428,8 +450,29 @@ export class AppointmentsService {
       // NestJS will run this inside transaction scope.
       // But we can trigger emit immediately after the transaction finishes or directly.
       // We will do it in a setTimeout/deferred block so it runs after transaction finishes committing.
-      setTimeout(() => {
+      setTimeout(async () => {
         // Emit events
+        try {
+          const recentNotifs = await this.prisma.notification.findMany({
+            where: {
+              OR: [
+                { userId: appointment.patient.userId },
+                { userId: doctorUserId }
+              ],
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 4,
+          });
+          
+          for (const notif of recentNotifs) {
+            this.realtimeService.emit('notification.new', {
+              targetUserId: notif.userId,
+              notification: notif,
+            });
+          }
+        } catch (err) {
+          console.error("Failed to fetch and emit real-time notifications", err);
+        }
         this.realtimeService.emit('consultation.completed', {
           appointmentId: id,
           patientId: appointment.patientId,

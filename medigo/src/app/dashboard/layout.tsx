@@ -21,6 +21,7 @@ import {
 import { useToast } from "@/components/ui/Toast";
 import { BackButton } from "@/components/ui/BackButton";
 import { useRole } from "@/features/shared/RoleProvider";
+import { api } from "@/lib/api";
 
 interface SidebarItem {
   label: string;
@@ -45,8 +46,44 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const { show } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const { user } = useRole();
+
+  useEffect(() => {
+    if (user?.id) {
+      api.get("/api/v1/notifications").then(res => {
+        if (res.success && Array.isArray(res.data)) {
+          setUnreadCount(res.data.filter((n: any) => !n.isRead).length);
+        }
+      });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user?.id) {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const sseUrl = `${baseUrl}/api/v1/realtime/events?userId=${user.id}&role=${user.role}`;
+      const eventSource = new EventSource(sseUrl);
+
+      eventSource.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          if (payload.event === "notification.new") {
+            const notif = payload.data?.notification;
+            if (notif) {
+              show(notif.message, "info");
+              setUnreadCount((prev) => prev + 1);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to parse SSE", err);
+        }
+      };
+
+      return () => eventSource.close();
+    }
+  }, [user, show]);
   
   const patient = user?.patient || {};
   const name = patient.firstName ? `${patient.firstName} ${patient.lastName}` : "Patient";
@@ -111,7 +148,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             aria-label="View notifications"
           >
             <Bell className="w-5 h-5" />
-            <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-primary border-2 border-surface animate-pulse" />
+            {unreadCount > 0 && (
+              <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary border-2 border-surface"></span>
+              </span>
+            )}
           </Link>
 
           <div className="flex items-center gap-3 border-l border-border pl-4">

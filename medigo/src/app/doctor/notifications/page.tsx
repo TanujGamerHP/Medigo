@@ -9,27 +9,58 @@ import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
 
 interface NotificationItem {
-  id: number;
+  id: string;
   text: string;
   time: string;
-  category: "Alert" | "Booking" | "Refill";
+  category: "Alert" | "Booking" | "Refill" | "All";
   isRead: boolean;
 }
 
 const initialNotifications: NotificationItem[] = [];
 
+import { api } from "@/lib/api";
+
 export default function DoctorNotificationsPage() {
   const router = useRouter();
   const { show } = useToast();
-  const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<"All" | "Alert" | "Booking" | "Refill">("All");
 
-  const handleMarkAllRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, isRead: true })));
-    show("All clinic notifications marked as read.", "success");
+  const fetchNotifications = async () => {
+    try {
+      const res = await api.get("/api/v1/notifications");
+      if (res.success && Array.isArray(res.data)) {
+        const mapped = res.data.map((n: any) => ({
+          id: n.id,
+          text: n.message,
+          time: new Date(n.createdAt).toLocaleDateString() + " " + new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+          category: n.type === "appointment" ? "Booking" : n.type === "consultation" ? "Alert" : "Refill",
+          isRead: n.isRead,
+        }));
+        setNotifications(mapped);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleDelete = (id: number) => {
+  React.useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const handleMarkAllRead = async () => {
+    try {
+      const res = await api.patch("/api/v1/notifications/read-all", {});
+      if (res.success) {
+        setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+        show("All clinic notifications marked as read.", "success");
+      }
+    } catch (err) {
+      show("Failed to mark read.", "error");
+    }
+  };
+
+  const handleDelete = (id: string) => {
     setNotifications(notifications.filter(n => n.id !== id));
     show("Notification dismissed.", "info");
   };

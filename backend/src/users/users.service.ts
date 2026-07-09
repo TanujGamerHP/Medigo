@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
@@ -131,6 +135,13 @@ export class UsersService {
         status: 'Active',
       },
     });
+
+    await this.notificationsService.createAndEmitNotification(
+      userId,
+      'Membership Activated',
+      `You have successfully purchased the ${planName} plan. Your membership is now active until ${expiryDate.toLocaleDateString()}.`,
+      'membership'
+    );
 
     return this.findOne(userId);
   }
