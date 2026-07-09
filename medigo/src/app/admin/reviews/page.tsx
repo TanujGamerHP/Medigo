@@ -12,6 +12,7 @@ export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   const [formData, setFormData] = useState({
     id: "",
@@ -103,6 +104,7 @@ export default function AdminReviewsPage() {
       return;
     }
 
+    setIsSaving(true);
     try {
       if (formData.id) {
         await api.patch(`/api/v1/reviews/${formData.id}`, formData);
@@ -116,6 +118,8 @@ export default function AdminReviewsPage() {
     } catch (err) {
       console.error(err);
       show("Failed to save review", "error");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -341,8 +345,10 @@ export default function AdminReviewsPage() {
 
               {/* Sticky Footer */}
               <div className="px-6 py-4 border-t border-border bg-slate-50 flex items-center justify-end gap-3 shrink-0 rounded-b-2xl">
-                <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto">Cancel</Button>
-                <Button type="submit" className="w-full sm:w-auto shadow-md">Save Review</Button>
+                <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto" disabled={isSaving}>Cancel</Button>
+                <Button type="submit" className="w-full sm:w-auto shadow-md" disabled={isSaving}>
+                  {isSaving ? "Saving..." : "Save Review"}
+                </Button>
               </div>
             </form>
           </div>
