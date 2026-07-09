@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Star, Plus, Edit, Trash, Upload, CheckCircle2, Image as ImageIcon } from "lucide-react";
+import { Star, Plus, Edit, Trash, Upload, CheckCircle2, Image as ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { api } from "@/lib/api";
