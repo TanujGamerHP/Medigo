@@ -25,7 +25,8 @@ import {
   Eye,
   EyeOff,
   BarChart4,
-  ShoppingBag
+  ShoppingBag,
+  Star
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { BackButton } from "@/components/ui/BackButton";
@@ -45,6 +46,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { label: "Payments", href: "/admin/payments", icon: CircleDollarSign },
   { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
   { label: "Content Management", href: "/admin/content", icon: FileSpreadsheet },
+  { label: "Reviews", href: "/admin/reviews", icon: Star },
   { label: "Notifications", href: "/admin/notifications", icon: Bell },
   { label: "Reports", href: "/admin/reports", icon: BarChart4 },
   { label: "Settings", href: "/admin/settings", icon: Settings },
