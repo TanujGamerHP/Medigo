@@ -553,47 +553,92 @@ function FeaturedMedicines() {
     router.push("/store");
   };
 
+  const semaglutide = MEDICINE_CATALOG.filter(m => m.category === "Semaglutide");
+  const tirzepatide = MEDICINE_CATALOG.filter(m => m.category === "Tirzepatide");
+
   return (
-    <Section className="bg-background border-t border-border overflow-hidden" id="featured-medicines">
+    <Section className="bg-[#FAFAFA] border-t border-border overflow-hidden" id="featured-medicines">
       <div className="container-custom relative">
-        <SectionHeading
-          badge="Medicine Store"
-          title="Premium Weight Loss Medications"
-          subtitle="Clinically proven treatments delivered directly to your door."
-        />
         
-        {/* Mobile: Horizontally Scrollable, Desktop: Grid */}
-        <div className="mt-8 -mx-4 px-4 sm:mx-0 sm:px-0 relative">
-          <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 hide-scrollbar">
-            {MEDICINE_CATALOG.map((medicine, i) => (
-              <motion.div
-                key={medicine.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="snap-center shrink-0 w-[170px] sm:w-auto"
-              >
-                <MedicineCard 
-                  medicine={medicine} 
-                  onBuyNow={handleBuyNow} 
-                  onAddToCart={handleBuyNow}
-                />
-              </motion.div>
-            ))}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <div className="max-w-2xl">
+            <span className="text-primary font-bold tracking-wider uppercase text-sm mb-4 block">Premium Catalog</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight mb-4">
+              GLP-1 Medications
+            </h2>
+            <p className="text-lg text-gray-500 max-w-xl leading-relaxed">
+              Choose your medication by category, brand and dosage. Clinically proven treatments delivered directly to your door.
+            </p>
           </div>
+          <Link 
+            href="/store"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 font-semibold rounded-full border border-gray-200 shadow-sm hover:border-primary hover:text-primary transition-all duration-300 w-fit"
+          >
+            View All Medications
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
 
-        <motion.div variants={fadeInUp} className="mt-6 text-center">
-          <Link
-            href="/store"
-            id="view-all-medicines"
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-white border border-border text-text-primary font-semibold hover:shadow-md hover:border-primary/30 transition-all duration-300"
-          >
-            View All Medicines
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-        </motion.div>
+        <div className="space-y-24">
+          {/* Section 1: Semaglutide */}
+          {semaglutide.length > 0 && (
+            <section>
+              <div className="mb-8 border-b border-gray-200 pb-4">
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Semaglutide</h3>
+              </div>
+              
+              {/* Mobile: Horizontally Scrollable, Desktop: Grid */}
+              <div className="mt-8 -mx-4 px-4 sm:mx-0 sm:px-0 relative">
+                <div className="flex sm:grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 hide-scrollbar">
+                  {semaglutide.map((medicine, i) => (
+                    <motion.div
+                      key={medicine.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.1 }}
+                      className="snap-center shrink-0 w-[85vw] sm:w-auto"
+                    >
+                      <MedicineCard 
+                        medicine={medicine} 
+                        onSelect={handleBuyNow} 
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Section 2: Tirzepatide */}
+          {tirzepatide.length > 0 && (
+            <section>
+              <div className="mb-8 border-b border-gray-200 pb-4">
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Tirzepatide</h3>
+              </div>
+              
+              <div className="-mx-4 px-4 sm:mx-0 sm:px-0 relative">
+                <div className="flex sm:grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 hide-scrollbar">
+                  {tirzepatide.map((medicine, i) => (
+                    <motion.div
+                      key={medicine.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.1 }}
+                      className="snap-center shrink-0 w-[85vw] sm:w-auto"
+                    >
+                      <MedicineCard 
+                        medicine={medicine} 
+                        onSelect={handleBuyNow} 
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+        </div>
       </div>
     </Section>
   );
