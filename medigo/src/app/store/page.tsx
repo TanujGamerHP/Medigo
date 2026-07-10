@@ -240,7 +240,7 @@ export default function StorePage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="snap-center shrink-0 w-[240px] sm:w-auto"
+                  className="snap-center shrink-0 w-[170px] sm:w-auto"
                 >
                   <MedicineCard 
                     medicine={product} 
