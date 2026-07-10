@@ -55,9 +55,9 @@ export const MEDICINE_CATALOG: MedicineBrand[] = [
     name: "Mounjaro",
     genericName: "Tirzepatide",
     category: "Tirzepatide",
-    medicationType: "Tablet", // User requested: Wegovy and Zepbound are injections, rest are tablets
+    medicationType: "Tablet", 
     description: "A first-in-class medicine that activates both the GIP and GLP-1 receptors, offering significant improvements in glycemic control and body weight.",
-    imageUrl: "/images/products/mounjaro-pen.png", // AI Generated Image
+    imageUrl: "/images/products/wegovy-tablets-1-5mg.jpg", 
     dosages: ["2.5 mg", "5 mg", "7.5 mg", "10 mg", "12.5 mg", "15 mg"],
     basePrice: 5200,
   },
