@@ -34,9 +34,9 @@ export const MEDICINE_CATALOG: MedicineBrand[] = [
     name: "Ozempic",
     category: "Semaglutide",
     description: "Once-weekly medicine for adults with type 2 diabetes to improve blood sugar, along with diet and exercise. Also used off-label for weight management.",
-    imageUrl: "/images/products/glp-vial.png",
+    imageUrl: "/images/products/semaglutide.png",
     variants: [
-      { form: "Injection", doses: injectionDoses, basePrice: 4200, imageUrl: "/images/products/glp-vial.png" },
+      { form: "Injection", doses: injectionDoses, basePrice: 4200, imageUrl: "/images/products/semaglutide.png" },
       { form: "Tablets", doses: tabletDoses, basePrice: 3500, imageUrl: "/images/products/glp-oral-tablets.png" },
     ]
   },
@@ -56,9 +56,9 @@ export const MEDICINE_CATALOG: MedicineBrand[] = [
     name: "Mounjaro",
     category: "Tirzepatide",
     description: "A first-in-class medicine that activates both the GIP and GLP-1 receptors, offering significant improvements in glycemic control and body weight.",
-    imageUrl: "/images/products/glp-vial.png",
+    imageUrl: "/images/products/tirzepatide.png",
     variants: [
-      { form: "Injection", doses: injectionDoses, basePrice: 5200, imageUrl: "/images/products/glp-vial.png" },
+      { form: "Injection", doses: injectionDoses, basePrice: 5200, imageUrl: "/images/products/tirzepatide.png" },
       { form: "Tablets", doses: tabletDoses, basePrice: 4800, imageUrl: "/images/products/glp-oral-tablets.png" },
     ]
   },
