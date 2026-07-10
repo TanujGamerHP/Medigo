@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { MedicineBrand, VariantForm } from "@/data/medicines";
 import { Pill } from "lucide-react";
-import { Button } from "@/components/ui/Button";
 
 interface MedicineCardProps {
   medicine: MedicineBrand;
@@ -17,7 +16,6 @@ export function MedicineCard({ medicine, onAddToCart, onBuyNow }: MedicineCardPr
   const currentVariant = medicine.variants.find(v => v.form === selectedForm) || medicine.variants[0];
   const [selectedDose, setSelectedDose] = useState<string>(currentVariant.doses[0]);
 
-  // If the user switches form, auto-select the first dose of the new form
   const handleFormChange = (form: VariantForm) => {
     setSelectedForm(form);
     const newVariant = medicine.variants.find(v => v.form === form);
@@ -26,7 +24,6 @@ export function MedicineCard({ medicine, onAddToCart, onBuyNow }: MedicineCardPr
     }
   };
 
-  // Mock pricing logic: base price + extra for higher doses
   const doseIndex = currentVariant.doses.indexOf(selectedDose);
   const calculatedPrice = currentVariant.basePrice + (doseIndex * 200);
 
@@ -39,94 +36,81 @@ export function MedicineCard({ medicine, onAddToCart, onBuyNow }: MedicineCardPr
   };
 
   return (
-    <div className="group p-6 rounded-2xl bg-white border border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300 flex flex-col min-w-[280px] sm:min-w-[auto]">
-      <div className="w-full h-48 mb-4 rounded-xl flex items-center justify-center overflow-hidden bg-gray-50 p-4 shrink-0">
+    <div className="group p-3 sm:p-4 rounded-xl bg-white border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 flex flex-col h-full w-[220px] sm:w-[260px]">
+      
+      {/* Product Image - Smaller */}
+      <div className="w-full h-28 sm:h-32 mb-3 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 p-2 shrink-0 relative">
+        <span className="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary-50 px-1.5 py-0.5 rounded-sm z-10">
+          {medicine.category}
+        </span>
         {medicine.imageUrl ? (
-          <img src={medicine.imageUrl} alt={medicine.name} className="max-w-full max-h-full object-contain" />
+          <img src={medicine.imageUrl} alt={medicine.name} className="max-w-full max-h-full object-contain mix-blend-multiply" />
         ) : (
-          <Pill className="w-12 h-12 text-primary-200" />
+          <Pill className="w-8 h-8 text-primary-200" />
         )}
       </div>
 
-      <div className="text-left flex-grow">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary-50 px-2 py-0.5 rounded-full">
-          {medicine.category}
-        </span>
-        <h3 className="mt-3 font-heading text-lg font-bold text-text-primary leading-tight">
+      <div className="text-left flex-grow flex flex-col">
+        {/* Title & Description */}
+        <h3 className="font-heading text-base font-bold text-text-primary leading-tight line-clamp-1">
           {medicine.name}
         </h3>
-        <p className="mt-2 text-text-secondary text-sm line-clamp-2">
+        <p className="mt-1 text-text-tertiary text-[11px] leading-tight line-clamp-2 min-h-[28px]">
           {medicine.description}
         </p>
         
-        {/* Variant Selection */}
-        <div className="mt-4 space-y-3">
-          <div>
-            <p className="text-xs font-semibold text-text-secondary mb-1">Form</p>
-            <div className="flex gap-2">
-              {medicine.variants.map((v) => (
-                <button
-                  key={v.form}
-                  onClick={() => handleFormChange(v.form)}
-                  className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
-                    selectedForm === v.form 
-                      ? 'bg-primary text-white border-primary' 
-                      : 'bg-white text-text-secondary border-border hover:border-primary/50'
-                  }`}
-                >
-                  {v.form}
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <p className="text-xs font-semibold text-text-secondary mb-1">Dose</p>
-            <select 
-              value={selectedDose}
-              onChange={(e) => setSelectedDose(e.target.value)}
-              className="w-full text-sm p-2 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary/20 outline-none"
+        {/* Form Selector (Pills) */}
+        <div className="mt-3 flex gap-1.5">
+          {medicine.variants.map((v) => (
+            <button
+              key={v.form}
+              onClick={() => handleFormChange(v.form)}
+              className={`flex-1 py-1 text-[10px] font-bold rounded border transition-colors ${
+                selectedForm === v.form 
+                  ? 'bg-primary/10 text-primary border-primary' 
+                  : 'bg-background text-text-tertiary border-border hover:border-primary/50'
+              }`}
             >
-              {currentVariant.doses.map(dose => (
-                <option key={dose} value={dose}>{dose}</option>
-              ))}
-            </select>
-          </div>
+              {v.form}
+            </button>
+          ))}
+        </div>
+        
+        {/* Dose Selector */}
+        <div className="mt-2">
+          <select 
+            value={selectedDose}
+            onChange={(e) => setSelectedDose(e.target.value)}
+            className="w-full text-xs font-medium p-1.5 rounded border border-border bg-background focus:ring-1 focus:ring-primary/50 outline-none text-text-secondary"
+          >
+            {currentVariant.doses.map(dose => (
+              <option key={dose} value={dose}>{dose}</option>
+            ))}
+          </select>
         </div>
 
-        <div className="mt-5 flex items-center justify-between">
-          <span className="font-bold text-xl">₹{calculatedPrice}</span>
+        <div className="mt-auto pt-3 flex items-end justify-between">
+          <div className="flex flex-col">
+            <span className="text-[10px] text-text-tertiary line-through leading-none mb-0.5">₹{calculatedPrice + 500}</span>
+            <span className="font-bold text-lg leading-none text-text-primary">₹{calculatedPrice}</span>
+          </div>
         </div>
       </div>
       
-      <div className="mt-4 flex gap-2">
-        {onAddToCart ? (
-          <>
-            <Button
-              onClick={() => onAddToCart(cartItem)}
-              variant="outline"
-              className="flex-1 shadow-sm hover:shadow-md transition-all font-bold border-border"
-            >
-              Add to Cart
-            </Button>
-            <Button
-              onClick={() => onBuyNow(cartItem)}
-              variant="primary"
-              className="flex-1 shadow-md hover:shadow-lg transition-all font-bold"
-            >
-              Buy Now
-            </Button>
-          </>
-        ) : (
-          <Button
-            onClick={() => onBuyNow(cartItem)}
-            variant="primary"
-            fullWidth
-            className="shadow-md hover:shadow-lg transition-all font-bold"
-          >
-            Buy Now
-          </Button>
-        )}
+      {/* Action Buttons */}
+      <div className="mt-3 flex gap-2">
+        <button
+          onClick={() => onAddToCart && onAddToCart(cartItem)}
+          className="flex-1 py-1.5 rounded-lg text-xs font-bold text-primary bg-primary-50 border border-primary-200 hover:bg-primary-100 transition-colors"
+        >
+          Add
+        </button>
+        <button
+          onClick={() => onBuyNow && onBuyNow(cartItem)}
+          className="flex-1 py-1.5 rounded-lg text-xs font-bold text-white bg-primary hover:bg-primary-dark transition-colors shadow-sm"
+        >
+          Buy Now
+        </button>
       </div>
     </div>
   );

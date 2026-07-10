@@ -22,6 +22,7 @@ export const MEDICINE_CATALOG: MedicineBrand[] = [
     name: "Wegovy",
     category: "Semaglutide",
     description: "Prescription medication for adults with obesity or overweight with weight-related medical problems to help them lose weight and keep it off.",
+    imageUrl: "/images/products/wegovy-injection-1-7mg.png",
     variants: [
       { form: "Injection", doses: injectionDoses, basePrice: 4500 },
       { form: "Tablets", doses: tabletDoses, basePrice: 3800 },
@@ -32,6 +33,7 @@ export const MEDICINE_CATALOG: MedicineBrand[] = [
     name: "Ozempic",
     category: "Semaglutide",
     description: "Once-weekly medicine for adults with type 2 diabetes to improve blood sugar, along with diet and exercise. Also used off-label for weight management.",
+    imageUrl: "/images/products/glp-vial.png",
     variants: [
       { form: "Injection", doses: injectionDoses, basePrice: 4200 },
       { form: "Tablets", doses: tabletDoses, basePrice: 3500 },
@@ -42,6 +44,7 @@ export const MEDICINE_CATALOG: MedicineBrand[] = [
     name: "Rybelsus",
     category: "Semaglutide",
     description: "A daily pill that works similarly to Ozempic, primarily for type 2 diabetes but increasingly utilized for effective weight management protocols.",
+    imageUrl: "/images/products/glp-oral-tablets.png",
     variants: [
       { form: "Injection", doses: injectionDoses, basePrice: 4000 },
       { form: "Tablets", doses: tabletDoses, basePrice: 3200 },
@@ -52,6 +55,7 @@ export const MEDICINE_CATALOG: MedicineBrand[] = [
     name: "Mounjaro",
     category: "Tirzepatide",
     description: "A first-in-class medicine that activates both the GIP and GLP-1 receptors, offering significant improvements in glycemic control and body weight.",
+    imageUrl: "/images/products/glp-vial.png",
     variants: [
       { form: "Injection", doses: injectionDoses, basePrice: 5200 },
       { form: "Tablets", doses: tabletDoses, basePrice: 4800 },
@@ -62,6 +66,7 @@ export const MEDICINE_CATALOG: MedicineBrand[] = [
     name: "Zepbound",
     category: "Tirzepatide",
     description: "Zepbound is an injectable prescription medicine that may help adults with obesity or overweight to lose weight and keep it off.",
+    imageUrl: "/images/products/zepbound-injection-2-5mg.png",
     variants: [
       { form: "Injection", doses: injectionDoses, basePrice: 5500 },
       { form: "Tablets", doses: tabletDoses, basePrice: 4900 },
