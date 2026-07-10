@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
+import { MEDICINE_CATALOG } from "@/data/medicines";
+import { MedicineCard } from "@/components/store/MedicineCard";
 
 declare global {
   interface Window {
@@ -40,19 +42,7 @@ export default function StorePage() {
   const router = useRouter();
 
   useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const res = await api.get('/api/v1/products');
-        if (res.success && res.data) {
-          setProducts(res.data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch products", err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchProducts();
+    setIsLoading(false);
     
     // Load Razorpay script
     const script = document.createElement("script");
@@ -196,7 +186,7 @@ export default function StorePage() {
     }
   };
 
-  const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredProducts = MEDICINE_CATALOG.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
     <div className="min-h-screen bg-background pt-24 pb-16">
@@ -242,64 +232,30 @@ export default function StorePage() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="group p-6 rounded-2xl bg-white border border-border hover:border-primary/30 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 flex flex-col"
-              >
-                <div className="w-full h-48 mb-4 rounded-xl flex items-center justify-center overflow-hidden bg-transparent p-4">
-                  {product.imageUrl ? (
-                    <img src={product.imageUrl} alt={product.name} className="max-w-full max-h-full object-contain drop-shadow-md" />
-                  ) : (
-                    <Pill className="w-12 h-12 text-primary-200" />
-                  )}
-                </div>
-
-                <div className="text-left flex-grow">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary-50 px-2 py-0.5 rounded-full">
-                    {product.category || "Weight Loss"}
-                  </span>
-                  <h3 className="mt-3 font-heading text-lg font-bold text-text-primary leading-tight">
-                    {product.name}
-                  </h3>
-                  <p className="mt-2 text-text-secondary text-sm line-clamp-2">
-                    {product.description}
-                  </p>
-                  
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="font-bold text-xl">₹{product.price}</span>
-                  </div>
-                </div>
-                
-                <div className="mt-4 flex gap-2">
-                  <Button
-                    onClick={() => addToCart(product)}
-                    variant="outline"
-                    className="flex-1 shadow-sm hover:shadow-md transition-all font-bold border-border"
-                  >
-                    Add to Cart
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      // If it's already in the cart, just open the drawer.
-                      // If not, add it and open drawer.
-                      const exists = cart.find(item => item.product.id === product.id);
+          <div className="mt-8 -mx-4 px-4 sm:mx-0 sm:px-0 relative">
+            <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 hide-scrollbar">
+              {filteredProducts.map((product, i) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="snap-center shrink-0 w-[85vw] sm:w-auto"
+                >
+                  <MedicineCard 
+                    medicine={product} 
+                    onAddToCart={addToCart}
+                    onBuyNow={(item) => {
+                      const exists = cart.find(cartItem => cartItem.product.id === item.id);
                       if (!exists) {
-                        setCart(prev => [...prev, { product, quantity: 1 }]);
+                        setCart(prev => [...prev, { product: item, quantity: 1 }]);
                       }
                       setIsCartOpen(true);
                     }}
-                    variant="primary"
-                    className="flex-1 shadow-md hover:shadow-lg transition-all font-bold"
-                  >
-                    Buy Now
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
+                  />
+                </motion.div>
+              ))}
+            </div>
           </div>
         )}
       </div>

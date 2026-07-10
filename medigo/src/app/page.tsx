@@ -29,6 +29,9 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { MEDICINE_CATALOG } from "@/data/medicines";
+import { MedicineCard } from "@/components/store/MedicineCard";
 
 /* ============================================
    Animation Variants
@@ -544,82 +547,44 @@ function HowItWorks() {
    5.5. FEATURED MEDICINES
    ============================================ */
 function FeaturedMedicines() {
-  const [products, setProducts] = useState<any[]>([]);
+  const router = useRouter();
 
-  useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const res = await api.get('/api/v1/products');
-        if (res.success && res.data) {
-          // Take first 4 products
-          setProducts(res.data.slice(0, 4));
-        }
-      } catch (err) {
-        console.error("Failed to fetch products", err);
-      }
-    }
-    fetchProducts();
-  }, []);
+  const handleBuyNow = () => {
+    router.push("/store");
+  };
 
   return (
-    <Section className="bg-background border-t border-border" id="featured-medicines">
-      <div className="container-custom">
+    <Section className="bg-background border-t border-border overflow-hidden" id="featured-medicines">
+      <div className="container-custom relative">
         <SectionHeading
           badge="Medicine Store"
           title="Premium Weight Loss Medications"
           subtitle="Clinically proven treatments delivered directly to your door."
         />
-        {products.length > 0 && (
-          <motion.div
-            variants={staggerContainer}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            {products.map((product) => (
+        
+        {/* Mobile: Horizontally Scrollable, Desktop: Grid */}
+        <div className="mt-8 -mx-4 px-4 sm:mx-0 sm:px-0 relative">
+          <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 hide-scrollbar">
+            {MEDICINE_CATALOG.map((medicine, i) => (
               <motion.div
-                key={product.id || product.name}
-                variants={scaleIn}
-                className="group p-6 rounded-2xl bg-white border border-border hover:border-primary/30 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 flex flex-col"
+                key={medicine.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="snap-center shrink-0 w-[85vw] sm:w-auto"
               >
-                {/* Product Image */}
-                <div className="w-full h-48 mb-4 rounded-xl flex items-center justify-center overflow-hidden bg-gray-50 p-4">
-                  {product.imageUrl ? (
-                    <img src={product.imageUrl} alt={product.name} className="max-w-full max-h-full object-contain" />
-                  ) : (
-                    <Pill className="w-12 h-12 text-primary-200" />
-                  )}
-                </div>
-
-                <div className="text-left flex-grow">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary-50 px-2 py-0.5 rounded-full">
-                    {product.category || "Weight Loss"}
-                  </span>
-                  <h3 className="mt-3 font-heading text-lg font-bold text-text-primary leading-tight">
-                    {product.name}
-                  </h3>
-                  <p className="mt-2 text-text-secondary text-sm line-clamp-2">
-                    {product.description}
-                  </p>
-                  
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="font-bold text-xl">₹{product.price}</span>
-                  </div>
-                </div>
-                
-                <Link href="/store" className="block w-full mt-4">
-                  <Button
-                    variant="primary"
-                    fullWidth
-                    className="shadow-md hover:shadow-lg transition-all"
-                  >
-                    Buy Now
-                  </Button>
-                </Link>
+                <MedicineCard 
+                  medicine={medicine} 
+                  onBuyNow={handleBuyNow} 
+                  onAddToCart={handleBuyNow}
+                />
               </motion.div>
             ))}
-          </motion.div>
-        )}
+          </div>
+        </div>
 
-        <motion.div variants={fadeInUp} className="mt-10 text-center">
+        <motion.div variants={fadeInUp} className="mt-6 text-center">
           <Link
             href="/store"
             id="view-all-medicines"
