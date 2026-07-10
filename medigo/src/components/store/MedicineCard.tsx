@@ -31,9 +31,11 @@ export function MedicineCard({ medicine, onAddToCart, onBuyNow }: MedicineCardPr
     id: `${medicine.id}-${selectedForm}-${selectedDose}`,
     name: `${medicine.name} (${medicine.category}) - ${selectedForm} ${selectedDose}`,
     price: calculatedPrice,
-    imageUrl: medicine.imageUrl,
+    imageUrl: currentVariant.imageUrl || medicine.imageUrl,
     category: medicine.category,
   };
+
+  const displayImageUrl = currentVariant.imageUrl || medicine.imageUrl;
 
   return (
     <div className="group p-3 sm:p-4 rounded-xl bg-white border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 flex flex-col h-full w-full">
@@ -43,8 +45,8 @@ export function MedicineCard({ medicine, onAddToCart, onBuyNow }: MedicineCardPr
         <span className="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary-50 px-1.5 py-0.5 rounded-sm z-10">
           {medicine.category}
         </span>
-        {medicine.imageUrl ? (
-          <img src={medicine.imageUrl} alt={medicine.name} className="max-w-full max-h-full object-contain mix-blend-multiply" />
+        {displayImageUrl ? (
+          <img src={displayImageUrl} alt={medicine.name} className="max-w-full max-h-full object-contain mix-blend-multiply" />
         ) : (
           <Pill className="w-8 h-8 text-primary-200" />
         )}
