@@ -36,7 +36,7 @@ export function MedicineCard({ medicine, onAddToCart, onBuyNow }: MedicineCardPr
   };
 
   return (
-    <div className="group p-3 sm:p-4 rounded-xl bg-white border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 flex flex-col h-full w-[220px] sm:w-[260px]">
+    <div className="group p-3 sm:p-4 rounded-xl bg-white border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 flex flex-col h-full w-full">
       
       {/* Product Image - Smaller */}
       <div className="w-full h-28 sm:h-32 mb-3 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 p-2 shrink-0 relative">

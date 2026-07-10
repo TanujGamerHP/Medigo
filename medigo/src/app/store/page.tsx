@@ -233,14 +233,14 @@ export default function StorePage() {
           </div>
         ) : (
           <div className="mt-8 -mx-4 px-4 sm:mx-0 sm:px-0 relative">
-            <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 hide-scrollbar">
+            <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 hide-scrollbar">
               {filteredProducts.map((product, i) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="snap-center shrink-0 w-[85vw] sm:w-auto"
+                  className="snap-center shrink-0 w-[240px] sm:w-auto"
                 >
                   <MedicineCard 
                     medicine={product} 
