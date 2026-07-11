@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Pill, Check, ShoppingBag, X } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { useRole } from "@/features/shared/RoleProvider";
 
 interface CartItem {
   product: MedicineBrand;
@@ -22,9 +23,13 @@ export default function StorePage() {
     brand: "All",
   });
   
-  const [simulatedPlan, setSimulatedPlan] = useState<"None" | "1-Month" | "3-Months" | "6-Months">("1-Month");
+  const { user } = useRole();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const memberships = user?.patient?.memberships || [];
+  const activeMembership = memberships.length > 0 ? memberships[0] : null;
+  const planName = activeMembership?.planName;
 
   const availableBrands = Array.from(new Set(MEDICINE_CATALOG.map(m => m.name)));
 
@@ -58,7 +63,7 @@ export default function StorePage() {
       <main className="flex-grow pt-24 pb-20">
         
         {/* Page Header */}
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-8 text-center max-w-3xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-12 text-center max-w-3xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -71,23 +76,6 @@ export default function StorePage() {
               Choose your medication by category, brand and dosage.
             </p>
           </motion.div>
-        </div>
-
-        {/* Membership Simulator Dropdown */}
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-8 flex justify-center">
-          <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
-            <span className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Simulate Membership Plan:</span>
-            <select 
-              className="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block p-2 font-medium"
-              value={simulatedPlan}
-              onChange={(e) => setSimulatedPlan(e.target.value as any)}
-            >
-              <option value="None">None (Guest)</option>
-              <option value="1-Month">MediGo Care - 1 Month</option>
-              <option value="3-Months">MediGo Care - 3 Months</option>
-              <option value="6-Months">MediGo Care - 6 Months</option>
-            </select>
-          </div>
         </div>
 
         <MedicineFilterBar 
@@ -130,9 +118,11 @@ export default function StorePage() {
                           medicine={medicine} 
                           onSelect={handleSelectMedication}
                           disabledReason={
-                            simulatedPlan === "1-Month" && medicine.medicationType === "Injection"
-                              ? "Upgrade plan to buy injections"
-                              : undefined
+                            !activeMembership 
+                              ? "Active membership required to purchase medication"
+                              : (planName === "1-Month" || planName === "1-month") && medicine.medicationType === "Injection"
+                                ? "Upgrade plan to buy injections"
+                                : undefined
                           }
                         />
                       </motion.div>
@@ -159,9 +149,11 @@ export default function StorePage() {
                           medicine={medicine} 
                           onSelect={handleSelectMedication}
                           disabledReason={
-                            simulatedPlan === "1-Month" && medicine.medicationType === "Injection"
-                              ? "Upgrade plan to buy injections"
-                              : undefined
+                            !activeMembership 
+                              ? "Active membership required to purchase medication"
+                              : (planName === "1-Month" || planName === "1-month") && medicine.medicationType === "Injection"
+                                ? "Upgrade plan to buy injections"
+                                : undefined
                           }
                         />
                       </motion.div>

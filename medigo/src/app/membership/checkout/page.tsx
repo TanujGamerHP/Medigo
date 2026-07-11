@@ -31,11 +31,21 @@ function MembershipCheckoutContent() {
   const [isSending, setIsSending] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(true);
 
-  // Read raw plan name, but normalize it to capitalized form for API validation
-  const rawPlanName = searchParams.get("plan") || "Starter";
-  const planName = rawPlanName.charAt(0).toUpperCase() + rawPlanName.slice(1).toLowerCase();
-  
-  const price = planName === "Elite" ? 499 : planName === "Premium" ? 299 : 149;
+  // Read raw plan name, but normalize it
+  const rawPlanName = searchParams.get("plan") || "1-month";
+  let planName = rawPlanName;
+  let price = 2499;
+
+  if (rawPlanName.toLowerCase() === "3-months") {
+    planName = "3-Months";
+    price = 6999;
+  } else if (rawPlanName.toLowerCase() === "6-months") {
+    planName = "6-Months";
+    price = 12999;
+  } else {
+    planName = "1-Month";
+    price = 2499;
+  }
 
   useEffect(() => {
     // Load Razorpay script
@@ -152,7 +162,7 @@ function MembershipCheckoutContent() {
                       <p className="text-sm text-slate-500">Billed monthly • Cancel anytime</p>
                     </div>
                   </div>
-                  {planName === "Starter" && (
+                  {planName === "3-Months" && (
                     <div className="hidden sm:block px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded-full">
                       Most Popular
                     </div>
