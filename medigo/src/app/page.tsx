@@ -1023,47 +1023,47 @@ function SuccessStories() {
 function PricingPreview() {
   const plans = [
     {
-      name: "Starter",
-      price: 149,
-      period: "/month",
-      description: "Perfect for getting started with medical weight management.",
+      name: "MediGo Care – 1 Month",
+      price: 2499,
+      period: "",
+      description: "Perfect to get started",
       features: [
         "Initial doctor consultation",
         "AI health assessment",
         "Basic GLP-1 prescription",
-        "Monthly check-in",
+        "Personalised diet plan",
+        "Personalised workout plan",
         "Email support",
       ],
       popular: false,
     },
     {
-      name: "Premium",
-      price: 299,
-      period: "/month",
-      description: "Our most popular plan with comprehensive care and support.",
+      name: "MediGo Care – 3 Months",
+      price: 6999,
+      period: "",
+      description: "Most patients start seeing meaningful results in 3 months.",
       features: [
-        "Everything in Starter",
+        "Everything in 1 Month, PLUS:",
         "Bi-weekly doctor calls",
-        "AI Health Coach (24/7)",
-        "Advanced progress tracking",
+        "Personalised diet plan every 15days",
+        "Personalised workout plan every 15 days",
         "Priority medication delivery",
-        "Nutrition planning",
+        "WhatsApp Priority Support",
       ],
       popular: true,
     },
     {
-      name: "Elite",
-      price: 499,
-      period: "/month",
-      description: "Maximum support with unlimited access and concierge care.",
+      name: "MediGo Care – 6 Months",
+      price: 12999,
+      period: "",
+      description: "Best value for long-term health transformation.",
       features: [
-        "Everything in Premium",
+        "Everything in 3 Months, PLUS:",
         "Weekly doctor sessions",
-        "Concierge support",
-        "Lab work coordination",
-        "Metabolic panel tracking",
-        "Dedicated care manager",
-        "Family plan discounts",
+        "Personalised diet plan every week",
+        "Personalised workout plan every week",
+        "Advanced Nutrition Coaching",
+        "Free Lab Report Reviews",
       ],
       popular: false,
     },
@@ -1105,7 +1105,7 @@ function PricingPreview() {
                 {plan.description}
               </p>
 
-              <div className="mt-4 flex items-baseline">
+              <div className="mt-4 flex items-baseline justify-center">
                 <span className="text-4xl font-bold text-text-primary">
                   ₹{plan.price}
                 </span>
