@@ -206,7 +206,9 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
       router.push("/unauthorized");
     } else if (pathname.startsWith("/admin") && !hasPermission(["Admin"])) {
       router.push("/unauthorized");
-    } else if (pathname.startsWith("/pharmacy") && !hasPermission(["Pharmacy"])) {
+    } else if (pathname.startsWith("/pharmacy") && pathname !== "/pharmacy/checkout" && !hasPermission(["Pharmacy"])) {
+      router.push("/unauthorized");
+    } else if (pathname === "/pharmacy/checkout" && !hasPermission(["Patient", "Admin", "Pharmacy"])) {
       router.push("/unauthorized");
     } else if (pathname.startsWith("/lab") && !hasPermission(["Lab"])) {
       router.push("/unauthorized");
