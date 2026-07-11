@@ -10,9 +10,10 @@ import { ChevronRight } from "lucide-react";
 interface MedicineCardProps {
   medicine: MedicineBrand;
   onSelect?: (item: MedicineBrand, dose: string) => void;
+  disabledReason?: string;
 }
 
-export function MedicineCard({ medicine, onSelect }: MedicineCardProps) {
+export function MedicineCard({ medicine, onSelect, disabledReason }: MedicineCardProps) {
   const [selectedDose, setSelectedDose] = useState<string | null>(null);
 
   const handleSelect = () => {
@@ -26,7 +27,11 @@ export function MedicineCard({ medicine, onSelect }: MedicineCardProps) {
       
       {/* Type Badge */}
       <div className="absolute top-6 left-6 z-10">
-        <span className="px-3 py-1 bg-gray-50 text-gray-600 text-xs font-medium rounded-full tracking-wide uppercase border border-gray-100 shadow-sm">
+        <span className={`px-3 py-1 text-xs font-bold rounded-full tracking-wider uppercase border shadow-sm ${
+          medicine.medicationType === "Tablet" 
+            ? "bg-blue-50 text-blue-700 border-blue-200" 
+            : "bg-orange-50 text-orange-700 border-orange-200"
+        }`}>
           {medicine.medicationType}
         </span>
       </div>
@@ -78,11 +83,12 @@ export function MedicineCard({ medicine, onSelect }: MedicineCardProps) {
         {/* Actions */}
         <div className="mt-auto pt-4 flex flex-col gap-3 border-t border-gray-50">
           <Button 
-            className="w-full h-12 text-sm font-semibold rounded-xl transition-all duration-300 shadow-sm hover:shadow-md group-hover:bg-primary-600"
+            className="w-full h-12 text-sm font-semibold rounded-xl transition-all duration-300 shadow-sm hover:shadow-md group-hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleSelect}
-            disabled={!selectedDose}
+            disabled={!selectedDose || !!disabledReason}
+            title={disabledReason}
           >
-            {selectedDose ? "Select Medication" : "Choose a Dosage"}
+            {disabledReason ? disabledReason : selectedDose ? "Select Medication" : "Choose a Dosage"}
           </Button>
           
           <Link 
