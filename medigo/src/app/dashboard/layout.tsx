@@ -16,7 +16,8 @@ import {
   LogOut,
   Menu,
   X,
-  Stethoscope
+  Stethoscope,
+  Search
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import { BackButton } from "@/components/ui/BackButton";
@@ -139,6 +140,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="hidden sm:block ml-4 border-l border-border pl-4">
             <BackButton variant="ghost" size="sm" className="text-text-secondary" />
           </div>
+        </div>
+
+        {/* Search Bar - Desktop Only */}
+        <div className="hidden md:flex items-center relative w-80">
+          <Search className="w-4 h-4 text-text-secondary absolute left-3 pointer-events-none" />
+          <input
+            type="text"
+            readOnly
+            placeholder="Search panels, roles, actions (Cmd+K)..."
+            onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+          />
         </div>
 
         <div className="flex items-center gap-4">

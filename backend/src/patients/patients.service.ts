@@ -147,7 +147,7 @@ export class PatientsService {
     const bmi =
       patient.weight && patient.height
         ? parseFloat(
-            (patient.weight / (patient.height * patient.height)).toFixed(2),
+            (patient.weight / ((patient.height / 100) * (patient.height / 100))).toFixed(2),
           )
         : null;
 

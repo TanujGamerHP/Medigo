@@ -300,7 +300,7 @@ export default function ConsultationRoom() {
     }
 
     return (
-      <div className="max-w-4xl mx-auto space-y-8 py-6 animate-fade-in text-left">
+      <div className="max-w-4xl mx-auto space-y-8 py-6 pt-28 px-4 animate-fade-in text-left">
         <button
           onClick={() => router.back()}
           className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-text-secondary hover:text-primary transition-colors duration-200 group"
@@ -432,7 +432,7 @@ export default function ConsultationRoom() {
 
   // RENDER ACTIVE CONSULTATION WORKSPACE
   return (
-    <div className="max-w-7xl mx-auto space-y-6 py-6 animate-fade-in text-left">
+    <div className="max-w-7xl mx-auto space-y-6 py-6 pt-28 px-4 animate-fade-in text-left">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
         <div>
           <button

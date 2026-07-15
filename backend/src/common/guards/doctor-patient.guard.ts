@@ -21,7 +21,7 @@ export class DoctorPatientGuard implements CanActivate {
     }
 
     // Try to extract patientId from params or body
-    const patientId = request.params.patientId || request.params.id || request.body.patientId;
+    const patientId = request.params?.patientId || request.params?.id || request.body?.patientId;
 
     if (!patientId) {
       // If there's no patientId specified in the route, we can't restrict it, 

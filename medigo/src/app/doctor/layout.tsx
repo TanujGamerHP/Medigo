@@ -151,9 +151,11 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
         <div className="hidden md:flex items-center relative w-80">
           <Search className="w-4 h-4 text-text-secondary absolute left-3 pointer-events-none" />
           <input
-            type="search"
-            placeholder="Search patient, prescriptions..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+            type="text"
+            readOnly
+            placeholder="Search panels, roles, actions (Cmd+K)..."
+            onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
           />
         </div>
 
