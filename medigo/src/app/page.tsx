@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MEDICINE_CATALOG } from "@/data/medicines";
+import { MEDICINE_CATALOG, type MedicineBrand } from "@/data/medicines";
 import { MedicineCard } from "@/components/store/MedicineCard";
 
 /* ============================================
