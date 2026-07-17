@@ -3,9 +3,15 @@ import { PrismaService } from '../database/prisma.service';
 import { SubscribeDto } from './dto/subscribe.dto';
 import { MembershipStatus } from '@prisma/client';
 
+import { DatabaseModule } from '../database/database.module';
+import { NotificationsService } from '../notifications/notifications.service';
+
 @Injectable()
 export class MembershipsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   async getPlans() {
     return [
@@ -44,9 +50,17 @@ export class MembershipsService {
 
     const startDate = new Date();
     const expiryDate = new Date();
-    expiryDate.setMonth(expiryDate.getMonth() + 1); // 30 days active
+    
+    // Calculate expiry based on plan duration
+    if (dto.planName.toLowerCase().includes('3-months')) {
+      expiryDate.setMonth(expiryDate.getMonth() + 3);
+    } else if (dto.planName.toLowerCase().includes('6-months')) {
+      expiryDate.setMonth(expiryDate.getMonth() + 6);
+    } else {
+      expiryDate.setMonth(expiryDate.getMonth() + 1); // default 30 days active
+    }
 
-    return this.prisma.membership.create({
+    const membership = await this.prisma.membership.create({
       data: {
         patientId: patient.id,
         planName: dto.planName,
@@ -57,6 +71,15 @@ export class MembershipsService {
         createdBy: userId,
       },
     });
+
+    await this.notificationsService.createAndEmitNotification(
+      userId,
+      'Subscription Activated',
+      `Your ${dto.planName} has been successfully activated.`,
+      'system'
+    );
+
+    return membership;
   }
 
   async getHistory(userId: string) {

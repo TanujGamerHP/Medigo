@@ -27,6 +27,13 @@ enum DoctorStatus {
   Suspended
 }
 
+enum ConnectionStatus {
+  Active
+  Pending
+  Completed
+  Revoked
+}
+
 enum AppointmentStatus {
   Pending
   Confirmed
@@ -42,6 +49,13 @@ enum MembershipStatus {
   Pending
 }
 
+enum PaymentStatus {
+  Pending
+  Paid
+  Failed
+  Refunded
+}
+
 enum PrescriptionStatus {
   Active
   Refilled
@@ -49,36 +63,36 @@ enum PrescriptionStatus {
 }
 
 model User {
-  id                 String         @id @default(uuid())
-  role               UserRole       @default(Patient)
-  email              String         @unique
+  id                 String    @id @default(uuid())
+  role               UserRole  @default(Patient)
+  email              String    @unique
   phone              String?
-  isVerified         Boolean        @default(false)
-  status             String         @default("Active")
+  isVerified         Boolean   @default(false)
+  status             String    @default("Active")
   lastLogin          DateTime?
   passwordHash       String?
-  failedOtpAttempts  Int            @default(0)
+  failedOtpAttempts  Int       @default(0)
   lockedUntil        DateTime?
-  repeatedAbuseCount Int            @default(0)
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-  deletedAt          DateTime?      // Soft delete support
+  repeatedAbuseCount Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime? // Soft delete support
 
-  patient            Patient?
-  doctor             Doctor?
-  notifications      Notification[]
-  sessions           Session[]
-  messages           Message[]
+  patient       Patient?
+  doctor        Doctor?
+  notifications Notification[]
+  sessions      Session[]
+  messages      Message[]
 
-  @@map("users")
   @@index([email])
   @@index([phone])
+  @@map("users")
 }
 
 model Patient {
-  id               String         @id @default(uuid())
-  userId           String         @unique
-  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String        @id @default(uuid())
+  userId           String        @unique
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   firstName        String
   lastName         String
   dob              DateTime?
@@ -88,30 +102,32 @@ model Patient {
   bloodGroup       String?
   emergencyContact String?
   profileImage     String?
-  status           PatientStatus  @default(PendingIntake)
-  
-  // Audits
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  deletedAt        DateTime?
-  createdBy        String?
-  updatedBy        String?
+  status           PatientStatus @default(PendingIntake)
 
-  appointments     Appointment[]
-  memberships      Membership[]
-  prescriptions    Prescription[]
-  assessments      Assessment[]
-  orders           Order[]
+  // Audits
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+
+  appointments  Appointment[]
+  memberships   Membership[]
+  prescriptions Prescription[]
+  assessments   Assessment[]
+  orders        Order[]
+  weightLogs    WeightLog[]
+  connections   DoctorPatientConnection[]
 
   @@map("patients")
 }
 
 model Doctor {
-  id                 String         @id @default(uuid())
-  userId             String         @unique
-  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  firstName          String         @default("") // Keep names consistent with Patient model
-  lastName           String         @default("")
+  id                 String       @id @default(uuid())
+  userId             String       @unique
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName          String       @default("") // Keep names consistent with Patient model
+  lastName           String       @default("")
   specialization     String
   qualification      String?
   experience         String
@@ -119,24 +135,42 @@ model Doctor {
   hospital           String?
   bio                String?
   profileImage       String?
-  consultationFee    Float          @default(0)
+  consultationFee    Float        @default(0)
   bankName           String?
   accountNumber      String?
   ifscCode           String?
-  availabilityStatus String         @default("Available")
-  status             DoctorStatus   @default(PendingCredentials)
-  
-  // Audits
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-  deletedAt          DateTime?
-  createdBy          String?
-  updatedBy          String?
+  razorpayAccountId  String?
+  availabilityStatus String       @default("Available")
+  status             DoctorStatus @default(PendingCredentials)
 
-  appointments       Appointment[]
-  prescriptions      Prescription[]
+  // Audits
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+
+  appointments  Appointment[]
+  prescriptions Prescription[]
+  connections   DoctorPatientConnection[]
 
   @@map("doctors")
+}
+
+model DoctorPatientConnection {
+  id        String           @id @default(uuid())
+  doctorId  String
+  patientId String
+  status    ConnectionStatus @default(Active)
+
+  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([doctorId, patientId])
+  @@map("doctor_patient_connections")
 }
 
 model Appointment {
@@ -149,45 +183,47 @@ model Appointment {
   appointmentTime  String
   consultationType String
   status           AppointmentStatus @default(Pending)
+  paymentStatus    PaymentStatus     @default(Pending)
+  paymentId        String?
   notes            String?
   meetingLink      String?
-  
+
   // Audits
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  deletedAt        DateTime?
-  createdBy        String?
-  updatedBy        String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
-  prescription     Prescription?
-  consultation     Consultation?
-  messages         Message[]
+  prescription Prescription?
+  consultation Consultation?
+  messages     Message[]
 
-  @@map("appointments")
   @@index([appointmentDate])
   @@index([doctorId])
   @@index([patientId])
+  @@map("appointments")
 }
 
 model Assessment {
-  id              String    @id @default(uuid())
+  id              String   @id @default(uuid())
   patientId       String
-  patient         Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   assessmentScore Float
   bmi             Float
   result          String
   recommendation  String
-  submittedAt     DateTime  @default(now())
-  
-  // Audits
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
-  createdBy       String?
-  updatedBy       String?
+  submittedAt     DateTime @default(now())
 
-  @@map("assessments")
+  // Audits
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+
   @@index([patientId])
+  @@map("assessments")
 }
 
 model Prescription {
@@ -203,17 +239,17 @@ model Prescription {
   instructions  String?
   followUpDate  DateTime?
   status        PrescriptionStatus @default(Active)
-  
-  // Audits
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  deletedAt     DateTime?
-  createdBy     String?
-  updatedBy     String?
 
-  @@map("prescriptions")
+  // Audits
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+
   @@index([doctorId])
   @@index([patientId])
+  @@map("prescriptions")
 }
 
 model Membership {
@@ -225,17 +261,17 @@ model Membership {
   expiryDate DateTime
   status     MembershipStatus @default(Pending)
   price      Float
-  
-  // Audits
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-  deletedAt  DateTime?
-  createdBy  String?
-  updatedBy  String?
 
-  @@map("memberships")
+  // Audits
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+
   @@index([patientId])
   @@index([status])
+  @@map("memberships")
 }
 
 model Notification {
@@ -248,42 +284,42 @@ model Notification {
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  @@map("notifications")
   @@index([userId])
+  @@map("notifications")
 }
 
 model Message {
-  id            String   @id @default(uuid())
+  id            String      @id @default(uuid())
   appointmentId String
   appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
   senderId      String
-  sender        User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  sender        User        @relation(fields: [senderId], references: [id], onDelete: Cascade)
   text          String
-  createdAt     DateTime @default(now())
+  createdAt     DateTime    @default(now())
 
-  @@map("messages")
   @@index([appointmentId])
   @@index([senderId])
+  @@map("messages")
 }
 
 model CMSPage {
-  id              String    @id @default(uuid())
+  id              String  @id @default(uuid())
   title           String
-  slug            String    @unique
+  slug            String  @unique
   content         String
   seoTitle        String?
   metaDescription String?
-  status          String    @default("Draft")
-  
-  // Audits
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
-  createdBy       String?
-  updatedBy       String?
+  status          String  @default("Draft")
 
-  @@map("cms_pages")
+  // Audits
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+
   @@index([slug])
+  @@map("cms_pages")
 }
 
 model Blog {
@@ -296,25 +332,25 @@ model Blog {
   author        String
   publishedAt   DateTime?
   status        String    @default("Draft")
-  
-  // Audits
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
-  createdBy     String?
-  updatedBy     String?
 
-  @@map("blogs")
+  // Audits
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+
   @@index([slug])
+  @@map("blogs")
 }
 
 model FAQ {
-  id        String    @id @default(uuid())
-  question  String
-  answer    String
-  category  String
-  status    String    @default("Active")
-  
+  id       String @id @default(uuid())
+  question String
+  answer   String
+  category String
+  status   String @default("Active")
+
   // Audits
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -326,19 +362,19 @@ model FAQ {
 }
 
 model Media {
-  id         String    @id @default(uuid())
+  id         String  @id @default(uuid())
   fileName   String
   fileType   String
   fileSize   Int
   url        String
   uploadedBy String?
-  
+
   // Audits
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  deletedAt  DateTime?
-  createdBy  String?
-  updatedBy  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
   @@map("media_library")
 }
@@ -375,62 +411,62 @@ model Session {
 }
 
 model Product {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   name        String
   description String
   price       Float
-  stock       Int      @default(0)
+  stock       Int     @default(0)
   imageUrl    String?
   category    String?
-  isActive    Boolean  @default(true)
-  
-  // Audits
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
-  createdBy   String?
-  updatedBy   String?
+  isActive    Boolean @default(true)
 
-  orderItems  OrderItem[]
+  // Audits
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+
+  orderItems OrderItem[]
 
   @@map("products")
 }
 
 model Order {
-  id            String      @id @default(uuid())
-  patientId     String
-  patient       Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  totalAmount   Float
-  status        String      @default("Pending") // Pending, Paid, Shipped, Delivered, Cancelled
-  paymentId     String?
-  paymentMethod String      @default("Razorpay")
+  id              String  @id @default(uuid())
+  patientId       String
+  patient         Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  totalAmount     Float
+  status          String  @default("Pending") // Pending, Paid, Shipped, Delivered, Cancelled
+  paymentId       String?
+  paymentMethod   String  @default("Razorpay")
   shippingAddress String?
-  
+
   // Audits
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  deletedAt     DateTime?
-  createdBy     String?
-  updatedBy     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
 
-  items         OrderItem[]
+  items OrderItem[]
 
-  @@map("orders")
   @@index([patientId])
+  @@map("orders")
 }
 
 model OrderItem {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   orderId   String
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
   quantity  Int
   price     Float
 
-  @@map("order_items")
   @@index([orderId])
   @@index([productId])
+  @@map("order_items")
 }
 
 model AuditLog {
@@ -453,7 +489,7 @@ model Consultation {
   chiefComplaint          String
   diagnosis               String
   clinicalFindings        String
-  treatmentRecommendation String      // "Approved for Treatment" | "Requires Further Evaluation" | "Treatment Rejected"
+  treatmentRecommendation String // "Approved for Treatment" | "Requires Further Evaluation" | "Treatment Rejected"
   lifestyleAdvice         String?
   dietRecommendation      String?
   exerciseRecommendation  String?
@@ -462,14 +498,13 @@ model Consultation {
   createdAt               DateTime    @default(now())
   updatedAt               DateTime    @updatedAt
 
-  @@map("consultations")
   @@index([patientId])
   @@index([doctorId])
+  @@map("consultations")
 }
 
-
 model Review {
-  id                String   @id @default(uuid())
+  id                String  @id @default(uuid())
   patientName       String
   age               Int
   profileImage      String?
@@ -478,13 +513,25 @@ model Review {
   weightLossKg      Float
   durationMonths    Int
   reviewText        String
-  rating            Int      // 1 to 5
-  isSelectedForHome Boolean  @default(false)
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  rating            Int // 1 to 5
+  isSelectedForHome Boolean @default(false)
 
-  @@map("reviews")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([rating])
   @@index([isSelectedForHome])
+  @@map("reviews")
+}
+
+model WeightLog {
+  id        String   @id @default(uuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  weight    Float
+  date      DateTime @default(now())
+
+  @@index([patientId])
+  @@index([date])
+  @@map("weight_logs")
 }

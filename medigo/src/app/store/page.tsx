@@ -9,6 +9,7 @@ import { Pill, Check, ShoppingBag, X } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { useRole } from "@/features/shared/RoleProvider";
+import { UpgradePlanModal } from "@/components/store/UpgradePlanModal";
 
 interface CartItem {
   product: MedicineBrand;
@@ -28,8 +29,20 @@ export default function StorePage() {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const memberships = user?.patient?.memberships || [];
-  const activeMembership = memberships.length > 0 ? memberships[0] : null;
-  const planName = activeMembership?.planName;
+  const activeMembership = memberships.find((m: any) => m.status === 'Active') || (memberships.length > 0 ? memberships[0] : null);
+  const planName = activeMembership?.planName?.toLowerCase() || "";
+  const [modalReason, setModalReason] = useState<string | null>(null);
+
+  const getRestrictionReason = (medicine: MedicineBrand) => {
+    if (!activeMembership) {
+      return "Active membership required to purchase medication";
+    }
+    const isBasicTier = planName.includes("basic") || planName.includes("1-month") || planName === "month";
+    if (isBasicTier && medicine.medicationType === "Injection") {
+      return "Please upgrade to Standard or Premium to buy injectable medications.";
+    }
+    return undefined;
+  };
 
   const availableBrands = Array.from(new Set(MEDICINE_CATALOG.map(m => m.name)));
 
@@ -117,13 +130,8 @@ export default function StorePage() {
                         <MedicineCard 
                           medicine={medicine} 
                           onSelect={handleSelectMedication}
-                          disabledReason={
-                            !activeMembership 
-                              ? "Active membership required to purchase medication"
-                              : (planName === "1-Month" || planName === "1-month") && medicine.medicationType === "Injection"
-                                ? "Upgrade plan to buy injections"
-                                : undefined
-                          }
+                          onRestrictedClick={setModalReason}
+                          disabledReason={getRestrictionReason(medicine)}
                         />
                       </motion.div>
                     ))}
@@ -148,13 +156,8 @@ export default function StorePage() {
                         <MedicineCard 
                           medicine={medicine} 
                           onSelect={handleSelectMedication}
-                          disabledReason={
-                            !activeMembership 
-                              ? "Active membership required to purchase medication"
-                              : (planName === "1-Month" || planName === "1-month") && medicine.medicationType === "Injection"
-                                ? "Upgrade plan to buy injections"
-                                : undefined
-                          }
+                          onRestrictedClick={setModalReason}
+                          disabledReason={getRestrictionReason(medicine)}
                         />
                       </motion.div>
                     ))}
@@ -266,6 +269,12 @@ export default function StorePage() {
           </>
         )}
       </AnimatePresence>
+
+      <UpgradePlanModal 
+        isOpen={!!modalReason} 
+        onClose={() => setModalReason(null)} 
+        reason={modalReason || ""} 
+      />
     </div>
   );
 }

@@ -14,9 +14,10 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole, PrescriptionStatus } from '@prisma/client';
 import { RequestUser } from '../common/decorators/user.decorator';
+import { DoctorPatientGuard } from '../common/guards/doctor-patient.guard';
 
 @Controller('api/v1/prescriptions')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, DoctorPatientGuard)
 export class PrescriptionsController {
   constructor(private prescriptionsService: PrescriptionsService) {}
 

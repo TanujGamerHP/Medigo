@@ -20,7 +20,9 @@ export class UsersService {
         createdAt: true,
         patient: {
           include: {
-            memberships: true,
+            memberships: {
+              orderBy: { createdAt: 'desc' }
+            },
           },
         },
         doctor: true,
@@ -60,6 +62,7 @@ export class UsersService {
       if (updateData.gender) patientData.gender = updateData.gender;
       if (updateData.height) patientData.height = parseFloat(updateData.height);
       if (updateData.weight) patientData.weight = parseFloat(updateData.weight);
+      if (updateData.bloodGroup !== undefined) patientData.bloodGroup = updateData.bloodGroup;
       if (updateData.profileImage)
         patientData.profileImage = updateData.profileImage;
 

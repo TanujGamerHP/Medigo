@@ -6,6 +6,8 @@ import { useRef, useState, useEffect } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
+import { useRole } from "@/features/shared/RoleProvider";
+import { UpgradePlanModal } from "@/components/store/UpgradePlanModal";
 import {
   ArrowRight,
   Shield,
@@ -548,9 +550,33 @@ function HowItWorks() {
    ============================================ */
 function FeaturedMedicines() {
   const router = useRouter();
+  const { user } = useRole();
+  const [modalReason, setModalReason] = useState<string | null>(null);
+
+  const memberships = user?.patient?.memberships || [];
+  const activeMembership = memberships.find((m: any) => m.status === 'Active') || (memberships.length > 0 ? memberships[0] : null);
+  const planName = activeMembership?.planName?.toLowerCase() || "";
+
+  // Helper to determine restriction string
+  const getRestrictionReason = (medicine: MedicineBrand) => {
+    if (!activeMembership) {
+      return "Active membership required to purchase medication";
+    }
+    // "basic" plan (₹2499) blocks injections
+    // Assuming 2499 plan is named "Basic" or "1-month". Let's check for "basic" or "1-month".
+    const isBasicTier = planName.includes("basic") || planName.includes("1-month") || planName === "month";
+    if (isBasicTier && medicine.medicationType === "Injection") {
+      return "Please upgrade to Standard or Premium to buy injectable medications.";
+    }
+    return undefined; // Allowed
+  };
 
   const handleBuyNow = () => {
     router.push("/store");
+  };
+
+  const handleRestrictedClick = (reason: string) => {
+    setModalReason(reason);
   };
 
   const semaglutide = MEDICINE_CATALOG.filter(m => m.category === "Semaglutide");
@@ -601,7 +627,9 @@ function FeaturedMedicines() {
                     >
                       <MedicineCard 
                         medicine={medicine} 
-                        onSelect={handleBuyNow} 
+                        onSelect={handleBuyNow}
+                        onRestrictedClick={handleRestrictedClick}
+                        disabledReason={getRestrictionReason(medicine)}
                       />
                     </motion.div>
                   ))}
@@ -630,7 +658,9 @@ function FeaturedMedicines() {
                     >
                       <MedicineCard 
                         medicine={medicine} 
-                        onSelect={handleBuyNow} 
+                        onSelect={handleBuyNow}
+                        onRestrictedClick={handleRestrictedClick}
+                        disabledReason={getRestrictionReason(medicine)}
                       />
                     </motion.div>
                   ))}
@@ -640,6 +670,11 @@ function FeaturedMedicines() {
           )}
         </div>
       </div>
+      <UpgradePlanModal 
+        isOpen={!!modalReason} 
+        onClose={() => setModalReason(null)} 
+        reason={modalReason || ""} 
+      />
     </Section>
   );
 }

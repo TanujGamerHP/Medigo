@@ -83,7 +83,7 @@ export function AssessmentWizard() {
       category = "Overweight";
       color = "text-amber-500";
     } else {
-      category = "Obese";
+      category = "Severe Overweight";
       color = "text-error";
     }
 

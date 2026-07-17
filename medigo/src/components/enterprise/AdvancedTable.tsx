@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Download, Filter, CheckCircle2 } from "lucide-react";
+import { jsPDF } from "jspdf";
 
 export interface TableColumn<T> {
   key: keyof T | string;
@@ -119,27 +120,33 @@ export function AdvancedTable<T>({
     return data.filter((row) => selectedIds.has(rowKey(row)));
   }, [data, selectedIds, rowKey]);
 
-  const handleExportCSV = () => {
-    const csvContent = [
-      columns.map((col) => col.label).join(","), // header
-      ...data.map((row) =>
-        columns
-          .map((col) => {
-            const val = row[col.key as keyof T];
-            return `"${String(val ?? "").replace(/"/g, '""')}"`;
-          })
-          .join(",")
-      ),
-    ].join("\n");
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    let y = 15;
+    
+    doc.setFontSize(14);
+    doc.text("Medigo Data Export", 14, y);
+    y += 10;
+    
+    doc.setFontSize(10);
+    const headers = columns.map((col) => col.label).join(" | ");
+    doc.text(headers, 14, y);
+    y += 8;
+    
+    data.forEach((row) => {
+      const rowText = columns
+        .map((col) => String(row[col.key as keyof T] ?? ""))
+        .join(" | ");
+      doc.text(rowText, 14, y);
+      y += 8;
+      
+      if (y > 280) {
+        doc.addPage();
+        y = 15;
+      }
+    });
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `medigo_export_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    doc.save(`medigo_export_${Date.now()}.pdf`);
   };
 
   return (
@@ -186,11 +193,11 @@ export function AdvancedTable<T>({
           )}
 
           <button
-            onClick={handleExportCSV}
+            onClick={handleExportPDF}
             className="inline-flex items-center gap-1.5 px-3 py-2 border border-border rounded-xl bg-white hover:bg-slate-50 text-text-primary text-xs font-semibold shadow-sm transition-all"
           >
             <Download className="w-3.5 h-3.5" />
-            CSV Export
+            PDF Export
           </button>
         </div>
       </div>

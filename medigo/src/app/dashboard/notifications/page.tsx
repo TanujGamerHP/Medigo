@@ -20,8 +20,10 @@ interface NotificationItem {
 const initialNotifications: NotificationItem[] = [];
 
 import { api } from "@/lib/api";
+import { useRole } from "@/features/shared/RoleProvider";
 
 export default function NotificationsPage() {
+  const { user } = useRole();
   const { show } = useToast();
   const router = useRouter();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -48,7 +50,34 @@ export default function NotificationsPage() {
 
   React.useEffect(() => {
     fetchNotifications();
-  }, []);
+
+    if (!user) return;
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const sseUrl = `${baseUrl}/api/v1/realtime/events?userId=${user.id}&role=${user.role}`;
+    const eventSource = new EventSource(sseUrl);
+
+    eventSource.onmessage = (event) => {
+      try {
+        const parsed = JSON.parse(event.data);
+        if (parsed.event === 'notification.new') {
+          const n = parsed.data.notification;
+          const newNotif: NotificationItem = {
+            id: n.id,
+            text: n.message,
+            time: new Date(n.createdAt).toLocaleDateString() + " " + new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+            category: n.type === "consultation" || n.type === "prescription" || n.type === "treatment" ? "Medical" : "System",
+            channel: "App",
+            isRead: n.isRead,
+          };
+          setNotifications(prev => [newNotif, ...prev]);
+        }
+      } catch (err) {
+        console.error("Failed to parse SSE in Notification Center", err);
+      }
+    };
+    
+    return () => eventSource.close();
+  }, [user]);
 
   const handleMarkAllRead = async () => {
     try {

@@ -17,6 +17,7 @@ interface Doctor {
   availability: string;
   fee: number;
   languages: string[];
+  profileImage?: string | null;
 }
 
 const DOCTORS_DB: Doctor[] = [];
@@ -50,6 +51,7 @@ export function DoctorDiscovery() {
             availability: doc.availabilityStatus,
             fee: doc.consultationFee,
             languages: ["English"], // Hardcoded default
+            profileImage: doc.profileImage || null,
           }));
           setDoctors(mappedDoctors);
         }
@@ -178,9 +180,13 @@ export function DoctorDiscovery() {
               <div>
                 {/* Header details */}
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-primary-50 to-primary-100/50 border border-primary-200/30 text-primary-950 font-heading font-extrabold text-lg flex items-center justify-center shadow-sm">
-                    {doc.imageInitials}
-                  </div>
+                  {doc.profileImage ? (
+                    <img src={doc.profileImage} alt={doc.name} className="w-14 h-14 rounded-full object-cover shrink-0 shadow-sm border border-primary-200/30" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-primary-50 to-primary-100/50 border border-primary-200/30 text-primary-950 font-heading font-extrabold text-lg flex items-center justify-center shadow-sm shrink-0">
+                      {doc.imageInitials}
+                    </div>
+                  )}
                   <div>
                     <h3 className="font-heading font-bold text-base text-text-primary group-hover:text-primary transition-colors">
                       {doc.name}

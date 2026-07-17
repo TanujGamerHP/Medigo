@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { RoleProvider } from "@/features/shared/RoleProvider";
 import { CommandPalette } from "@/components/enterprise/CommandPalette";
 import { ToastProvider } from "@/components/ui/Toast";
+import { GlobalToastListener } from "@/components/ui/GlobalToastListener";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -72,6 +73,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-text-primary font-body" suppressHydrationWarning>
         <RoleProvider>
           <ToastProvider>
+            <GlobalToastListener />
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />

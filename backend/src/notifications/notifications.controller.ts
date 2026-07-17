@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Delete, UseGuards } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RequestUser } from '../common/decorators/user.decorator';
@@ -68,6 +68,26 @@ export class NotificationsController {
     return {
       message: 'Notification marked as read',
       data,
+    };
+  }
+
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Delete specific notification',
+    description: 'Deletes a notification alert by ID.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Notification deleted successfully.',
+  })
+  async deleteNotification(
+    @Param('id') id: string,
+    @RequestUser('sub') userId: string,
+  ) {
+    await this.notificationsService.delete(id, userId);
+    return {
+      message: 'Notification deleted successfully',
+      data: null,
     };
   }
 }

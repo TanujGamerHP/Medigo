@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CircleDollarSign, Download, Eye } from "lucide-react";
 import { AdvancedTable, TableColumn } from "@/components/enterprise/AdvancedTable";
 import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
+import jsPDF from "jspdf";
+import { api } from "@/lib/api";
 
 interface TransactionRecord {
   id: string;
@@ -19,59 +21,68 @@ export default function AdminPaymentsPage() {
   const { show } = useToast();
   const [txns, setTxns] = useState<TransactionRecord[]>([]);
 
+  useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const res = await api.get('/api/v1/admin/payments');
+        if (res.success && res.data) {
+          setTxns(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch payments:", err);
+      }
+    };
+    fetchPayments();
+  }, []);
+
   const handleDownloadInvoice = (txn: TransactionRecord) => {
     show("Generating transactional invoice receipt PDF...", "info");
-    setTimeout(() => {
-      const element = document.createElement("a");
-      const file = new Blob([
-        `MEDI GO TRANSACTION RECEIPT\n` +
-        `---------------------------\n` +
-        `Transaction ID: ${txn.id}\n` +
-        `Billing Date: ${txn.date}\n` +
-        `Billed Patient: ${txn.patient}\n` +
-        `Paid Amount: ${txn.amount}\n` +
-        `Payment Method: ${txn.method}\n` +
-        `Status: ${txn.status.toUpperCase()}\n` +
-        `Thank you for billing with MediGo!\n`
-      ], { type: 'text/plain' });
-      element.href = URL.createObjectURL(file);
-      element.download = `medigo_${txn.id.toLowerCase()}_receipt.txt`;
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
-    }, 1000);
+    try {
+      const doc = new jsPDF();
+      
+      doc.setFontSize(22);
+      doc.setTextColor(15, 118, 110);
+      doc.text("Medigo - Transaction Receipt", 20, 20);
+      
+      doc.setFontSize(12);
+      doc.setTextColor(50, 50, 50);
+      doc.text(`Transaction ID: ${txn.id}`, 20, 40);
+      doc.text(`Billing Date: ${txn.date}`, 20, 50);
+      doc.text(`Billed Patient: ${txn.patient}`, 20, 60);
+      doc.text(`Paid Amount: ${txn.amount}`, 20, 70);
+      doc.text(`Payment Method: ${txn.method}`, 20, 80);
+      doc.text(`Status: ${txn.status.toUpperCase()}`, 20, 90);
+
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text("Thank you for choosing Medigo!", 20, 120);
+      
+      doc.save(`Receipt_${txn.id}.pdf`);
+      show("Receipt downloaded successfully!", "success");
+    } catch (err) {
+      console.error(err);
+      show("Failed to generate PDF.", "error");
+    }
   };
 
   const columns: TableColumn<TransactionRecord>[] = [
     {
-      key: "id",
-      label: "Transaction ID",
-      sortable: true,
-      render: (row) => <span className="font-mono font-bold text-text-secondary text-xs">#{row.id}</span>,
-    },
-    {
       key: "patient",
       label: "Patient Name",
       sortable: true,
-      render: (row) => <span className="font-bold text-text-primary text-xs">{row.patient}</span>,
+      render: (row) => <span className="font-bold text-text-primary text-sm">{row.patient}</span>,
     },
     {
       key: "amount",
-      label: "Billed Amount",
+      label: "Amount Paid",
       sortable: true,
-      render: (row) => <span className="font-extrabold text-text-primary text-xs">{row.amount}</span>,
+      render: (row) => <span className="font-extrabold text-emerald-600 text-sm">{row.amount}</span>,
     },
     {
       key: "method",
-      label: "Payment Channel",
+      label: "Payment Method",
       sortable: false,
-      render: (row) => <span className="text-xs text-text-secondary font-semibold">{row.method}</span>,
-    },
-    {
-      key: "date",
-      label: "Billed Date",
-      sortable: true,
-      render: (row) => <span className="text-xs text-text-secondary font-medium">{row.date}</span>,
+      render: (row) => <span className="text-xs text-text-secondary font-semibold bg-slate-100 px-2.5 py-1 rounded-md">{row.method}</span>,
     },
     {
       key: "status",
@@ -93,18 +104,12 @@ export default function AdminPaymentsPage() {
       render: (row) => (
         <div className="flex gap-2">
           <button 
-            onClick={() => show(`Opening ledger details for transaction #${row.id}...`, "info")}
-            className="p-1.5 rounded-lg border border-border text-text-secondary hover:text-text-primary hover:bg-slate-50 transition-colors"
-            title="View Details"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-          <button 
             onClick={() => handleDownloadInvoice(row)}
-            className="p-1.5 rounded-lg border border-border text-text-secondary hover:text-text-primary hover:bg-slate-50 transition-colors"
+            className="p-1.5 rounded-lg border border-border text-text-secondary hover:text-primary hover:bg-primary-50 transition-colors flex items-center gap-1.5"
             title="Download Invoice"
           >
             <Download className="w-4 h-4" />
+            <span className="text-xs font-bold">Receipt</span>
           </button>
         </div>
       ),

@@ -7,7 +7,7 @@ import { RegisterFlow } from "@/features/auth/RegisterFlow";
 
 export default function SignupPage() {
   return (
-    <div className="bg-background min-h-screen grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+    <div className="bg-background min-h-screen pt-16 lg:pt-20 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
       
       {/* Left side brand banner (hidden on mobile/tablet) */}
       <div className="hidden lg:flex lg:col-span-5 bg-gradient-to-tr from-dark-green to-primary p-12 text-white flex-col justify-between relative overflow-hidden">
@@ -17,8 +17,8 @@ export default function SignupPage() {
           <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full bg-white blur-[120px]" />
         </div>
 
-        <div className="relative z-10">
-          <Link href="/" className="flex items-center gap-2 select-none">
+        <div className="relative z-10 pt-4">
+          <Link href="/" className="flex items-center gap-2 select-none invisible">
             <span className="inline-flex h-3.5 w-3.5 rounded-full bg-white animate-ping" />
             <span className="text-2xl font-heading font-bold text-white">MediGo</span>
           </Link>

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase";
+import { updatePassword } from "firebase/auth";
 
 export default function DoctorSettingsPage() {
   const { show } = useToast();
@@ -28,7 +30,7 @@ export default function DoctorSettingsPage() {
     show("Clinic preferences saved successfully.", "success");
   };
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!oldPassword || !newPassword || !confirmPassword) {
       show("Please fill out all password fields.", "error");
@@ -38,10 +40,25 @@ export default function DoctorSettingsPage() {
       show("Passwords do not match.", "error");
       return;
     }
-    show("Password changed successfully.", "success");
-    setOldPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+
+    try {
+      if (auth.currentUser) {
+        await updatePassword(auth.currentUser, newPassword);
+        show("Password changed securely.", "success");
+      } else {
+        // Fallback for the hardcoded bypass account
+        show("Note: You are using the developer bypass account. Real password changes require a standard Firebase login.", "info");
+      }
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      if (err.code === "auth/requires-recent-login") {
+        show("Security alert: Please log out and log back in to change your password.", "error");
+      } else {
+        show(err.message || "Failed to update password.", "error");
+      }
+    }
   };
 
   const handleLogout = () => {
@@ -104,6 +121,7 @@ export default function DoctorSettingsPage() {
                         type="button"
                         onClick={() => {
                           setDarkMode(false);
+                          document.documentElement.classList.remove("dark");
                           show("Light theme enabled.", "info");
                         }}
                         className={`flex-1 py-2 px-3 border rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all ${
@@ -117,6 +135,7 @@ export default function DoctorSettingsPage() {
                         type="button"
                         onClick={() => {
                           setDarkMode(true);
+                          document.documentElement.classList.add("dark");
                           show("Dark theme support loaded (visual mode toggled).", "info");
                         }}
                         className={`flex-1 py-2 px-3 border rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all ${

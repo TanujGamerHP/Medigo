@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useRole } from "@/features/shared/RoleProvider";
+import { api } from "@/lib/api";
 
 interface PrescriptionItem {
   id: string;
@@ -27,63 +28,155 @@ export default function DoctorPrescriptionsPage() {
   const { show } = useToast();
   const { user } = useRole();
   const doctorName = user?.doctor?.firstName ? `Dr. ${user.doctor.firstName} ${user.doctor.lastName}` : "Authorized Clinician";
-  const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>(mockPrescriptions);
+  const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>([]);
   const [showBuilder, setShowBuilder] = useState(false);
 
   // Form states
-  const [patientName, setPatientName] = useState("");
+  const [patientId, setPatientId] = useState("");
+  const [patientsList, setPatientsList] = useState<{ id: string; firstName: string; lastName: string }[]>([]);
   const [medicineName, setMedicineName] = useState("Compounded Semaglutide Injection (Initiation Vial)");
   const [dosage, setDosage] = useState("0.25 mg / week");
   const [duration, setDuration] = useState("4 weeks (Initiation)");
   const [instructions, setInstructions] = useState("");
 
-  const handleCreatePrescription = (e: React.FormEvent) => {
+  React.useEffect(() => {
+    if (!user) return;
+
+    const fetchPatients = async () => {
+      try {
+        const res = await api.get("/api/v1/doctor/patients");
+        if (res.success && Array.isArray(res.data)) {
+          setPatientsList(res.data);
+          if (res.data.length > 0) {
+            setPatientId(res.data[0].id);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch doctor patients", err);
+      }
+    };
+    fetchPatients();
+
+    const fetchPrescriptions = async () => {
+      try {
+        const res = await api.get("/api/v1/prescriptions");
+        if (res.success && Array.isArray(res.data)) {
+          const formatted = res.data
+            .filter((p: any) => p.doctorId === user?.doctor?.id)
+            .map((p: any) => {
+              const diagParts = (p.diagnosis || "Standard Dose").split(" | ");
+              return {
+                id: p.id,
+                patientName: p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : "Unknown Patient",
+                medicineName: p.medications || "Unknown Medication",
+                dosage: diagParts[0] || "Standard Dose",
+                duration: diagParts[1] || "As directed",
+                instructions: p.instructions || "No special instructions",
+                datePrescribed: new Date(p.createdAt).toLocaleDateString(),
+              };
+            });
+          setPrescriptions(formatted);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchPrescriptions();
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const sseUrl = `${baseUrl}/api/v1/realtime/events?userId=${user.id}&role=${user.role}`;
+    const eventSource = new EventSource(sseUrl);
+
+    eventSource.onmessage = (event) => {
+      try {
+        const parsed = JSON.parse(event.data);
+        if (parsed.event === "prescription.new" && parsed.data?.prescription) {
+          const p = parsed.data.prescription;
+          if (p.doctorId === user?.doctor?.id) {
+             const diagParts = (p.diagnosis || "Standard Dose").split(" | ");
+             const newRx = {
+                id: p.id,
+                patientName: p.patient ? `${p.patient.firstName} ${p.patient.lastName}` : "Unknown Patient",
+                medicineName: p.medications || "Unknown Medication",
+                dosage: diagParts[0] || "Standard Dose",
+                duration: diagParts[1] || "As directed",
+                instructions: p.instructions || "No special instructions",
+                datePrescribed: new Date(p.createdAt).toLocaleDateString(),
+             };
+             setPrescriptions((prev) => [newRx, ...prev]);
+          }
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [user]);
+
+  const handleCreatePrescription = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!patientName || !instructions) {
-      show("Please fill out patient name and usage instructions.", "error");
+    if (!patientId || !instructions) {
+      show("Please select a patient and fill out usage instructions.", "error");
       return;
     }
 
-    const newRx: PrescriptionItem = {
-      id: `RX-${Math.floor(1000 + Math.random() * 9000)}`,
-      patientName,
-      medicineName,
-      dosage,
-      duration,
-      instructions,
-      datePrescribed: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    };
+    try {
+      const res = await api.post("/api/v1/prescriptions", {
+        patientId,
+        doctorId: user?.doctor?.id,
+        appointmentId: null,
+        diagnosis: `${dosage} | ${duration}`,
+        medications: medicineName,
+        instructions: instructions,
+        followUpDate: null
+      });
 
-    setPrescriptions([newRx, ...prescriptions]);
-    setShowBuilder(false);
-    show("Prescription created and routed to CVS pharmacy queue.", "success");
-
-    // reset fields
-    setPatientName("");
-    setInstructions("");
+      if (res.success) {
+        setShowBuilder(false);
+        show("Prescription created and routed to CVS pharmacy queue.", "success");
+        setInstructions("");
+      } else {
+        show("Failed to create prescription", "error");
+      }
+    } catch (err) {
+      show("Failed to create prescription", "error");
+    }
   };
 
   const handleDownloadPdf = (rx: PrescriptionItem) => {
     show("Generating clinical prescription PDF card...", "info");
     setTimeout(() => {
-      const element = document.createElement("a");
-      const file = new Blob([
-        `MEDI GO MEDICAL PRESCRIPTION CARD\n` +
-        `---------------------------------\n` +
-        `Rx Number: ${rx.id}\n` +
-        `Authorized Clinician: ${doctorName}\n` +
-        `Patient Name: ${rx.patientName}\n` +
-        `Date Issued: ${rx.datePrescribed}\n` +
-        `Medication: ${rx.medicineName}\n` +
-        `Dosage: ${rx.dosage} (${rx.duration})\n` +
-        `Clinical Instructions: ${rx.instructions}\n` +
-        `Compliance: HIPAA VA Protected Electronic Transmission.\n`
-      ], { type: 'text/plain' });
-      element.href = URL.createObjectURL(file);
-      element.download = `medigo_${rx.id.toLowerCase()}_prescription.txt`;
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
+      import("jspdf").then(({ jsPDF }) => {
+        const doc = new jsPDF();
+        
+        doc.setFontSize(22);
+        doc.text("MediGo Medical Prescription Card", 20, 30);
+        
+        doc.setFontSize(12);
+        doc.text("---------------------------------------------------------", 20, 40);
+        doc.text(`Rx Number: ${rx.id}`, 20, 50);
+        doc.text(`Authorized Clinician: ${doctorName}`, 20, 60);
+        doc.text(`Patient Name: ${rx.patientName}`, 20, 70);
+        doc.text(`Date Issued: ${rx.datePrescribed}`, 20, 80);
+        doc.text(`Medication: ${rx.medicineName}`, 20, 90);
+        doc.text(`Dosage: ${rx.dosage} (${rx.duration})`, 20, 100);
+        
+        doc.text(`Clinical Instructions:`, 20, 110);
+        const splitInstructions = doc.splitTextToSize(rx.instructions, 170);
+        doc.text(splitInstructions, 20, 120);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text("Compliance: HIPAA VA Protected Electronic Transmission.", 20, 140);
+        
+        doc.save(`medigo_${rx.id.toLowerCase()}_prescription.pdf`);
+      }).catch(err => {
+        console.error("Failed to load jsPDF", err);
+      });
     }, 1000);
   };
 
@@ -147,13 +240,14 @@ export default function DoctorPrescriptionsPage() {
 
               <div className="flex justify-end gap-3 pt-3 border-t border-border-light">
                 <button
+                  type="button"
                   onClick={() => handleDownloadPdf(rx)}
                   className="py-2 px-4 rounded-xl border border-border hover:border-primary text-text-primary hover:text-primary flex items-center justify-center gap-1.5 text-xs font-bold transition-all focus:outline-none"
                 >
                   <Download className="w-4 h-4" />
                   Generate PDF
                 </button>
-                <Button size="sm" className="text-xs font-bold">
+                <Button size="sm" className="text-xs font-bold" type="button">
                   Edit Details
                 </Button>
               </div>
@@ -187,15 +281,18 @@ export default function DoctorPrescriptionsPage() {
         <form onSubmit={handleCreatePrescription} className="space-y-4 text-left text-xs">
           <div className="space-y-1.5">
             <label htmlFor="rx-patient-name" className="text-xs font-bold text-text-secondary uppercase">Patient Name</label>
-            <input
+            <select
               id="rx-patient-name"
-              type="text"
               required
-              value={patientName}
-              onChange={(e) => setPatientName(e.target.value)}
-              placeholder="e.g. John Smith"
+              value={patientId}
+              onChange={(e) => setPatientId(e.target.value)}
               className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
+            >
+              <option value="" disabled>Select a patient</option>
+              {patientsList.map(p => (
+                <option key={p.id} value={p.id}>{p.firstName} {p.lastName}</option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-1.5">

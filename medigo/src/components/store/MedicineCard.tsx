@@ -10,13 +10,18 @@ import { ChevronRight } from "lucide-react";
 interface MedicineCardProps {
   medicine: MedicineBrand;
   onSelect?: (item: MedicineBrand, dose: string) => void;
+  onRestrictedClick?: (reason: string) => void;
   disabledReason?: string;
 }
 
-export function MedicineCard({ medicine, onSelect, disabledReason }: MedicineCardProps) {
+export function MedicineCard({ medicine, onSelect, onRestrictedClick, disabledReason }: MedicineCardProps) {
   const [selectedDose, setSelectedDose] = useState<string | null>(null);
 
   const handleSelect = () => {
+    if (disabledReason && onRestrictedClick) {
+      onRestrictedClick(disabledReason);
+      return;
+    }
     if (onSelect && selectedDose) {
       onSelect(medicine, selectedDose);
     }
@@ -85,10 +90,10 @@ export function MedicineCard({ medicine, onSelect, disabledReason }: MedicineCar
           <Button 
             className="w-full h-12 text-sm font-semibold rounded-xl transition-all duration-300 shadow-sm hover:shadow-md group-hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleSelect}
-            disabled={!selectedDose || !!disabledReason}
+            disabled={!selectedDose}
             title={disabledReason}
           >
-            {disabledReason ? disabledReason : selectedDose ? "Select Medication" : "Choose a Dosage"}
+            {selectedDose ? "Select Medication" : "Choose a Dosage"}
           </Button>
           
           <Link 

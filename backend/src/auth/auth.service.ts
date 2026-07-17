@@ -9,15 +9,17 @@ import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
-import { hashPassword } from '../common/utils/crypto';
+import { hashPassword, verifyPassword } from '../common/utils/crypto';
 import { UserRole } from '@prisma/client';
 import * as crypto from 'crypto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private notificationsService: NotificationsService,
   ) {}
 
   // Securely hash OTP before database storage
@@ -53,7 +55,7 @@ export class AuthService {
 
     const passwordHash = dto.password ? hashPassword(dto.password) : null;
 
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
         data: {
           email: emailNormalized,
@@ -105,8 +107,20 @@ export class AuthService {
         id: user.id,
         email: user.email,
         role: user.role,
+        firstName,
+        lastName,
       };
     });
+
+    if (result.role === UserRole.Doctor) {
+      await this.notificationsService.notifyAdmins(
+        'New Doctor Verification Required',
+        `Doctor ${result.firstName} ${result.lastName} has registered and requires verification.`,
+        'Security'
+      );
+    }
+
+    return result;
   }
 
   async sendOtp(email: string, ipAddress?: string) {
@@ -487,5 +501,41 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  async changePassword(userId: string, dto: import('./dto/change-password.dto').ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (!user.passwordHash) {
+      throw new BadRequestException('User does not have a password set (OTP only)');
+    }
+
+    const isMatch = verifyPassword(dto.oldPassword, user.passwordHash);
+    if (!isMatch) {
+      throw new BadRequestException('Incorrect current password');
+    }
+
+    const newHash = hashPassword(dto.newPassword);
+    
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: newHash }
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'Password Change',
+        details: 'User successfully updated their password',
+      },
+    });
+
+    return { message: 'Password changed successfully' };
   }
 }

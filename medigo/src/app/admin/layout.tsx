@@ -65,6 +65,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [showPassword, setShowPassword] = useState(false);
   const [verifying, setVerifying] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const filteredItems = SIDEBAR_ITEMS.filter(item => 
+    item.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   // Sync session authentication
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -218,9 +225,43 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Search className="w-4 h-4 text-text-secondary absolute left-3 pointer-events-none" />
           <input
             type="search"
-            placeholder="Search transactions, patients, logs..."
+            placeholder="Search sections..."
             className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setIsSearchOpen(e.target.value.length > 0);
+            }}
+            onFocus={() => setIsSearchOpen(searchQuery.length > 0)}
+            onBlur={() => setTimeout(() => setIsSearchOpen(false), 200)}
           />
+          {isSearchOpen && (
+            <div 
+              className="absolute top-full mt-2 left-0 right-0 bg-white border border-border rounded-xl shadow-lg z-50 overflow-hidden max-h-60 overflow-y-auto"
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              {filteredItems.length > 0 ? (
+                filteredItems.map(item => (
+                  <Link 
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => {
+                      setSearchQuery("");
+                      setIsSearchOpen(false);
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors border-b border-border last:border-0"
+                  >
+                    <item.icon className="w-4 h-4 text-text-secondary" />
+                    <span className="text-xs font-semibold text-text-primary">{item.label}</span>
+                  </Link>
+                ))
+              ) : (
+                <div className="p-4 text-xs text-text-secondary text-center">
+                  No sections found.
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4">

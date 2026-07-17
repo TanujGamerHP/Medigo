@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
-import { FileText, ClipboardCheck, ArrowRight, Eye, User, FileEdit, ArrowLeft } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { FileText, ClipboardCheck, ArrowRight, Eye, User, FileEdit, ArrowLeft, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
+import { api } from "@/lib/api";
 
 interface AssessmentReviewItem {
   id: string;
@@ -28,6 +29,46 @@ export default function DoctorAssessmentsPage() {
   const [assessments, setAssessments] = useState<AssessmentReviewItem[]>([]);
   const [selectedAsmId, setSelectedAsmId] = useState<string | null>(null);
   const [editingNotes, setEditingNotes] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAssessments = async () => {
+      try {
+        const response = await api.get('/api/v1/doctor/assessments');
+        if (response.success && response.data) {
+          const formatted = response.data.map((asm: any) => {
+            const calculateAge = (dobString: string | null) => {
+              if (!dobString) return 0;
+              const dob = new Date(dobString);
+              const diffMs = Date.now() - dob.getTime();
+              const ageDt = new Date(diffMs);
+              return Math.abs(ageDt.getUTCFullYear() - 1970);
+            };
+            
+            return {
+              id: asm.id,
+              patientName: asm.patient ? `${asm.patient.firstName} ${asm.patient.lastName}` : "Unknown Patient",
+              age: calculateAge(asm.patient?.dob),
+              gender: asm.patient?.gender || "Not specified",
+              score: asm.assessmentScore || 0,
+              bmi: asm.bmi || 0,
+              historySummary: asm.result || "No specific history provided.",
+              lifestyleSummary: "Data from intake survey",
+              notes: asm.recommendation || "",
+              status: asm.recommendation ? "Reviewed" : "Pending",
+            };
+          });
+          setAssessments(formatted);
+        }
+      } catch (err) {
+        console.error("Failed to fetch assessments", err);
+        show("Failed to load patient assessments.", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAssessments();
+  }, [show]);
 
   const activeAsm = assessments.find(a => a.id === selectedAsmId);
 
@@ -69,50 +110,65 @@ export default function DoctorAssessmentsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left">
         {/* Left Column: Assessments list */}
         <div className="lg:col-span-8 space-y-4">
-          {assessments.map((asm) => (
-            <Card key={asm.id} padding="md" className="hover">
-              <div className="flex items-center justify-between pb-3 border-b border-border-light mb-4">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-primary-600" />
-                  <span className="font-mono text-xs text-text-tertiary font-bold">#{asm.id}</span>
-                </div>
-                <Badge variant={asm.status === "Reviewed" ? "success" : "info"} size="sm">
-                  {asm.status}
-                </Badge>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-medium text-text-secondary mb-4 leading-relaxed">
-                <div>
-                  <span className="text-[10px] text-text-tertiary block font-bold uppercase">Patient</span>
-                  <span className="text-text-primary font-bold block mt-0.5">
-                    {asm.patientName} ({asm.gender}, {asm.age} yrs)
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-text-tertiary block font-bold uppercase">Assessment Score</span>
-                  <span className="text-text-primary font-bold block mt-0.5">{asm.score} / 100</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-text-tertiary block font-bold uppercase font-mono">BMI Index</span>
-                  <span className="text-primary font-bold block mt-0.5">{asm.bmi}</span>
-                </div>
-              </div>
-
-              <div className="border-t border-border-light pt-3 mt-1 flex justify-between items-center">
-                <span className="text-[10px] text-text-secondary max-w-[70%] truncate italic" title={asm.notes}>
-                  Notes: {asm.notes || "No notes written yet."}
-                </span>
-                <Button 
-                  onClick={() => handleOpenReview(asm)}
-                  size="sm" 
-                  className="text-xs font-bold"
-                  rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-                >
-                  View Assessment
-                </Button>
-              </div>
+          {loading ? (
+            <div className="flex flex-col items-center justify-center p-12 space-y-4 text-text-secondary">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <p className="text-xs font-bold">Loading patient assessments...</p>
+            </div>
+          ) : assessments.length === 0 ? (
+            <Card padding="lg" className="flex flex-col items-center justify-center text-center space-y-3">
+              <ClipboardCheck className="w-10 h-10 text-border" />
+              <p className="text-sm font-bold text-text-primary">No Patient Assessments</p>
+              <p className="text-xs text-text-secondary">
+                There are no clinical intake assessments submitted by patients assigned to you yet.
+              </p>
             </Card>
-          ))}
+          ) : (
+            assessments.map((asm) => (
+              <Card key={asm.id} padding="md" className="hover">
+                <div className="flex items-center justify-between pb-3 border-b border-border-light mb-4">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-primary-600" />
+                    <span className="font-mono text-xs text-text-tertiary font-bold">#{asm.id.split('-')[0]}</span>
+                  </div>
+                  <Badge variant={asm.status === "Reviewed" ? "success" : "info"} size="sm">
+                    {asm.status}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-medium text-text-secondary mb-4 leading-relaxed">
+                  <div>
+                    <span className="text-[10px] text-text-tertiary block font-bold uppercase">Patient</span>
+                    <span className="text-text-primary font-bold block mt-0.5">
+                      {asm.patientName} ({asm.gender}, {asm.age} yrs)
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-text-tertiary block font-bold uppercase">Assessment Score</span>
+                    <span className="text-text-primary font-bold block mt-0.5">{asm.score} / 100</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-text-tertiary block font-bold uppercase font-mono">BMI Index</span>
+                    <span className="text-primary font-bold block mt-0.5">{asm.bmi}</span>
+                  </div>
+                </div>
+
+                <div className="border-t border-border-light pt-3 mt-1 flex justify-between items-center">
+                  <span className="text-[10px] text-text-secondary max-w-[70%] truncate italic" title={asm.notes}>
+                    Notes: {asm.notes || "No notes written yet."}
+                  </span>
+                  <Button 
+                    onClick={() => handleOpenReview(asm)}
+                    size="sm" 
+                    className="text-xs font-bold"
+                    rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                  >
+                    View Assessment
+                  </Button>
+                </div>
+              </Card>
+            ))
+          )}
         </div>
 
         {/* Right Column: Information Panel */}

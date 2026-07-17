@@ -15,6 +15,11 @@ export class RealtimeService {
     this.eventSubject.next({ event, data });
   }
 
+  // Emit a real-time event to a specific user
+  emitToUser(userId: string, event: string, data: any) {
+    this.emit(event, { ...data, targetUserId: userId });
+  }
+
   // Subscribe to the stream of real-time events
   getEventStream(): Observable<RealtimeEvent> {
     return this.eventSubject.asObservable();

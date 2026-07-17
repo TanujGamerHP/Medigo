@@ -3,11 +3,13 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useRole } from "@/features/shared/RoleProvider";
 import { WeightTracker } from "@/features/progress/WeightTracker";
 import { FileText, Stethoscope, FileCheck, Calendar, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { api } from "@/lib/api";
 
 interface AssessmentRecord {
   id: string;
@@ -21,8 +23,36 @@ interface AssessmentRecord {
 export default function AssessmentsPage() {
   const [activeSubTab, setActiveSubTab] = useState<"weight" | "reports">("weight");
   const router = useRouter();
+  const { user } = useRole();
+  const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const mockAssessments: AssessmentRecord[] = [];
+  React.useEffect(() => {
+    if (activeSubTab === "reports") {
+      fetchAssessments();
+    }
+  }, [activeSubTab]);
+
+  const fetchAssessments = async () => {
+    setLoading(true);
+    try {
+      const data = await api.get("/api/v1/assessment/history");
+      if (data.data) {
+        setAssessments(data.data.map((a: any) => ({
+          id: a.id.substring(0, 8),
+          date: new Date(a.submittedAt || a.createdAt).toLocaleDateString("en-US", { month: "long", day: "2-digit", year: "numeric" }),
+          score: Math.round(a.assessmentScore),
+          eligibility: a.result,
+          program: a.recommendation,
+          status: "Completed"
+        })));
+      }
+    } catch (err) {
+      console.error("Error fetching assessments:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -75,7 +105,9 @@ export default function AssessmentsPage() {
         <div className="space-y-6 text-left animate-fade-in">
           {/* Assessment Overview List */}
           <div className="space-y-4">
-            {mockAssessments.length > 0 ? mockAssessments.map((asm) => (
+            {loading ? (
+              <div className="py-8 text-center text-text-tertiary text-xs">Loading clinical reports...</div>
+            ) : assessments.length > 0 ? assessments.map((asm) => (
               <Card key={asm.id} padding="md" className="hover">
                 <div className="flex items-center justify-between pb-3 border-b border-border-light mb-4">
                   <div className="flex items-center gap-2">

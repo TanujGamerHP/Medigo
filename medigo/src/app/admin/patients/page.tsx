@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Users, Search, AlertTriangle, ArrowRight, Eye, UserX, UserCheck } from "lucide-react";
 import { AdvancedTable, TableColumn } from "@/components/enterprise/AdvancedTable";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
+import { api } from "@/lib/api";
 
 interface PatientRecord {
   id: string;
@@ -22,6 +23,34 @@ const initialPatients: PatientRecord[] = [];
 export default function AdminPatientsPage() {
   const { show } = useToast();
   const [patients, setPatients] = useState<PatientRecord[]>(initialPatients);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPatients() {
+      try {
+        setIsLoading(true);
+        const res = await api.get('/api/v1/admin/patients');
+        if (res.success && res.data) {
+          const mapped: PatientRecord[] = res.data.map((p: any) => ({
+            id: p.id.substring(0, 8),
+            name: `${p.firstName} ${p.lastName || ""}`.trim(),
+            email: p.user?.email || "N/A",
+            phone: p.phone || "N/A",
+            membership: p.memberships?.find((m: any) => m.status === 'Active')?.planName || (p.memberships?.length > 0 ? p.memberships[0].planName : "None"),
+            status: p.user?.status === "Deactivated" ? "Deactivated" : (p.memberships?.find((m: any) => m.status === 'Active') ? "Active" : "Pending Intake"),
+            joinedDate: new Date(p.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+          }));
+          setPatients(mapped);
+        }
+      } catch (err) {
+        show("Failed to fetch patients", "error");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchPatients();
+  }, []);
 
   const handleToggleDeactivate = (id: string, currentStatus: string) => {
     const nextStatus = currentStatus === "Active" ? "Deactivated" as const : "Active" as const;
@@ -132,13 +161,17 @@ export default function AdminPatientsPage() {
             </h3>
           </div>
 
-          <AdvancedTable
-            data={patients}
-            columns={columns}
-            rowKey={(row) => row.id}
-            searchKeys={["name", "email", "membership", "status"]}
-            searchPlaceholder="Search patients database..."
-          />
+          {isLoading ? (
+            <div className="py-8 text-center text-xs text-text-secondary">Loading patients directory...</div>
+          ) : (
+            <AdvancedTable
+              data={patients}
+              columns={columns}
+              rowKey={(row) => row.id}
+              searchKeys={["name", "email", "membership", "status"]}
+              searchPlaceholder="Search patients database..."
+            />
+          )}
         </div>
       </div>
     </div>

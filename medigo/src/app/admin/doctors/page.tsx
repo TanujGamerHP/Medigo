@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { UserSquare2, Eye, CheckCircle2, AlertTriangle, ShieldCheck, Ban, ThumbsUp, Loader2, Hospital, GraduationCap, Award } from "lucide-react";
+import { UserSquare2, Eye, CheckCircle2, AlertTriangle, ShieldCheck, Ban, ThumbsUp, Loader2, Hospital, GraduationCap, Award, Plus } from "lucide-react";
 import { AdvancedTable, TableColumn } from "@/components/enterprise/AdvancedTable";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -30,6 +30,19 @@ export default function AdminDoctorsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newDoctor, setNewDoctor] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    specialization: "",
+    experience: "",
+    consultationFee: 0,
+    bankName: "",
+    accountNumber: "",
+    ifscCode: ""
+  });
 
   async function fetchDoctors() {
     try {
@@ -47,6 +60,29 @@ export default function AdminDoctorsPage() {
   useEffect(() => {
     fetchDoctors();
   }, []);
+
+  const handleAddDoctor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsAdding(true);
+    try {
+      const res = await api.post("/api/v1/admin/doctors", {
+        ...newDoctor,
+        consultationFee: Number(newDoctor.consultationFee)
+      });
+      if (res.success) {
+        show("Doctor created successfully.", "success");
+        setIsAddModalOpen(false);
+        fetchDoctors();
+        setNewDoctor({
+          email: "", firstName: "", lastName: "", specialization: "", experience: "", consultationFee: 0, bankName: "", accountNumber: "", ifscCode: ""
+        });
+      }
+    } catch (err: any) {
+      show(err.message || "Failed to create doctor.", "error");
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   const handleToggleVerification = async (id: string, currentStatus: string) => {
     // Verified -> Suspended; PendingCredentials/Suspended -> Verified
@@ -165,13 +201,18 @@ export default function AdminDoctorsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="pb-4 border-b border-border/60 text-left">
-        <h2 className="font-heading text-xl font-extrabold text-text-primary">
-          Clinical Practitioner Directory
-        </h2>
-        <p className="text-xs text-text-secondary mt-0.5">
-          Verify licenses, review qualifications credentials, audit scheduling blocks, and approve or suspend doctor accounts.
-        </p>
+      <div className="pb-4 border-b border-border/60 text-left flex justify-between items-end">
+        <div>
+          <h2 className="font-heading text-xl font-extrabold text-text-primary">
+            Clinical Practitioner Directory
+          </h2>
+          <p className="text-xs text-text-secondary mt-0.5">
+            Verify licenses, review qualifications credentials, audit scheduling blocks, and approve or suspend doctor accounts.
+          </p>
+        </div>
+        <Button size="sm" onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-1.5">
+          <Plus className="w-4 h-4" /> Add Doctor
+        </Button>
       </div>
 
       <div className="space-y-4 text-left">
@@ -268,6 +309,68 @@ export default function AdminDoctorsPage() {
           </div>
         </Modal>
       )}
+
+      {/* Add Doctor Modal */}
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="Add New Doctor"
+        size="md"
+      >
+        <form onSubmit={handleAddDoctor} className="space-y-4 text-left py-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-text-secondary mb-1">First Name</label>
+              <input required type="text" className="w-full px-3 py-2 border rounded-lg text-sm" value={newDoctor.firstName} onChange={(e) => setNewDoctor({...newDoctor, firstName: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-text-secondary mb-1">Last Name</label>
+              <input required type="text" className="w-full px-3 py-2 border rounded-lg text-sm" value={newDoctor.lastName} onChange={(e) => setNewDoctor({...newDoctor, lastName: e.target.value})} />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-text-secondary mb-1">Email</label>
+            <input required type="email" className="w-full px-3 py-2 border rounded-lg text-sm" value={newDoctor.email} onChange={(e) => setNewDoctor({...newDoctor, email: e.target.value})} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-text-secondary mb-1">Specialization</label>
+              <input required type="text" className="w-full px-3 py-2 border rounded-lg text-sm" value={newDoctor.specialization} onChange={(e) => setNewDoctor({...newDoctor, specialization: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-text-secondary mb-1">Experience</label>
+              <input required type="text" className="w-full px-3 py-2 border rounded-lg text-sm" value={newDoctor.experience} onChange={(e) => setNewDoctor({...newDoctor, experience: e.target.value})} />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-text-secondary mb-1">Consultation Fee (INR)</label>
+            <input required type="number" min="0" className="w-full px-3 py-2 border rounded-lg text-sm" value={newDoctor.consultationFee} onChange={(e) => setNewDoctor({...newDoctor, consultationFee: Number(e.target.value)})} />
+          </div>
+          <div className="pt-2 border-t mt-4">
+            <h4 className="text-sm font-bold text-text-primary mb-2">Bank Details (For Direct Payment)</h4>
+            <div className="grid grid-cols-2 gap-4 mb-2">
+              <div>
+                <label className="block text-xs font-bold text-text-secondary mb-1">Bank Name</label>
+                <input type="text" className="w-full px-3 py-2 border rounded-lg text-sm" value={newDoctor.bankName} onChange={(e) => setNewDoctor({...newDoctor, bankName: e.target.value})} />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-text-secondary mb-1">IFSC Code</label>
+                <input type="text" className="w-full px-3 py-2 border rounded-lg text-sm" value={newDoctor.ifscCode} onChange={(e) => setNewDoctor({...newDoctor, ifscCode: e.target.value})} />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-text-secondary mb-1">Account Number</label>
+              <input type="text" className="w-full px-3 py-2 border rounded-lg text-sm" value={newDoctor.accountNumber} onChange={(e) => setNewDoctor({...newDoctor, accountNumber: e.target.value})} />
+            </div>
+          </div>
+          <div className="pt-4 flex justify-end gap-2">
+            <Button type="button" variant="neutral" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={isAdding}>
+              {isAdding ? "Adding..." : "Add Doctor"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

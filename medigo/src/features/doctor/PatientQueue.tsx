@@ -14,6 +14,9 @@ export interface QueuePatient {
   type: "Consultation" | "Chart Review" | "Refill Check";
   status: "Waiting" | "In Consult" | "Labs Needed" | "Completed";
   waitingTime: string;
+  profileImage?: string | null;
+  hasActiveMembership?: boolean;
+  membershipPlan?: string | null;
 }
 
 const mockPatients: QueuePatient[] = [];
@@ -24,11 +27,9 @@ export function PatientQueue({ onSelectPatient }: { onSelectPatient: (patientId:
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await api.request("/api/v1/appointments");
+        const response = await api.request("/api/v1/doctors/my-patients");
         if (response.data) {
-          const queue = response.data.map((app: any) => {
-            const p = app.patient || {};
-            
+          const queue = response.data.map((p: any) => {
             let age = 35;
             if (p.dob) {
               const diff = new Date().getTime() - new Date(p.dob).getTime();
@@ -41,24 +42,18 @@ export function PatientQueue({ onSelectPatient }: { onSelectPatient: (patientId:
               bmi = Number((p.weight / (heightM * heightM)).toFixed(1));
             }
 
-            const diffMs = new Date().getTime() - new Date(app.createdAt).getTime();
-            const diffMins = Math.max(1, Math.floor(diffMs / 60000));
-            const waitingTime = diffMins > 60 ? `${Math.floor(diffMins/60)} hrs ${diffMins%60} mins` : `${diffMins} mins`;
-            
-            let status = "Waiting";
-            if (app.status === "Pending") status = "Waiting";
-            if (app.status === "Completed") status = "Completed";
-            if (app.status === "Confirmed") status = "In Consult";
-            
             return {
-              id: p.id || app.id,
-              name: `${p.firstName || 'Unknown'} ${p.lastName || ''}`.trim(),
+              id: p.id,
+              name: `${p.user?.firstName || p.firstName || 'Unknown'} ${p.user?.lastName || p.lastName || ''}`.trim(),
               age,
               gender: p.gender || "Unspecified",
               bmi,
-              type: app.consultationType || "Consultation",
-              status,
-              waitingTime
+              type: "Consultation",
+              status: "Waiting",
+              waitingTime: "10 mins", // Mocked waiting time for now
+              profileImage: p.profileImage || null,
+              hasActiveMembership: p.memberships?.some((m: any) => m.status === 'Active') || false,
+              membershipPlan: p.memberships?.find((m: any) => m.status === 'Active')?.planName || null,
             };
           });
           setPatients(queue);
@@ -76,11 +71,28 @@ export function PatientQueue({ onSelectPatient }: { onSelectPatient: (patientId:
       label: "Patient Name",
       sortable: true,
       render: (row) => (
-        <div>
-          <span className="font-bold text-text-primary block text-sm">{row.name}</span>
-          <span className="text-[10px] text-text-secondary block mt-0.5">
-            {row.age} yrs • {row.gender}
-          </span>
+        <div className="flex items-center gap-3">
+          {row.profileImage ? (
+            <img src={row.profileImage} alt={row.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-[10px] flex items-center justify-center shrink-0">
+              {row.name.charAt(0)}
+            </div>
+          )}
+          <div>
+            <span className="font-bold text-text-primary flex items-center gap-2 text-sm">
+              {row.name}
+              {row.hasActiveMembership && (
+                <span className="bg-emerald-100 text-emerald-800 text-[9px] px-1.5 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider">
+                  <Star className="w-2.5 h-2.5" />
+                  {row.membershipPlan}
+                </span>
+              )}
+            </span>
+            <span className="text-[10px] text-text-secondary block mt-0.5">
+              {row.age} yrs • {row.gender}
+            </span>
+          </div>
         </div>
       ),
     },
@@ -91,10 +103,10 @@ export function PatientQueue({ onSelectPatient }: { onSelectPatient: (patientId:
       render: (row) => {
         const isObese = row.bmi >= 30;
         return (
-          <div>
-            <span className="font-semibold text-text-primary text-xs">{row.bmi}</span>
+          <div className="flex flex-col">
+            <span className="text-text-primary font-bold">{row.bmi}</span>
             <span className={`text-[10px] block mt-0.5 font-bold ${isObese ? "text-red-500" : "text-amber-500"}`}>
-              {isObese ? "Obese Category" : "Overweight"}
+              {isObese ? "Severe Overweight" : "Overweight"}
             </span>
           </div>
         );

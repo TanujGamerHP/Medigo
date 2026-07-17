@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
+import { auth } from "@/lib/firebase";
+import { EmailAuthProvider, updatePassword, reauthenticateWithCredential } from "firebase/auth";
 
 export default function SettingsPage() {
   const { show } = useToast();
@@ -28,7 +30,7 @@ export default function SettingsPage() {
     show("General settings saved.", "success");
   };
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!oldPassword || !newPassword || !confirmPassword) {
       show("Please fill out all password fields.", "error");
@@ -38,10 +40,30 @@ export default function SettingsPage() {
       show("Passwords do not match.", "error");
       return;
     }
-    show("Password changed successfully.", "success");
-    setOldPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+
+    const user = auth.currentUser;
+    if (!user || !user.email) {
+      show("You must be logged in to change your password.", "error");
+      return;
+    }
+
+    try {
+      const credential = EmailAuthProvider.credential(user.email, oldPassword);
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, newPassword);
+      
+      show("Password changed successfully.", "success");
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'auth/invalid-credential') {
+        show("Incorrect current password.", "error");
+      } else {
+        show(err.message || "Failed to change password.", "error");
+      }
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -85,17 +107,8 @@ export default function SettingsPage() {
 
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label htmlFor="settings-lang-select" className="text-xs font-bold text-text-secondary uppercase">Portal Language</label>
-                  <select
-                    id="settings-lang-select"
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full sm:w-64 px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
-                  >
-                    <option value="English">English</option>
-                    <option value="Spanish">Español</option>
-                    <option value="French">Français</option>
-                  </select>
+                  <span className="text-xs font-bold text-text-secondary uppercase block">Portal Language</span>
+                  <p className="text-sm font-semibold text-text-primary">English</p>
                 </div>
 
                 {/* Notifications Setup */}

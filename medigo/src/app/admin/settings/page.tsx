@@ -1,18 +1,20 @@
 "use client";
 
 import React, { useState } from "react";
-import { Settings, Bell, Lock, Globe, KeyRound, LogOut, ShieldAlert, ArrowLeft } from "lucide-react";
+import { Settings, Bell, Lock, Globe, KeyRound, LogOut, ShieldAlert, ArrowLeft, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
 
 export default function AdminSettingsPage() {
   const { show } = useToast();
   const router = useRouter();
   
   // Settings States
-  const [language, setLanguage] = useState("English");
+  const [darkMode, setDarkMode] = useState(false);
+
   const [alertAudit, setAlertAudit] = useState(true);
   const [alertRegistration, setAlertRegistration] = useState(true);
   const [twoFactor, setTwoFactor] = useState(true);
@@ -27,7 +29,9 @@ export default function AdminSettingsPage() {
     show("Platform configuration settings saved successfully.", "success");
   };
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!oldPassword || !newPassword || !confirmPassword) {
       show("Please fill out all password fields.", "error");
@@ -37,10 +41,23 @@ export default function AdminSettingsPage() {
       show("Passwords do not match.", "error");
       return;
     }
-    show("Password changed successfully.", "success");
-    setOldPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+    
+    setIsChangingPassword(true);
+    try {
+      await api.post('/api/v1/auth/change-password', {
+        oldPassword,
+        newPassword
+      });
+      show("Password changed successfully.", "success");
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      console.error(err);
+      show(err.message || "Failed to change password. Please check your current password.", "error");
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   const handleLogout = () => {
@@ -83,18 +100,47 @@ export default function AdminSettingsPage() {
               </div>
 
               <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <label htmlFor="set-lang" className="text-xs font-bold text-text-secondary uppercase">Portal Language</label>
-                  <select
-                    id="set-lang"
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full sm:w-64 px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
-                  >
-                    <option value="English">English</option>
-                    <option value="Spanish">Español</option>
-                    <option value="French">Français</option>
-                  </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-text-secondary uppercase">Portal Language</label>
+                    <div className="w-full px-4 py-2.5 rounded-xl border border-border bg-slate-50 text-text-secondary text-xs cursor-not-allowed select-none">
+                      English (Locked)
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-text-secondary uppercase">Visual Theme</label>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDarkMode(false);
+                          document.documentElement.classList.remove("dark");
+                          show("Light theme enabled.", "info");
+                        }}
+                        className={`flex-1 py-2 px-3 border rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all ${
+                          !darkMode ? "bg-slate-900 border-slate-900 text-white" : "bg-white border-border text-text-secondary hover:text-text-primary"
+                        }`}
+                      >
+                        <Sun className="w-4 h-4" />
+                        Light
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDarkMode(true);
+                          document.documentElement.classList.add("dark");
+                          show("Dark theme support loaded (visual mode toggled).", "info");
+                        }}
+                        className={`flex-1 py-2 px-3 border rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all ${
+                          darkMode ? "bg-slate-900 border-slate-900 text-white" : "bg-white border-border text-text-secondary hover:text-text-primary"
+                        }`}
+                      >
+                        <Moon className="w-4 h-4" />
+                        Dark
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Notifications Setup */}
@@ -191,8 +237,8 @@ export default function AdminSettingsPage() {
               </div>
 
               <div className="flex justify-end pt-4 border-t border-border-light">
-                <Button type="submit" size="sm" className="font-bold">
-                  Update Password
+                <Button type="submit" size="sm" className="font-bold" disabled={isChangingPassword}>
+                  {isChangingPassword ? "Updating..." : "Update Password"}
                 </Button>
               </div>
             </form>

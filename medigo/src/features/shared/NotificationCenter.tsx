@@ -16,53 +16,72 @@ export interface SystemNotification {
   };
 }
 
-const initialNotifications: SystemNotification[] = [
-  {
-    id: "1",
-    type: "Appointment",
-    title: "New virtual consultation booked",
-    desc: "Patient Jane Doe booked slots for metabolic review tomorrow at 10:00 AM.",
-    time: "2 mins ago",
-    isRead: false,
-    deliveryReceipts: { email: "Read", whatsapp: "Read" },
-  },
-  {
-    id: "2",
-    type: "Prescription",
-    title: "Prescription signed & sent to pharmacy",
-    desc: "Ozempic 0.25mg titration schedule successfully transmitted to CVS pharmacy.",
-    time: "45 mins ago",
-    isRead: false,
-    deliveryReceipts: { email: "Delivered", whatsapp: "Read" },
-  },
-  {
-    id: "3",
-    type: "Lab",
-    title: "Lab results uploaded from Quest Diagnostics",
-    desc: "Metabolic panel results for patient are available for review.",
-    time: "2 hours ago",
-    isRead: true,
-    deliveryReceipts: { email: "Read", whatsapp: "Delivered" },
-  },
-  {
-    id: "4",
-    type: "System",
-    title: "Security audit log snapshot generated",
-    desc: "Daily HIPAA access reports are archived and ready for Admin review.",
-    time: "1 day ago",
-    isRead: true,
-    deliveryReceipts: { email: "Sent", whatsapp: "Sent" },
-  },
-];
+const initialNotifications: SystemNotification[] = [];
+
+import { api } from "@/lib/api";
+import { useRole } from "@/features/shared/RoleProvider";
 
 export function NotificationCenter({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const { user } = useRole();
   const [notifications, setNotifications] = useState<SystemNotification[]>(initialNotifications);
   const [filter, setFilter] = useState<"All" | "Unread" | "System" | "Medical">("All");
 
+  const mapNotification = (n: any): SystemNotification => ({
+    id: n.id,
+    type: n.type === "consultation" || n.type === "prescription" || n.type === "treatment" || n.type === "appointment" ? "Appointment" : "System",
+    title: n.title || "Notification",
+    desc: n.message,
+    time: new Date(n.createdAt).toLocaleDateString() + " " + new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+    isRead: n.isRead,
+    deliveryReceipts: { email: "Delivered", whatsapp: "Delivered" },
+  });
+
+  React.useEffect(() => {
+    if (!isOpen || !user) return;
+    
+    const fetchNotifications = async () => {
+      try {
+        const res = await api.get("/api/v1/notifications");
+        if (res.success && Array.isArray(res.data)) {
+          setNotifications(res.data.map(mapNotification));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchNotifications();
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const sseUrl = `${baseUrl}/api/v1/realtime/events?userId=${user.id}&role=${user.role}`;
+    const eventSource = new EventSource(sseUrl);
+
+    eventSource.onmessage = (event) => {
+      try {
+        const parsed = JSON.parse(event.data);
+        if (parsed.event === 'notification.new') {
+          const newNotif = mapNotification(parsed.data.notification);
+          setNotifications(prev => [newNotif, ...prev]);
+        }
+      } catch (err) {
+        console.error("Failed to parse SSE in Notification Center drawer", err);
+      }
+    };
+    
+    return () => eventSource.close();
+  }, [isOpen, user]);
+
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
+  const markAllAsRead = async () => {
+    try {
+      const res = await api.patch("/api/v1/notifications/read-all", {});
+      if (res.success) {
+        setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const toggleRead = (id: string) => {

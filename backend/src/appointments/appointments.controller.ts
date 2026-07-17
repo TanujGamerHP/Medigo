@@ -145,8 +145,22 @@ export class AppointmentsController {
     };
   }
 
+  @Post(':id/ping')
+  @Roles(UserRole.Doctor)
+  @ApiOperation({
+    summary: 'Ping patient for consultation',
+    description: 'Notifies the patient that the doctor is waiting.',
+  })
+  async pingPatient(@Param('id') id: string) {
+    const data = await this.appointmentsService.pingPatient(id);
+    return {
+      message: 'Patient notified successfully',
+      data,
+    };
+  }
+
   @Patch(':id')
-  @Roles(UserRole.Patient, UserRole.Admin)
+  @Roles(UserRole.Patient, UserRole.Admin, UserRole.Doctor)
   @ApiOperation({
     summary: 'Reschedule an existing consultation slot',
     description: 'Updates date and time parameters.',

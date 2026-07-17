@@ -18,8 +18,8 @@ export function AreaChart({ data, height = 240, color = "#22C55E" }: { data: Cha
 
   const points = data
     .map((d, i) => {
-      const x = (i / (data.length - 1)) * 100;
-      const y = 100 - ((d.value - min) / range) * 80 - 10; // keep padding top/bottom
+      const x = data.length > 1 ? (i / (data.length - 1)) * 100 : 50;
+      const y = range === 0 ? 50 : 100 - ((d.value - min) / range) * 80 - 10; // keep padding top/bottom
       return `${x},${y}`;
     })
     .join(" ");
@@ -66,8 +66,8 @@ export function AreaChart({ data, height = 240, color = "#22C55E" }: { data: Cha
         {/* Active Point Highlight */}
         {activeIdx !== null && (
           <circle
-            cx={(activeIdx / (data.length - 1)) * 100}
-            cy={100 - ((data[activeIdx].value - min) / range) * 80 - 10}
+            cx={data.length > 1 ? (activeIdx / (data.length - 1)) * 100 : 50}
+            cy={range === 0 ? 50 : 100 - ((data[activeIdx].value - min) / range) * 80 - 10}
             r="2"
             fill={color}
             stroke="#FFFFFF"

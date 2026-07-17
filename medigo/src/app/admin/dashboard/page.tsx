@@ -72,10 +72,10 @@ export default function AdminDashboardOverview() {
     { label: "Monthly Revenue", value: `₹${statsData?.earnings?.totalCollected?.toLocaleString() ?? "0"}`, desc: "Total collected", icon: CircleDollarSign, color: "text-cyan-600", bg: "bg-cyan-50" }
   ];
 
-  const patientGrowthTrend: any[] = [];
-  const monthlyRevenueTrend: any[] = [];
+  const patientGrowthTrend: any[] = statsData?.patientGrowthTrend || [];
+  const monthlyRevenueTrend: any[] = statsData?.monthlyRevenueTrend || [];
 
-  const recentRegistrations: any[] = []; // Empty for production
+  const recentRegistrations: any[] = statsData?.recentRegistrations || [];
 
   if (loading) {
     return (

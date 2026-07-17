@@ -211,4 +211,28 @@ export class AuthController {
       data,
     };
   }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Change user password',
+    description: 'Allows an authenticated user to change their password.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Password changed successfully.',
+  })
+  @ApiResponse({ status: 400, description: 'Incorrect current password or invalid data.' })
+  async changePassword(
+    @RequestUser('sub') userId: string,
+    @Body() dto: import('./dto/change-password.dto').ChangePasswordDto,
+  ) {
+    const data = await this.authService.changePassword(userId, dto);
+    return {
+      message: 'Password updated successfully',
+      data,
+    };
+  }
 }

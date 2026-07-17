@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole, DoctorStatus } from '@prisma/client';
+import { RequestUser } from '../common/decorators/user.decorator';
 import {
   ApiTags,
   ApiOperation,
@@ -45,6 +46,21 @@ export class DoctorsController {
     };
   }
 
+  @Get('my-patients')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.Doctor)
+  @ApiOperation({
+    summary: 'List authorized patients for the logged in doctor',
+    description: 'Returns patients with an active DoctorPatientConnection.',
+  })
+  async getMyPatients(@RequestUser('sub') userId: string) {
+    const data = await this.doctorsService.getMyPatients(userId);
+    return {
+      message: 'Authorized patients list fetched successfully',
+      data,
+    };
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Get details of specific doctor profile',
@@ -56,6 +72,21 @@ export class DoctorsController {
     const data = await this.doctorsService.findOne(id);
     return {
       message: 'Doctor details fetched successfully',
+      data,
+    };
+  }
+
+  @Get(':id/slots')
+  @ApiOperation({
+    summary: 'Get available slots for a doctor',
+    description: 'Retrieves dynamically generated available time slots for the next 7 days, excluding booked times.',
+  })
+  @ApiResponse({ status: 200, description: 'Doctor slots returned.' })
+  @ApiResponse({ status: 404, description: 'Doctor profile not found.' })
+  async getSlots(@Param('id') id: string) {
+    const data = await this.doctorsService.getAvailableSlots(id);
+    return {
+      message: 'Doctor slots fetched successfully',
       data,
     };
   }

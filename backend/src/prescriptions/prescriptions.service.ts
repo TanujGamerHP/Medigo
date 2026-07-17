@@ -1,17 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { PrescriptionStatus } from '@prisma/client';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Injectable()
 export class PrescriptionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtimeService: RealtimeService,
+  ) {}
 
   async findAll() {
     return this.prisma.prescription.findMany({
       where: { deletedAt: null },
       include: {
-        patient: true,
-        doctor: true,
+        patient: { include: { user: true } },
+        doctor: { include: { user: true } },
       },
     });
   }
@@ -19,7 +23,7 @@ export class PrescriptionsService {
   async findOne(id: string) {
     const prescription = await this.prisma.prescription.findFirst({
       where: { id, deletedAt: null },
-      include: { patient: true, doctor: true },
+      include: { patient: { include: { user: true } }, doctor: { include: { user: true } } },
     });
     if (!prescription) {
       throw new NotFoundException('Prescription record not found');
@@ -37,7 +41,7 @@ export class PrescriptionsService {
     followUpDate: Date | null,
     createdBy?: string,
   ) {
-    return this.prisma.prescription.create({
+    const prescription = await this.prisma.prescription.create({
       data: {
         patientId,
         doctorId,
@@ -49,7 +53,15 @@ export class PrescriptionsService {
         status: PrescriptionStatus.Active,
         createdBy,
       },
+      include: {
+        patient: { include: { user: true } },
+        doctor: { include: { user: true } },
+      }
     });
+
+    this.realtimeService.emit('prescription.new', { prescription });
+    
+    return prescription;
   }
 
   async update(

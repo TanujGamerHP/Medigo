@@ -2,18 +2,22 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { PatientStatus } from '@prisma/client';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Injectable()
 export class PatientsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtimeService: RealtimeService,
+  ) {}
 
   async findAll() {
     return this.prisma.patient.findMany({
       where: { deletedAt: null },
       include: {
-        appointments: true,
-        memberships: true,
-        prescriptions: true,
+        appointments: { orderBy: { createdAt: 'desc' } },
+        memberships: { orderBy: { createdAt: 'desc' } },
+        prescriptions: { orderBy: { createdAt: 'desc' } },
       },
     });
   }
@@ -22,9 +26,9 @@ export class PatientsService {
     const patient = await this.prisma.patient.findFirst({
       where: { id, deletedAt: null },
       include: {
-        appointments: true,
-        memberships: true,
-        prescriptions: true,
+        appointments: { orderBy: { createdAt: 'desc' } },
+        memberships: { orderBy: { createdAt: 'desc' } },
+        prescriptions: { orderBy: { createdAt: 'desc' } },
       },
     });
 
@@ -75,7 +79,7 @@ export class PatientsService {
 
     const dob = dto.dob ? new Date(dto.dob) : undefined;
 
-    return this.prisma.patient.update({
+    const updated = await this.prisma.patient.update({
       where: { userId },
       data: {
         firstName:
@@ -96,7 +100,13 @@ export class PatientsService {
             ? dto.profileImage
             : patient.profileImage,
       },
+      include: {
+        user: true,
+      }
     });
+
+    this.realtimeService.emit('patient.updated', { patient: updated });
+    return updated;
   }
 
   async getDashboardData(userId: string) {
@@ -137,7 +147,7 @@ export class PatientsService {
     const bmi =
       patient.weight && patient.height
         ? parseFloat(
-            (patient.weight / (patient.height * patient.height)).toFixed(2),
+            (patient.weight / ((patient.height / 100) * (patient.height / 100))).toFixed(2),
           )
         : null;
 
@@ -202,6 +212,35 @@ export class PatientsService {
     return this.prisma.notification.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getWeightLogs(userId: string) {
+    const patient = await this.findProfileByUserId(userId);
+    return this.prisma.weightLog.findMany({
+      where: { patientId: patient.id },
+      orderBy: { date: 'asc' },
+    });
+  }
+
+  async addWeightLog(userId: string, weight: number) {
+    const patient = await this.findProfileByUserId(userId);
+    
+    // Create log and update current weight in transaction
+    return this.prisma.$transaction(async (tx) => {
+      const log = await tx.weightLog.create({
+        data: {
+          patientId: patient.id,
+          weight,
+        },
+      });
+
+      await tx.patient.update({
+        where: { id: patient.id },
+        data: { weight },
+      });
+
+      return log;
     });
   }
 }

@@ -49,28 +49,59 @@ export default function DashboardOverview() {
   // Dynamic states
   const [appointment, setAppointment] = useState<any>(null);
   const [latestAssessment, setLatestAssessment] = useState<any>(null);
-  const prescription: any = null;
+  const [prescription, setPrescription] = useState<any>(null);
+  const [timeLeft, setTimeLeft] = useState<string | null>(null);
   const recentOrder: any = null;
   const notifications: any[] = [];
 
+  useEffect(() => {
+    if (!appointment || !appointment.date || !appointment.time) return;
+    
+    // Parse the appointment date and time
+    // format: date: "July 12, 2026", time: "9:00 AM"
+    const apptDateTime = new Date(`${appointment.date} ${appointment.time}`);
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const diff = apptDateTime.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setTimeLeft("Consultation Started");
+        clearInterval(interval);
+      } else {
+        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        const daysStr = d > 0 ? `${d}d ` : "";
+        setTimeLeft(`Starts in ${daysStr}${h}h ${m}m ${s}s`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [appointment]);
+
   const loadDashboard = async () => {
     try {
-      const [apptsRes, assessRes] = await Promise.all([
+      const [apptsRes, assessRes, rxRes] = await Promise.all([
         api.get('/api/v1/appointments'),
-        api.get('/api/v1/assessment/history')
+        api.get('/api/v1/assessment/history'),
+        api.get('/api/v1/prescriptions')
       ]);
       
       if (apptsRes.success && apptsRes.data && apptsRes.data.length > 0) {
-        const upcomingAppt = apptsRes.data.find((a: any) => a.status === 'Pending' || a.status === 'Scheduled');
+        const upcomingAppt = apptsRes.data.find((a: any) => a.status === 'Pending' || a.status === 'Scheduled' || a.status === 'Confirmed');
         if (upcomingAppt) {
           const appt = upcomingAppt;
           setAppointment({
-            doctorName: `Dr. ${appt.doctor?.firstName || ''} ${appt.doctor?.lastName || ''}`.trim() || 'Unknown Doctor',
+            doctorName: `Dr. ${appt.doctor?.user?.firstName || appt.doctor?.firstName || ''} ${appt.doctor?.user?.lastName || appt.doctor?.lastName || ''}`.trim() || 'Unknown Doctor',
             specialization: appt.doctor?.specialization || "General",
             date: new Date(appt.appointmentDate).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' }),
             time: appt.appointmentTime,
             type: appt.consultationType,
-            initials: `${appt.doctor?.firstName?.[0] || 'D'}${appt.doctor?.lastName?.[0] || 'R'}`.toUpperCase()
+            initials: `${appt.doctor?.user?.firstName?.[0] || appt.doctor?.firstName?.[0] || 'D'}${appt.doctor?.user?.lastName?.[0] || appt.doctor?.lastName?.[0] || 'R'}`.toUpperCase(),
+            profileImage: appt.doctor?.profileImage || null
           });
         }
       }
@@ -82,6 +113,18 @@ export default function DashboardOverview() {
           eligibility: assessData.result || "Under Review",
           program: assessData.recommendation || "Pending Evaluation"
         });
+      }
+
+      if (rxRes.success && rxRes.data && rxRes.data.length > 0) {
+        const activeRx = rxRes.data.find((p: any) => p.patientId === user?.patient?.id);
+        if (activeRx) {
+          setPrescription({
+            medication: activeRx.medications,
+            doctor: activeRx.doctor ? `Dr. ${activeRx.doctor.firstName} ${activeRx.doctor.lastName}` : "Unknown Doctor",
+            medicineCount: 1,
+            date: new Date(activeRx.createdAt).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })
+          });
+        }
       }
     } catch (err) {
       console.error(err);
@@ -304,16 +347,24 @@ export default function DashboardOverview() {
           <Card padding="md">
             <div className="flex items-center justify-between pb-3 border-b border-border-light mb-4">
               <h3 className="font-heading text-sm font-bold text-text-primary">Upcoming Consultation</h3>
-              {appointment && <Badge variant="info" size="sm">Scheduled</Badge>}
+              {appointment && (
+                <Badge variant={timeLeft === "Consultation Started" ? "success" : "info"} size="sm">
+                  {timeLeft || "Scheduled"}
+                </Badge>
+              )}
             </div>
             
             {appointment ? (
               <>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary-100 text-primary font-bold text-xs flex items-center justify-center">
-                      {appointment.initials}
-                    </div>
+                    {appointment.profileImage ? (
+                      <img src={appointment.profileImage} alt={appointment.doctorName} className="w-10 h-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-primary-100 text-primary font-bold text-xs flex items-center justify-center">
+                        {appointment.initials}
+                      </div>
+                    )}
                     <div>
                       <h4 className="text-xs font-bold text-text-primary">{appointment.doctorName}</h4>
                       <p className="text-[10px] text-text-secondary mt-0.5">{appointment.specialization}</p>
@@ -332,9 +383,12 @@ export default function DashboardOverview() {
                       Reschedule
                     </Button>
                   </Link>
-                  <Link href="/dashboard/appointments" className="flex-1">
-                    <Button size="sm" className="w-full text-xs font-bold">
-                      View Details
+                  <Link href={timeLeft === "Consultation Started" ? "/dashboard/video-consult" : "/dashboard/appointments"} className="flex-1">
+                    <Button 
+                      size="sm" 
+                      className={`w-full text-xs font-bold ${timeLeft === "Consultation Started" ? "gradient-cta text-white" : ""}`}
+                    >
+                      {timeLeft === "Consultation Started" ? "Join Consultation Now" : "View Details"}
                     </Button>
                   </Link>
                 </div>
@@ -525,8 +579,12 @@ export default function DashboardOverview() {
 
           {/* Profile Summary */}
           <Card padding="md" className="space-y-4 text-center">
-            <div className="w-16 h-16 rounded-full bg-primary-100 text-primary font-heading font-extrabold text-lg flex items-center justify-center shadow-inner mx-auto">
-              {initials}
+            <div className="w-16 h-16 rounded-full bg-primary-100 text-primary font-heading font-extrabold text-lg flex items-center justify-center shadow-inner mx-auto overflow-hidden">
+              {patient.profileImage ? (
+                <img src={patient.profileImage} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                initials
+              )}
             </div>
             
             <div>

@@ -8,7 +8,7 @@ import helmet from 'helmet';
 import { json, urlencoded } from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
 
   // Increase payload size limit for image uploads
   app.use(json({ limit: '50mb' }));

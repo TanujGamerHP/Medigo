@@ -2,11 +2,12 @@ import { Controller, Get, Param, Patch, Body, UseGuards } from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { DoctorPatientGuard } from '../common/guards/doctor-patient.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole, PatientStatus } from '@prisma/client';
 
 @Controller('api/v1/patients')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, DoctorPatientGuard)
 export class PatientsController {
   constructor(private patientsService: PatientsService) {}
 

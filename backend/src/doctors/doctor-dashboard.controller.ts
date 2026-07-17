@@ -81,6 +81,20 @@ export class DoctorDashboardController {
     };
   }
 
+  @Get('assessments')
+  @ApiOperation({
+    summary: 'List all assessments for patients of this doctor',
+    description: 'Returns a list of assessments for patients assigned to or consulted by this doctor.',
+  })
+  @ApiResponse({ status: 200, description: 'Patient assessments fetched successfully.' })
+  async getAssessments(@RequestUser('sub') userId: string) {
+    const data = await this.doctorsService.getDoctorPatientsAssessments(userId);
+    return {
+      message: 'Patient assessments retrieved successfully',
+      data,
+    };
+  }
+
   @Get('patient/:id')
   @ApiOperation({
     summary: 'Get detailed history and prescriptions of a patient',

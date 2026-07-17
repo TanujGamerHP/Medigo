@@ -1,67 +1,122 @@
 "use client";
 
-import React, { useState } from "react";
-import { CreditCard, Eye, Plus, Trash2, ArrowUpRight } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { CreditCard, Eye, Plus, Trash2, ArrowUpRight, CheckCircle2, Download } from "lucide-react";
 import { AdvancedTable, TableColumn } from "@/components/enterprise/AdvancedTable";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { useToast } from "@/components/ui/Toast";
+import { api } from "@/lib/api";
+import jsPDF from "jspdf";
 
 interface MembershipRecord {
   id: string;
-  planName: "Basic" | "Premium" | "Enterprise" | "None";
-  activeMembers: number;
-  expiredMembers: number;
-  monthlyRenewalRate: string;
+  patientName: string;
+  planName: string;
   price: string;
+  startDate: string;
+  expiryDate: string;
+  status: string;
 }
 
 export default function AdminMembershipsPage() {
   const { show } = useToast();
-  const [plans, setPlans] = useState<MembershipRecord[]>([]);
+  const [memberships, setMemberships] = useState<MembershipRecord[]>([]);
+  const [metrics, setMetrics] = useState({ totalActive: 0, averageMonthlyPayout: "₹0" });
+
+  useEffect(() => {
+    const loadMemberships = async () => {
+      try {
+        const res = await api.get('/api/v1/admin/memberships');
+        if (res.success && res.data) {
+          setMemberships(res.data.memberships || []);
+          setMetrics({
+            totalActive: res.data.totalActive || 0,
+            averageMonthlyPayout: res.data.averageMonthlyPayout || "₹0"
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch admin memberships", err);
+      }
+    };
+    loadMemberships();
+  }, []);
+
+  const handleDownloadPDF = (record: MembershipRecord) => {
+    show("Generating payment receipt PDF...", "info");
+    try {
+      const doc = new jsPDF();
+      
+      doc.setFontSize(22);
+      doc.setTextColor(15, 118, 110); // primary teal
+      doc.text("Medigo - Payment Receipt", 20, 20);
+      
+      doc.setFontSize(12);
+      doc.setTextColor(50, 50, 50);
+      doc.text(`Patient Name: ${record.patientName}`, 20, 40);
+      doc.text(`Membership Plan: ${record.planName} Plan`, 20, 50);
+      doc.text(`Amount Paid: ${record.price}`, 20, 60);
+      doc.text(`Validity: ${new Date(record.startDate).toLocaleDateString()} - ${new Date(record.expiryDate).toLocaleDateString()}`, 20, 70);
+      doc.text(`Payment Status: Completed`, 20, 80);
+      doc.text(`Date of Issue: ${new Date().toLocaleDateString()}`, 20, 90);
+
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text("Thank you for choosing Medigo!", 20, 120);
+      
+      doc.save(`Receipt_${record.patientName.replace(/\s+/g, '_')}_${record.planName}.pdf`);
+      show("Receipt downloaded successfully!", "success");
+    } catch (err) {
+      console.error(err);
+      show("Failed to generate PDF.", "error");
+    }
+  };
 
   const columns: TableColumn<MembershipRecord>[] = [
+    {
+      key: "patientName",
+      label: "Patient Name",
+      sortable: true,
+      render: (row) => <span className="font-bold text-text-primary text-xs">{row.patientName}</span>,
+    },
     {
       key: "planName",
       label: "Membership Program",
       sortable: true,
-      render: (row) => <span className="font-bold text-text-primary text-xs">{row.planName} Plan</span>,
+      render: (row) => <span className="font-bold text-text-secondary text-xs">{row.planName} Plan</span>,
     },
     {
       key: "price",
-      label: "Monthly Price",
+      label: "Price",
       sortable: true,
       render: (row) => <span className="font-semibold text-text-primary text-xs">{row.price}</span>,
     },
     {
-      key: "activeMembers",
-      label: "Active Members",
-      sortable: true,
-      render: (row) => <span className="text-xs text-text-secondary font-semibold font-mono">{row.activeMembers}</span>,
-    },
-    {
-      key: "expiredMembers",
-      label: "Expired Members",
-      sortable: true,
-      render: (row) => <span className="text-xs text-text-secondary font-semibold font-mono">{row.expiredMembers}</span>,
-    },
-    {
-      key: "monthlyRenewalRate",
-      label: "Retention/Renewal Rate",
-      sortable: true,
-      render: (row) => <span className="text-xs text-primary font-bold">{row.monthlyRenewalRate}</span>,
-    },
-    {
-      key: "actions",
-      label: "Actions",
+      key: "validity",
+      label: "Validity",
       sortable: false,
       render: (row) => (
-        <div className="flex gap-2">
+        <span className="text-[10px] text-text-secondary font-mono">
+          {new Date(row.startDate).toLocaleDateString()} - {new Date(row.expiryDate).toLocaleDateString()}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      sortable: false,
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-xs bg-emerald-50 px-2.5 py-1 rounded-full w-fit">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Payment Done</span>
+          </div>
           <button 
-            onClick={() => show(`Modifying membership plan settings for ${row.planName}...`, "info")}
-            className="px-3 py-1.5 border border-border hover:border-primary text-text-primary hover:text-primary rounded-xl text-xs font-bold transition-all focus:outline-none bg-white"
+            title="Download Payment Receipt PDF"
+            onClick={() => handleDownloadPDF(row)}
+            className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary-50 rounded-lg transition-colors"
           >
-            Edit Plan
+            <Download className="w-4 h-4" />
           </button>
         </div>
       ),
@@ -92,11 +147,11 @@ export default function AdminMembershipsPage() {
             </div>
 
             <AdvancedTable
-              data={plans}
+              data={memberships}
               columns={columns}
               rowKey={(row) => row.id}
-              searchKeys={["planName"]}
-              searchPlaceholder="Search active plans..."
+              searchKeys={["patientName", "planName"]}
+              searchPlaceholder="Search patients or plans..."
             />
           </div>
         </div>
@@ -111,11 +166,11 @@ export default function AdminMembershipsPage() {
           <div className="space-y-3.5 text-xs text-text-secondary font-medium">
             <div className="flex justify-between border-b border-border-light pb-2">
               <span>Total Active Members</span>
-              <span className="font-bold text-text-primary">842 Patients</span>
+              <span className="font-bold text-text-primary">{metrics.totalActive} Patients</span>
             </div>
             <div className="flex justify-between border-b border-border-light pb-2">
               <span>Average Monthly Payout</span>
-              <span className="font-bold text-text-primary">₹124,500</span>
+              <span className="font-bold text-text-primary">{metrics.averageMonthlyPayout}</span>
             </div>
           </div>
         </div>

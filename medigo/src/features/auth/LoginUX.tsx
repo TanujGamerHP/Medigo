@@ -46,11 +46,13 @@ export function LoginUX() {
       // Simulate backend sync for the frontend context
       const randomPatientEmail = firebaseEmail || `user.${Math.floor(Math.random() * 1000)}@medigo.com`;
       
+      const role = randomPatientEmail === "swayam1529.be23@chitkarauniversity.edu.in" ? "Doctor" : "Patient";
+
       // Auto-register/sync the user to the NestJS backend
       await api.post("/api/v1/auth/register", {
         email: randomPatientEmail,
         password: "OAuthSecurePassword123!",
-        role: "Patient",
+        role: role,
         name: firebaseName || "MediGo Portal User",
         phone: "555-123-4567"
       }, { silent: true }).catch(() => { /* Ignore if already registered */ });
@@ -79,6 +81,13 @@ export function LoginUX() {
 
     setVerifying(true);
     try {
+      // FOR TESTING ONLY: Bypass Firebase for the specific doctor account
+      if (email === "swayam1529.be23@chitkarauniversity.edu.in" && password === "Swayam@30") {
+        show("Logged in via bypass.", "success");
+        await syncWithBackend(email, "Swayam Khanna");
+        return;
+      }
+
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       show("Successfully logged in securely via Firebase.", "success");
       await syncWithBackend(userCredential.user.email, userCredential.user.displayName);

@@ -16,7 +16,8 @@ import {
   LogOut,
   Menu,
   X,
-  Stethoscope
+  Stethoscope,
+  Search
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import { BackButton } from "@/components/ui/BackButton";
@@ -85,9 +86,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [user, show]);
   
-  const patient = user?.patient || {};
-  const name = patient.firstName ? `${patient.firstName} ${patient.lastName}` : "Patient";
-  const initials = patient.firstName ? `${patient.firstName[0]}${patient.lastName ? patient.lastName[0] : ''}`.toUpperCase() : "P";
+  const isDoctor = user?.role === 'Doctor';
+  const profileData = isDoctor ? user?.doctor : user?.patient;
+  const name = profileData?.firstName ? (isDoctor ? `Dr. ${profileData.firstName} ${profileData.lastName}` : `${profileData.firstName} ${profileData.lastName}`) : (isDoctor ? "Doctor" : "Patient");
+  const initials = profileData?.firstName ? `${profileData.firstName[0]}${profileData.lastName ? profileData.lastName[0] : ''}`.toUpperCase() : (isDoctor ? "D" : "P");
+  const roleDisplay = isDoctor ? "Clinical Specialist" : "Standard Care";
+  const profileImage = profileData?.profileImage || null;
 
   const handleLogout = () => {
     show("Logging out of your account...", "info");
@@ -138,6 +142,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
 
+        {/* Search Bar - Desktop Only */}
+        <div className="hidden md:flex items-center relative w-80">
+          <Search className="w-4 h-4 text-text-secondary absolute left-3 pointer-events-none" />
+          <input
+            type="text"
+            readOnly
+            placeholder="Search panels, roles, actions (Cmd+K)..."
+            onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+          />
+        </div>
+
         <div className="flex items-center gap-4">
           <Link
             href="/dashboard/notifications"
@@ -155,15 +171,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <div className="flex items-center gap-3 border-l border-border pl-4">
             <div className="w-8 h-8 rounded-full bg-primary-100 text-primary font-heading font-extrabold text-xs flex items-center justify-center shadow-inner shrink-0 overflow-hidden">
-              {patient.profileImage ? (
-                <img src={patient.profileImage} alt={name} className="w-full h-full object-cover" />
+              {profileImage ? (
+                <img src={profileImage} alt={name} className="w-full h-full object-cover" />
               ) : (
                 initials
               )}
             </div>
             <div className="hidden sm:block text-left">
               <p className="text-xs font-bold text-text-primary leading-none">{name}</p>
-              <p className="text-[10px] text-text-secondary mt-1 leading-none">Standard Care</p>
+              <p className="text-[10px] text-text-secondary mt-1 leading-none">{roleDisplay}</p>
             </div>
           </div>
         </div>

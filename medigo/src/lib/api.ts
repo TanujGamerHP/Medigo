@@ -72,8 +72,12 @@ export const api = {
       const json = await response.json();
 
       if (!response.ok) {
-        // Standardized backend error format uses an array of strings in the 'errors' key
         const errMsg = json.message || (json.errors && json.errors[0]) || 'An unexpected error occurred';
+        if (response.status === 403) {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('auth:forbidden', { detail: errMsg }));
+          }
+        }
         throw new Error(errMsg);
       }
 

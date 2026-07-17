@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Post, Body, UseGuards } from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -122,6 +122,34 @@ export class PatientPortalController {
     const data = await this.patientsService.getPatientNotifications(userId);
     return {
       message: 'Patient alerts list retrieved successfully',
+      data,
+    };
+  }
+
+  @Post('weight')
+  @ApiOperation({
+    summary: 'Log a new weight',
+    description: 'Adds a new weight log and updates the patient current weight.',
+  })
+  @ApiResponse({ status: 201, description: 'Weight logged successfully.' })
+  async addWeightLog(@RequestUser('sub') userId: string, @Body('weight') weight: number) {
+    const data = await this.patientsService.addWeightLog(userId, weight);
+    return {
+      message: 'Weight logged successfully',
+      data,
+    };
+  }
+
+  @Get('weight-logs')
+  @ApiOperation({
+    summary: 'Get weight logs history',
+    description: 'Retrieves all historical weight logs for the patient.',
+  })
+  @ApiResponse({ status: 200, description: 'Weight logs retrieved successfully.' })
+  async getWeightLogs(@RequestUser('sub') userId: string) {
+    const data = await this.patientsService.getWeightLogs(userId);
+    return {
+      message: 'Weight logs fetched successfully',
       data,
     };
   }

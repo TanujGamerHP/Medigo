@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { TrendingDown, Scale, Plus, Award, History, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useRole } from "@/features/shared/RoleProvider";
+import { api } from "@/lib/api";
 
 interface Log {
   date: string;
@@ -10,17 +12,41 @@ interface Log {
 }
 
 export function WeightTracker() {
-  const [logs, setLogs] = useState<Log[]>([
-    { date: "June 04, 2026", weight: 97.5 },
-    { date: "June 11, 2026", weight: 96.7 },
-    { date: "June 18, 2026", weight: 96.1 },
-    { date: "June 25, 2026", weight: 95.5 },
-  ]);
+  const { user } = useRole();
+  const [logs, setLogs] = useState<Log[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [inputWeight, setInputWeight] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  const handleAddLog = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchLogs();
+  }, []);
+
+  const fetchLogs = async () => {
+    try {
+      const data = await api.get("/api/v1/patient/weight-logs");
+      if (data.data) {
+        const fetchedLogs = data.data.map((l: any) => ({
+          date: new Date(l.date).toLocaleDateString("en-US", { month: "long", day: "2-digit", year: "numeric" }),
+          weight: l.weight
+        }));
+        setLogs(fetchedLogs);
+        
+        if (fetchedLogs.length > 0) {
+          setInputWeight(fetchedLogs[fetchedLogs.length - 1].weight.toString());
+        } else if (user?.patient?.weight) {
+          setInputWeight(user.patient.weight.toString());
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching weight logs:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddLog = async (e: React.FormEvent) => {
     e.preventDefault();
     const w = parseFloat(inputWeight);
     if (isNaN(w) || w <= 20 || w >= 300) {
@@ -28,52 +54,64 @@ export function WeightTracker() {
       return;
     }
 
-    const today = new Date().toLocaleDateString("en-US", {
-      month: "long",
-      day: "2-digit",
-      year: "numeric",
-    });
-
-    const newLogs = [...logs, { date: today, weight: w }];
-    setLogs(newLogs);
-    setInputWeight("");
-    setSuccessMsg("Weight logged successfully!");
-    setTimeout(() => setSuccessMsg(""), 3000);
+    try {
+      const res = await api.post("/api/v1/patient/weight", { weight: w });
+      
+      if (res.success) {
+        setSuccessMsg("Weight logged successfully!");
+        fetchLogs();
+        setTimeout(() => setSuccessMsg(""), 3000);
+      } else {
+        alert("Failed to log weight");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to connect to server");
+    }
   };
 
   const stats = useMemo(() => {
-    if (logs.length === 0) return { start: 0, current: 0, lost: 0, bmi: 0 };
-    const start = logs[0].weight;
-    const current = logs[logs.length - 1].weight;
+    // Use the weight from the patient profile (captured during initial assessment) as the starting weight
+    const start = user?.patient?.weight || (logs.length > 0 ? logs[0].weight : 0);
+    const current = logs.length > 0 ? logs[logs.length - 1].weight : start;
     const lost = Math.round((start - current) * 10) / 10;
     
-    // Estimate BMI based on standard height of 5ft 6in (66 inches)
-    const heightInches = 66;
+    // Estimate BMI based on standard height of 5ft 6in (66 inches) if patient height isn't available
+    const heightInches = user?.patient?.height ? (user.patient.height / 0.0254) : 66;
     const heightMeters = heightInches * 0.0254;
     const bmiVal = Math.round((current / (heightMeters * heightMeters)) * 10) / 10;
 
     return { start, current, lost, bmi: bmiVal };
-  }, [logs]);
+  }, [logs, user]);
+
+  const chartData = useMemo(() => {
+    const data: Array<{label: string, weight: number}> = [];
+    if (user?.patient?.weight) {
+      data.push({ label: "Start", weight: user.patient.weight });
+    }
+    logs.forEach(l => data.push({ label: l.date.split(" ")[0] || "Log", weight: l.weight }));
+    return data;
+  }, [logs, user]);
 
   // Compute SVG coordinates for the custom weight chart (width: 500, height: 180)
   const chartPath = useMemo(() => {
-    if (logs.length < 2) return "";
-    const minW = Math.min(...logs.map((l) => l.weight)) - 5;
-    const maxW = Math.max(...logs.map((l) => l.weight)) + 5;
+    if (chartData.length < 2) return "";
+    const minW = Math.min(...chartData.map((l) => l.weight)) - 5;
+    const maxW = Math.max(...chartData.map((l) => l.weight)) + 5;
     const range = maxW - minW || 10;
 
     const width = 500;
     const height = 180;
     const padding = 20;
 
-    const points = logs.map((log, idx) => {
-      const x = padding + (idx / (logs.length - 1)) * (width - 2 * padding);
+    const points = chartData.map((log, idx) => {
+      const x = padding + (idx / (chartData.length - 1)) * (width - 2 * padding);
       const y = height - padding - ((log.weight - minW) / range) * (height - 2 * padding);
       return `${x},${y}`;
     });
 
     return `M ${points.join(" L ")}`;
-  }, [logs]);
+  }, [chartData]);
 
   const badges = [
     { name: "Metabolic Kickoff", desc: "First titration dose verified", active: true },
@@ -82,12 +120,30 @@ export function WeightTracker() {
     { name: "5 kg Club", desc: "Achieved 5 kg fat loss", active: stats.lost >= 5 },
   ];
 
+  if (loading) return <div className="text-center py-10">Loading progress...</div>;
+
   return (
     <div className="space-y-8 text-left">
       
+      {/* Daily reminder banner */}
+      <div className="bg-blue-50 text-blue-800 p-4 rounded-xl text-xs font-semibold flex items-center gap-3 border border-blue-100">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600 bg-blue-100 px-2 py-0.5 rounded">medigo</span>
+        <span>Reminder: Please update your weight daily to accurately track your current weight loss progress and BMI.</span>
+      </div>
+
       {/* Metrics overview widgets */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
+        <div className="bg-white p-5 rounded-2xl border border-border/50 shadow-sm flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+            <History className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[10px] font-bold text-text-tertiary uppercase block">Starting Weight</span>
+            <span className="text-lg font-heading font-black text-text-primary">{stats.start} kg</span>
+          </div>
+        </div>
+
         <div className="bg-white p-5 rounded-2xl border border-border/50 shadow-sm flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary flex items-center justify-center shrink-0">
             <Scale className="w-5 h-5" />
@@ -146,45 +202,46 @@ export function WeightTracker() {
 
                 {/* Main line path */}
                 {chartPath && (
-                  <>
-                    <path
-                      d={chartPath}
-                      fill="none"
-                      stroke="#22C55E"
-                      strokeWidth="3.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    
-                    {/* Dots on points */}
-                    {logs.map((log, idx) => {
-                      const minW = Math.min(...logs.map((l) => l.weight)) - 5;
-                      const maxW = Math.max(...logs.map((l) => l.weight)) + 5;
-                      const range = maxW - minW || 10;
-                      const x = 20 + (idx / (logs.length - 1)) * (500 - 40);
-                      const y = 180 - 20 - ((log.weight - minW) / range) * (180 - 40);
-                      return (
-                        <g key={idx} className="group/dot cursor-pointer">
-                          <circle
-                            cx={x}
-                            cy={y}
-                            r="6"
-                            className="fill-white stroke-primary stroke-[3.5] hover:r-7 transition-all"
-                          />
-                          {/* Value tooltips */}
-                          <text
-                            x={x}
-                            y={y - 12}
-                            textAnchor="middle"
-                            className="text-[9px] font-bold fill-text-primary opacity-0 group-hover/dot:opacity-100 transition-opacity"
-                          >
-                            {log.weight}
-                          </text>
-                        </g>
-                      );
-                    })}
-                  </>
+                  <path
+                    d={chartPath}
+                    fill="none"
+                    stroke="#22C55E"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 )}
+                
+                {/* Dots on points */}
+                {chartData.length > 0 && chartData.map((log, idx) => {
+                  const minW = Math.min(...chartData.map((l) => l.weight)) - 5;
+                  const maxW = Math.max(...chartData.map((l) => l.weight)) + 5;
+                  const range = maxW - minW || 10;
+                  // If there is only 1 point, place it in the center (x = 250)
+                  const x = chartData.length === 1 
+                    ? 250 
+                    : 20 + (idx / (chartData.length - 1)) * (500 - 40);
+                  const y = 180 - 20 - ((log.weight - minW) / range) * (180 - 40);
+                  return (
+                    <g key={idx} className="group/dot cursor-pointer">
+                      <circle
+                        cx={x}
+                        cy={y}
+                        r="6"
+                        className="fill-white stroke-primary stroke-[3.5] hover:r-7 transition-all"
+                      />
+                      {/* Value tooltips */}
+                      <text
+                        x={x}
+                        y={y - 12}
+                        textAnchor="middle"
+                        className="text-[9px] font-bold fill-text-primary opacity-0 group-hover/dot:opacity-100 transition-opacity"
+                      >
+                        {log.weight} kg ({log.label})
+                      </text>
+                    </g>
+                  );
+                })}
               </svg>
             </div>
           </div>

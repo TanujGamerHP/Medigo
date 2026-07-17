@@ -214,10 +214,10 @@ export function Footer() {
         </div>
 
         {/* Columns 2-4 — Links */}
-        <div className="w-full lg:w-3/5 grid grid-cols-2 sm:grid-cols-3 gap-8 lg:gap-10">
+        <div className="w-full lg:w-3/5 grid grid-cols-3 gap-2 sm:gap-8 lg:gap-10">
           {FOOTER_COLUMNS.map((col) => (
             <div key={col.title} suppressHydrationWarning>
-              <h4 className="text-sm font-heading font-semibold uppercase tracking-wider text-white/80 mb-4">
+              <h4 className="text-xs sm:text-sm font-heading font-semibold uppercase tracking-wider text-white/80 mb-4">
                 {col.title}
               </h4>
               <ul className="space-y-2.5">
@@ -225,7 +225,7 @@ export function Footer() {
                   <li key={link.href + link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-white/55 hover:text-primary transition-colors duration-200"
+                      className="text-xs sm:text-sm text-white/55 hover:text-primary transition-colors duration-200"
                     >
                       {link.label}
                     </Link>

@@ -328,3 +328,40 @@ body {
   animation: shimmer 1.5s ease-in-out infinite;
   border-radius: var(--radius-md);
 }
+
+/* ============================================
+   Dark Mode Support (Aggressive Class Overrides)
+   ============================================ */
+:root.dark body, .dark body {
+  background-color: #000000 !important;
+  color: #F8FAFC !important;
+}
+
+:root.dark .bg-surface, .dark .bg-surface,
+:root.dark .bg-white, .dark .bg-white,
+:root.dark .bg-background, .dark .bg-background {
+  background-color: #111111 !important;
+  color: #F8FAFC !important;
+  border-color: #333333 !important;
+}
+
+:root.dark .text-text-primary, .dark .text-text-primary,
+:root.dark .text-text-secondary, .dark .text-text-secondary,
+:root.dark .text-text-tertiary, .dark .text-text-tertiary,
+:root.dark p, .dark p, :root.dark h1, .dark h1, :root.dark h2, .dark h2, :root.dark h3, .dark h3 {
+  color: #F8FAFC !important;
+}
+
+:root.dark .border-border, .dark .border-border,
+:root.dark .border-border-light, .dark .border-border-light,
+:root.dark .border, .dark .border,
+:root.dark .border-b, .dark .border-b,
+:root.dark .border-t, .dark .border-t {
+  border-color: #333333 !important;
+}
+
+:root.dark input, .dark input, :root.dark select, .dark select {
+  background-color: #000000 !important;
+  color: #F8FAFC !important;
+  border-color: #333333 !important;
+}

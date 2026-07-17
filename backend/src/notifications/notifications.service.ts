@@ -27,6 +27,16 @@ export class NotificationsService {
     return notif;
   }
 
+  async notifyAdmins(title: string, message: string, type: string) {
+    const admins = await this.prisma.user.findMany({
+      where: { role: 'Admin' },
+    });
+
+    for (const admin of admins) {
+      await this.createAndEmitNotification(admin.id, title, message, type);
+    }
+  }
+
   async findForUser(userId: string) {
     return this.prisma.notification.findMany({
       where: { userId },
@@ -53,6 +63,25 @@ export class NotificationsService {
     return this.prisma.notification.updateMany({
       where: { userId, isRead: false },
       data: { isRead: true },
+    });
+  }
+
+  async delete(id: string, userId: string) {
+    const notif = await this.prisma.notification.findUnique({
+      where: { id },
+    });
+
+    if (!notif) {
+      // If it's already deleted, just return successfully to keep UI in sync
+      return { success: true };
+    }
+
+    if (notif.userId !== userId) {
+      throw new NotFoundException('Notification alert not found');
+    }
+
+    return this.prisma.notification.delete({
+      where: { id },
     });
   }
 }

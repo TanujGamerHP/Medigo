@@ -21,7 +21,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState({
     name: patient.firstName ? `${patient.firstName} ${patient.lastName}` : "",
     email: user?.email || "",
-    phone: patient.phone || "",
+    phone: user?.phone || "",
     age: patient.dob ? Math.floor((new Date().getTime() - new Date(patient.dob).getTime()) / 3.15576e+10).toString() : "",
     gender: patient.gender || "",
     height: patient.height ? `${patient.height} cm` : "",
@@ -59,14 +59,23 @@ export default function ProfilePage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.patch("/api/v1/users/profile", {
+      const payload: any = {
         firstName: form.name.split(" ")[0] || "",
         lastName: form.name.split(" ").slice(1).join(" ") || "",
         phone: form.phone,
         gender: form.gender,
         height: form.height.replace(" cm", ""),
         weight: form.weight.replace(" kg", ""),
-      });
+        bloodGroup: form.bloodGroup,
+      };
+
+      if (form.age) {
+        const dob = new Date();
+        dob.setFullYear(dob.getFullYear() - parseInt(form.age));
+        payload.dob = dob.toISOString();
+      }
+
+      await api.patch("/api/v1/users/profile", payload);
       await refreshProfile();
       setProfile({ ...form });
       setIsEditing(false);
@@ -250,6 +259,18 @@ export default function ProfilePage() {
                       value={form.weight}
                       onChange={(e) => setForm({ ...form, weight: e.target.value })}
                       className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label htmlFor="profile-blood-input" className="text-xs font-bold text-text-secondary uppercase">Blood Group</label>
+                    <input
+                      id="profile-blood-input"
+                      type="text"
+                      value={form.bloodGroup}
+                      onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      placeholder="e.g. O+, A-, B+"
                     />
                   </div>
                 </div>

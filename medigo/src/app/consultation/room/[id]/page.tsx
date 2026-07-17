@@ -33,6 +33,15 @@ export default function ConsultationRoom() {
   const [chatMessage, setChatMessage] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
 
+  // Timer State
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const [patientJoined, setPatientJoined] = useState(false);
+  
+  // Reschedule state
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [rescheduleDate, setRescheduleDate] = useState("");
+  const [rescheduleTime, setRescheduleTime] = useState("");
+
   // Patient detailed medical history & assessment logs
   const [patientDetails, setPatientDetails] = useState<any>(null);
   const [loadingPatient, setLoadingPatient] = useState(false);
@@ -84,6 +93,10 @@ export default function ConsultationRoom() {
           fetchMessages();
         }
 
+        if (isDoctor && res.data.status !== "Completed") {
+          api.post(`/api/v1/appointments/${id}/ping`, {}).catch(() => {});
+        }
+
         // Fetch patient medical dossier if user is doctor
         if (isDoctor && !patientDetails && res.data.patientId) {
           setLoadingPatient(true);
@@ -118,6 +131,57 @@ export default function ConsultationRoom() {
     }, 5000);
     return () => clearInterval(interval);
   }, [id, isDoctor]);
+
+  useEffect(() => {
+    if (!user) return;
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const sseUrl = `${baseUrl}/api/v1/realtime/events?userId=${user.id}&role=${user.role}`;
+    const eventSource = new EventSource(sseUrl);
+
+    eventSource.onmessage = (event) => {
+      try {
+        const parsed = JSON.parse(event.data);
+        if (parsed.event === "chat.new_message" && parsed.data?.message?.appointmentId === id) {
+          fetchMessages();
+          setPatientJoined(true);
+        }
+      } catch (e) {}
+    };
+    return () => eventSource.close();
+  }, [user, id]);
+
+  useEffect(() => {
+    if (loading || appointment?.status === "Completed" || patientJoined) return;
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [loading, appointment, patientJoined]);
+
+  const handleReschedule = async () => {
+    if (!rescheduleDate || !rescheduleTime) {
+      show("Please select new date and time", "error");
+      return;
+    }
+    try {
+      const res = await api.patch(`/api/v1/appointments/${id}`, { 
+        appointmentDate: rescheduleDate, 
+        appointmentTime: rescheduleTime 
+      });
+      if (res.success) {
+        show("Patient rescheduled and notified", "success");
+        router.push("/doctor/dashboard");
+      }
+    } catch (err) {
+      show("Failed to reschedule", "error");
+    }
+  };
 
   const handleUpdateLink = async () => {
     try {
@@ -236,7 +300,7 @@ export default function ConsultationRoom() {
     }
 
     return (
-      <div className="max-w-4xl mx-auto space-y-8 py-6 animate-fade-in text-left">
+      <div className="max-w-4xl mx-auto space-y-8 py-6 pt-28 px-4 animate-fade-in text-left">
         <button
           onClick={() => router.back()}
           className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-text-secondary hover:text-primary transition-colors duration-200 group"
@@ -368,7 +432,7 @@ export default function ConsultationRoom() {
 
   // RENDER ACTIVE CONSULTATION WORKSPACE
   return (
-    <div className="max-w-7xl mx-auto space-y-6 py-6 animate-fade-in text-left">
+    <div className="max-w-7xl mx-auto space-y-6 py-6 pt-28 px-4 animate-fade-in text-left">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
         <div>
           <button
@@ -392,6 +456,47 @@ export default function ConsultationRoom() {
         </div>
       </div>
 
+      {!isCompleted && !patientJoined && type.includes("chat") && isDoctor && (
+        <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl flex items-center justify-between gap-3 max-w-lg mb-6">
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-amber-500 animate-pulse" />
+            <div>
+              <span className="text-[10px] text-amber-700 font-bold uppercase block">Waiting for Patient</span>
+              <span className="text-xl font-mono font-black text-amber-600">
+                {Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}
+              </span>
+            </div>
+          </div>
+          {timeLeft === 0 && (
+            <Button size="sm" variant="outline" className="border-error text-error bg-white hover:bg-error/10" onClick={() => setShowReschedule(true)}>
+              No Show - Reschedule
+            </Button>
+          )}
+        </div>
+      )}
+
+      {showReschedule ? (
+        <Card padding="md" className="border-error/30 bg-error/5 max-w-lg">
+          <div className="flex items-center gap-2 text-error mb-4">
+            <AlertCircle className="w-5 h-5" />
+            <h3 className="font-bold">Reschedule Patient (No Show)</h3>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-text-secondary">New Date</label>
+              <input type="date" value={rescheduleDate} onChange={(e) => setRescheduleDate(e.target.value)} className="w-full mt-1 p-2 border border-border bg-white rounded-xl text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-text-secondary">New Time</label>
+              <input type="time" value={rescheduleTime} onChange={(e) => setRescheduleTime(e.target.value)} className="w-full mt-1 p-2 border border-border bg-white rounded-xl text-sm" />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setShowReschedule(false)}>Cancel</Button>
+              <Button onClick={handleReschedule} className="bg-error hover:bg-error/90 text-white font-bold">Confirm Reschedule</Button>
+            </div>
+          </div>
+        </Card>
+      ) : (
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
         
         {/* LEFT COLUMN: ACTIVE CONSULTATION TELEHEALTH ROOM */}
@@ -806,6 +911,7 @@ export default function ConsultationRoom() {
         )}
 
       </div>
+      )}
     </div>
   );
 }

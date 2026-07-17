@@ -20,8 +20,14 @@ export function CommandPalette() {
         setIsOpen((prev) => !prev);
       }
     };
+    const handleCustomOpen = () => setIsOpen(true);
+    
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("open-command-palette", handleCustomOpen);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("open-command-palette", handleCustomOpen);
+    };
   }, []);
 
   useEffect(() => {
@@ -34,80 +40,54 @@ export function CommandPalette() {
     }
   }, [isOpen]);
 
-  const items = [
-    {
-      label: "Switch to Patient Role",
-      desc: "Simulate patient experience dashboard",
-      icon: <Clock className="w-4 h-4 text-emerald-500" />,
-      action: () => {
-        setRole("Patient");
-        setIsOpen(false);
-      },
-    },
-    {
-      label: "Switch to Doctor Role",
-      desc: "Simulate doctor queue, clinic notes and prescriptions",
-      icon: <Stethoscope className="w-4 h-4 text-blue-500" />,
-      action: () => {
-        setRole("Doctor");
-        setIsOpen(false);
-      },
-    },
-    {
-      label: "Switch to Admin Role",
-      desc: "Simulate analytics, CMS editor & CRM pipelines",
-      icon: <Shield className="w-4 h-4 text-purple-500" />,
-      action: () => {
-        setRole("Admin");
-        setIsOpen(false);
-      },
-    },
-    {
-      label: "Go to Doctor Workspace",
-      desc: "Open clinical clinic workspace",
-      icon: <ArrowRight className="w-4 h-4 text-slate-500" />,
-      action: () => {
-        router.push("/doctor");
-        setIsOpen(false);
-      },
-    },
-    {
-      label: "Go to Admin Portal",
-      desc: "Open operations analytics hub",
-      icon: <ArrowRight className="w-4 h-4 text-slate-500" />,
-      action: () => {
-        router.push("/admin");
-        setIsOpen(false);
-      },
-    },
-    {
-      label: "Go to Pharmacy Terminal",
-      desc: "Open compounding status queue",
-      icon: <ArrowRight className="w-4 h-4 text-slate-500" />,
-      action: () => {
-        router.push("/pharmacy");
-        setIsOpen(false);
-      },
-    },
-    {
-      label: "Go to Lab Partner Portal",
-      desc: "Open lab reports matching queue",
-      icon: <ArrowRight className="w-4 h-4 text-slate-500" />,
-      action: () => {
-        router.push("/lab");
-        setIsOpen(false);
-      },
-    },
-    {
-      label: "Medical Disclaimer Guidelines",
-      desc: "View corporate health regulations disclaimer",
-      icon: <FileText className="w-4 h-4 text-red-500" />,
-      action: () => {
-        router.push("/disclaimer");
-        setIsOpen(false);
-      },
-    },
-  ];
+  const { currentRole } = useRole();
+
+  const getRoleItems = () => {
+    if (currentRole === "Patient") {
+      return [
+        { label: "Dashboard", desc: "Go to Dashboard", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/dashboard"); setIsOpen(false); } },
+        { label: "Appointments", desc: "Go to Appointments", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/dashboard/appointments"); setIsOpen(false); } },
+        { label: "Assessments", desc: "Go to Assessments", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/dashboard/assessments"); setIsOpen(false); } },
+        { label: "Prescriptions", desc: "Go to Prescriptions", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/dashboard/prescriptions"); setIsOpen(false); } },
+        { label: "Membership", desc: "Go to Membership", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/dashboard/membership"); setIsOpen(false); } },
+        { label: "Orders", desc: "Go to Orders", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/dashboard/orders"); setIsOpen(false); } },
+        { label: "Notifications", desc: "Go to Notifications", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/dashboard/notifications"); setIsOpen(false); } },
+        { label: "Profile", desc: "Go to Profile", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/dashboard/profile"); setIsOpen(false); } },
+        { label: "Settings", desc: "Go to Settings", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/dashboard/settings"); setIsOpen(false); } },
+      ];
+    }
+    
+    if (currentRole === "Doctor") {
+      return [
+        { label: "Dashboard", desc: "Go to Dashboard", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/doctor/dashboard"); setIsOpen(false); } },
+        { label: "Appointments", desc: "Go to Appointments", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/doctor/appointments"); setIsOpen(false); } },
+        { label: "Patients", desc: "Go to Patients", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/doctor/patients"); setIsOpen(false); } },
+        { label: "Assessments", desc: "Go to Assessments", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/doctor/assessments"); setIsOpen(false); } },
+        { label: "Prescriptions", desc: "Go to Prescriptions", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/doctor/prescriptions"); setIsOpen(false); } },
+        { label: "Availability", desc: "Go to Availability", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/doctor/availability"); setIsOpen(false); } },
+        { label: "Notifications", desc: "Go to Notifications", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/doctor/notifications"); setIsOpen(false); } },
+        { label: "Profile", desc: "Go to Profile", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/doctor/profile"); setIsOpen(false); } },
+        { label: "Settings", desc: "Go to Settings", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/doctor/settings"); setIsOpen(false); } },
+      ];
+    }
+    
+    if (currentRole === "Admin") {
+      return [
+        { label: "Dashboard", desc: "Go to Dashboard", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/admin/dashboard"); setIsOpen(false); } },
+        { label: "Doctors", desc: "Go to Doctors", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/admin/doctors"); setIsOpen(false); } },
+        { label: "Patients", desc: "Go to Patients", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/admin/patients"); setIsOpen(false); } },
+        { label: "Operations", desc: "Go to Operations", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/admin/operations"); setIsOpen(false); } },
+        { label: "Finance", desc: "Go to Finance", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/admin/finance"); setIsOpen(false); } },
+        { label: "Reports", desc: "Go to Reports", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/admin/reports"); setIsOpen(false); } },
+        { label: "Security", desc: "Go to Security", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/admin/security"); setIsOpen(false); } },
+        { label: "Settings", desc: "Go to Settings", icon: <ArrowRight className="w-4 h-4 text-slate-500" />, action: () => { router.push("/admin/settings"); setIsOpen(false); } },
+      ];
+    }
+
+    return [];
+  };
+
+  const items = getRoleItems();
 
   const filteredItems = items.filter((item) =>
     item.label.toLowerCase().includes(search.toLowerCase()) ||

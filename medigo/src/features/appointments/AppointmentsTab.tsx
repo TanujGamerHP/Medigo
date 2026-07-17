@@ -13,6 +13,8 @@ interface Appointment {
   time: string;
   status: "upcoming" | "completed" | "cancelled";
   meetingLink?: string;
+  profileImage?: string | null;
+  initials?: string;
 }
 
 export function AppointmentsTab() {
@@ -24,6 +26,7 @@ export function AppointmentsTab() {
   const [rescheduleDate, setRescheduleDate] = useState("July 5, 2026");
   const [rescheduleTime, setRescheduleTime] = useState("1:30 PM");
   const [successMsg, setSuccessMsg] = useState("");
+  const { show } = useToast();
 
   const fetchAppointments = async () => {
     try {
@@ -33,12 +36,14 @@ export function AppointmentsTab() {
         const mapped = res.data.map((apt: any) => {
           return {
             id: apt.id,
-            doctorName: apt.doctor ? `Dr. ${apt.doctor.firstName} ${apt.doctor.lastName}` : "Unknown Doctor",
+            doctorName: apt.doctor ? `Dr. ${apt.doctor.user?.firstName || apt.doctor.firstName} ${apt.doctor.user?.lastName || apt.doctor.lastName}` : "Unknown Doctor",
             specialty: apt.doctor ? apt.doctor.specialization : "General",
             date: new Date(apt.appointmentDate).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' }),
             time: apt.appointmentTime,
-            status: apt.status.toLowerCase() === "scheduled" ? "upcoming" : apt.status.toLowerCase(),
+            status: (apt.status === "Pending" || apt.status === "Scheduled" || apt.status === "Confirmed") ? "upcoming" : apt.status.toLowerCase(),
             meetingLink: apt.meetingLink,
+            profileImage: apt.doctor?.profileImage || null,
+            initials: apt.doctor ? `${apt.doctor.user?.firstName?.[0] || apt.doctor.firstName?.[0] || 'D'}${apt.doctor.user?.lastName?.[0] || apt.doctor.lastName?.[0] || 'R'}`.toUpperCase() : "DR"
           };
         });
         setAppointments(mapped);
@@ -52,7 +57,31 @@ export function AppointmentsTab() {
 
   useEffect(() => {
     fetchAppointments();
-  }, []);
+
+    const userStr = localStorage.getItem("medigo_user");
+    if (!userStr) return;
+    const userObj = JSON.parse(userStr);
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const sseUrl = `${baseUrl}/api/v1/realtime/events?userId=${userObj.id}&role=${userObj.role}`;
+    const eventSource = new EventSource(sseUrl);
+
+    eventSource.onmessage = (event) => {
+      try {
+        const parsed = JSON.parse(event.data);
+        if (parsed.event === "consultation.doctor_waiting") {
+          show("The doctor is waiting for you in the consultation room! Please join now.", "success");
+        } else if (parsed.event === "consultation.link_shared") {
+          show("Your doctor has shared a meeting link for your consultation.", "success");
+          fetchAppointments();
+        } else if (parsed.event === "appointment.rescheduled") {
+          show("Your appointment has been rescheduled by the doctor.", "warning");
+          fetchAppointments();
+        }
+      } catch (e) {}
+    };
+
+    return () => eventSource.close();
+  }, [show]);
 
   const handleConfirmReschedule = () => {
     const updated = appointments.map((apt) => {
@@ -86,10 +115,8 @@ export function AppointmentsTab() {
   return (
     <div className="space-y-8 text-left max-w-4xl mx-auto">
       
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        {/* Left Column: Upcoming visit */}
-        <div className="lg:col-span-8 space-y-6">
+        {/* Main Column: Upcoming visit */}
+        <div className="space-y-6">
           
           {loading ? (
             <div className="bg-white p-8 rounded-3xl border border-border/50 text-center">
@@ -99,16 +126,25 @@ export function AppointmentsTab() {
             <div className="bg-white p-6 md:p-8 rounded-3xl border border-border/50 shadow-sm space-y-6">
               
               <div className="flex justify-between items-start border-b border-border-light pb-5">
-                <div className="space-y-1">
-                  <span className="px-2.5 py-0.5 rounded-full bg-primary-50 text-primary-700 text-[10px] font-bold uppercase tracking-wider">
-                    Next Consultation
-                  </span>
-                  <h3 className="font-heading font-bold text-lg text-text-primary">
-                    {activeApt.doctorName}
-                  </h3>
-                  <p className="text-[10px] text-text-secondary">
-                    {activeApt.specialty} • 15 Minute titration audit
-                  </p>
+                <div className="flex items-start gap-4">
+                  {activeApt.profileImage ? (
+                    <img src={activeApt.profileImage} alt={activeApt.doctorName} className="w-12 h-12 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-primary-100 text-primary font-bold text-sm flex items-center justify-center shrink-0">
+                      {activeApt.initials}
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <span className="px-2.5 py-0.5 rounded-full bg-primary-50 text-primary-700 text-[10px] font-bold uppercase tracking-wider">
+                      Next Consultation
+                    </span>
+                    <h3 className="font-heading font-bold text-lg text-text-primary mt-1">
+                      {activeApt.doctorName}
+                    </h3>
+                    <p className="text-[10px] text-text-secondary">
+                      {activeApt.specialty} • 15 Minute titration audit
+                    </p>
+                  </div>
                 </div>
                 
                 <span className="inline-flex items-center gap-1 text-xs text-primary font-bold">
@@ -152,15 +188,13 @@ export function AppointmentsTab() {
                   </button>
                 </div>
 
-                <a
-                  href={activeApt.meetingLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => window.location.href = `/consultation/room/${activeApt.id}`}
                   className="py-2.5 px-6 rounded-xl gradient-cta text-white text-xs font-bold hover:shadow-glow transition-all flex items-center justify-center gap-1.5 w-full sm:w-auto"
                 >
                   <Video className="w-4 h-4" />
-                  Join Zoom Room
-                </a>
+                  Join Consultation Room
+                </button>
               </div>
 
             </div>
@@ -181,36 +215,6 @@ export function AppointmentsTab() {
           )}
 
         </div>
-
-        {/* Right Column: Historical logs */}
-        <div className="lg:col-span-4 bg-white p-6 rounded-3xl border border-border/50 shadow-sm space-y-4">
-          <h3 className="font-heading font-bold text-base text-text-primary">Visits History</h3>
-          
-          <div className="space-y-4 max-h-[280px] overflow-y-auto pr-1">
-            {historical.map((apt) => (
-              <div
-                key={apt.id}
-                className="border-b border-border-light pb-3 last:border-0 last:pb-0 text-xs text-text-secondary space-y-1"
-              >
-                <div className="flex justify-between items-start">
-                  <strong className="text-text-primary font-bold">{apt.doctorName}</strong>
-                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                    apt.status === "completed" ? "bg-green-50 text-success" : "bg-red-50 text-error"
-                  }`}>
-                    {apt.status}
-                  </span>
-                </div>
-                <div className="flex justify-between text-[10px]">
-                  <span>{apt.date}</span>
-                  <span>{apt.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-        </div>
-
-      </div>
 
       {successMsg && (
         <div className="p-3.5 bg-green-50 border border-success-200 text-success text-xs font-semibold rounded-xl text-center">

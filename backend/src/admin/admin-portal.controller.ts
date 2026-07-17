@@ -14,6 +14,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import {
   ApiTags,
@@ -21,6 +22,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { Post } from '@nestjs/common';
 
 @ApiTags('Admin Portal Module')
 @ApiBearerAuth()
@@ -76,6 +78,20 @@ export class AdminPortalController {
     };
   }
 
+  @Post('doctors')
+  @ApiOperation({
+    summary: 'Add a new doctor',
+    description: 'Creates a doctor profile with bank account details for direct payments.',
+  })
+  @ApiResponse({ status: 201, description: 'Doctor created.' })
+  async createDoctor(@Body() dto: CreateDoctorDto) {
+    const data = await this.adminService.createDoctor(dto);
+    return {
+      message: 'Doctor created successfully',
+      data,
+    };
+  }
+
   @Get('patients')
   @ApiOperation({
     summary: 'List all registered patients',
@@ -86,6 +102,32 @@ export class AdminPortalController {
     const data = await this.adminService.getPatients();
     return {
       message: 'Patients profiles retrieved successfully',
+      data,
+    };
+  }
+
+  @Get('memberships')
+  @ApiOperation({
+    summary: 'List aggregated membership statistics',
+    description: 'Returns metrics about active and expired memberships.',
+  })
+  @ApiResponse({ status: 200, description: 'Membership statistics retrieved.' })
+  async getMemberships() {
+    const data = await this.adminService.getMembershipsStats();
+    return {
+      message: 'Membership statistics retrieved successfully',
+      data,
+    };
+  }
+
+  @Get('payments')
+  @ApiOperation({
+    summary: 'List all payments and transactions',
+  })
+  async getPayments() {
+    const data = await this.adminService.getPayments();
+    return {
+      message: 'Payments retrieved successfully',
       data,
     };
   }

@@ -12,9 +12,12 @@ import { useRole } from "@/features/shared/RoleProvider";
 export default function BuyMembershipPage() {
   const router = useRouter();
   const { show } = useToast();
-  const { refreshProfile } = useRole();
+  const { user, refreshProfile } = useRole();
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"starter" | "premium">("starter");
+
+  const memberships = user?.patient?.memberships || [];
+  const activeMembership = memberships.find((m: any) => m.status === 'Active');
 
   const plans = {
     starter: {
@@ -41,6 +44,16 @@ export default function BuyMembershipPage() {
   };
 
   const handleCheckout = async () => {
+    if (activeMembership) {
+      const expiry = new Date(activeMembership.expiryDate);
+      const today = new Date();
+      const diffTime = expiry.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      show(`Your plan is going on and it will expire on ${expiry.toLocaleDateString()} (${diffDays} days left)`, "error");
+      return;
+    }
+
     setLoading(true);
     // Simulate Razorpay Gateway
     setTimeout(async () => {

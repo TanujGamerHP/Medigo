@@ -70,9 +70,9 @@ function ConsultationContent() {
         if (res.success && res.data) {
           const mapped = res.data.map((d: any) => ({
             id: d.id,
-            name: `Dr. ${d.firstName} ${d.lastName}`,
+            name: `Dr. ${d.firstName} ${d.lastName || ""}`.trim(),
             specialty: d.specialization || "General Medicine",
-            initials: `${d.firstName[0]}${d.lastName[0]}`.toUpperCase(),
+            initials: `${d.firstName?.[0] || ""}${d.lastName?.[0] || ""}`.toUpperCase(),
             slots: ["9:00 AM", "10:30 AM", "1:00 PM", "3:30 PM", "5:00 PM"],
             consultationFee: d.consultationFee || 0
           }));
@@ -152,7 +152,8 @@ function ConsultationContent() {
       // 1. Create Order
       const orderRes = await api.post("/api/v1/payments/create-order", {
         amount: fee,
-        currency: "INR"
+        currency: "INR",
+        doctorId: selectedDoctorId,
       });
       const order = orderRes.data;
 

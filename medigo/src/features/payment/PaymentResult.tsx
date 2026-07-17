@@ -48,23 +48,29 @@ export function PaymentResult({ status, doctor, date, time, total, mode }: Payme
     setDownloading(true);
     setTimeout(() => {
       setDownloading(false);
-      // Simulate file download by creating a fake text anchor
-      const element = document.createElement("a");
-      const file = new Blob([
-        `MEDI GO INVOICE RECEIPT\n` +
-        `-----------------------\n` +
-        `Invoice Reference ID: ${invoiceId || "MG-XXXXX"}\n` +
-        `Patient Name: Sarah Miller\n` +
-        `Clinician: ${doctorName}\n` +
-        `Appointment: ${date} at ${time} (${mode} mode)\n` +
-        `Paid Amount: ₹${total}.00\n` +
-        `Compliance: HIPAA Protected, Paid via secure Stripe endpoint.\n`
-      ], { type: 'text/plain' });
-      element.href = URL.createObjectURL(file);
-      element.download = `medigo_invoice_${doctor}.txt`;
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
+      
+      import("jspdf").then(({ jsPDF }) => {
+        const doc = new jsPDF();
+        
+        doc.setFontSize(22);
+        doc.text("MediGo Invoice Receipt", 20, 30);
+        
+        doc.setFontSize(12);
+        doc.text("---------------------------------------------------------", 20, 40);
+        doc.text(`Invoice Reference ID: ${invoiceId || "MG-XXXXX"}`, 20, 50);
+        doc.text(`Patient Name: Sarah Miller`, 20, 60);
+        doc.text(`Clinician: ${doctorName}`, 20, 70);
+        doc.text(`Appointment: ${date} at ${time} (${mode} mode)`, 20, 80);
+        doc.text(`Paid Amount: INR ${total}.00`, 20, 90);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text("Compliance: HIPAA Protected, Paid via secure Stripe endpoint.", 20, 110);
+        
+        doc.save(`medigo_invoice_${doctor}.pdf`);
+      }).catch(err => {
+        console.error("Failed to load jsPDF", err);
+      });
     }, 1200);
   };
 

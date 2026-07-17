@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
+import { useRole } from "@/features/shared/RoleProvider";
 import { 
   ShieldCheck, 
   Lock, 
@@ -28,6 +29,7 @@ function MembershipCheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { show } = useToast();
+  const { refreshProfile } = useRole();
   const [isSending, setIsSending] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(true);
 
@@ -93,6 +95,7 @@ function MembershipCheckoutContent() {
             });
 
             if (res.success || res.id) {
+              await refreshProfile();
               show(`Welcome to MediGo ${planName}!`, "success");
               router.push("/dashboard");
             }

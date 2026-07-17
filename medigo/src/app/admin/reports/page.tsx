@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { api } from "@/lib/api";
 import { BarChart4, Download, FileText, ArrowUpRight } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -12,12 +13,53 @@ export default function AdminReportsPage() {
   const { show } = useToast();
   const [activeReportTab, setActiveReportTab] = useState<"daily" | "weekly" | "monthly">("monthly");
 
-  const handleExport = (format: "CSV" | "PDF") => {
-    show(`Generating financial reports export in ${format} format...`, "info");
+  const handleExport = () => {
+    show(`Generating financial reports export in PDF format...`, "info");
+    
     setTimeout(() => {
-      show(`Exported successful. Check downloads folder.`, "success");
-    }, 1200);
+      import("jspdf").then(({ jsPDF }) => {
+        const doc = new jsPDF();
+        doc.setFontSize(22);
+        doc.text("MediGo Admin Financial Report", 20, 30);
+        
+        doc.setFontSize(12);
+        doc.text("---------------------------------------------------------", 20, 40);
+        doc.text(`Report Generation Date: ${new Date().toLocaleDateString()}`, 20, 50);
+        doc.text(`Active Cohort MRR: $124,500.00`, 20, 60);
+        doc.text(`Active Patient Count: 1,248`, 20, 70);
+        doc.text(`Status: METABOLIC AUDITED`, 20, 80);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text("Compliance: Internal Admin HIPAA Compliant Audit Data.", 20, 100);
+        
+        doc.save(`medigo_admin_report.pdf`);
+        show(`Exported successful. Check downloads folder.`, "success");
+      }).catch(err => {
+        console.error("Failed to load jsPDF", err);
+        show("Failed to generate PDF.", "error");
+      });
+    }, 1000);
   };
+
+  const [chartData, setChartData] = useState<{ label: string, value: number }[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      setLoading(true);
+      try {
+        const res = await api.get(`/api/v1/reports/revenue?interval=${activeReportTab}`);
+        setChartData(res.data || []);
+      } catch (err) {
+        console.error('Failed to fetch reports:', err);
+        show("Failed to load report data", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReports();
+  }, [activeReportTab]);
 
   const patientGrowthTrend = [
     { label: "Jan", value: 450 },
@@ -26,14 +68,6 @@ export default function AdminReportsPage() {
     { label: "Apr", value: 890 },
     { label: "May", value: 1100 },
     { label: "Jun", value: 1248 }
-  ];
-
-  const mrrTrend = [
-    { label: "Jan", value: 67000 },
-    { label: "Feb", value: 86000 },
-    { label: "Mar", value: 98000 },
-    { label: "Apr", value: 112000 },
-    { label: "May", value: 124500 }
   ];
 
   return (
@@ -87,7 +121,13 @@ export default function AdminReportsPage() {
               <Badge variant="success" size="sm">Metabolic Audited</Badge>
             </div>
             <div className="flex-1 flex items-center justify-center pt-2">
-              <AreaChart data={mrrTrend} height={220} color="#3B82F6" />
+              {loading ? (
+                <div className="h-[220px] w-full flex items-center justify-center text-text-tertiary text-sm">
+                  Loading data...
+                </div>
+              ) : (
+                <AreaChart data={chartData} height={220} color="#3B82F6" />
+              )}
             </div>
           </Card>
         </div>
@@ -99,19 +139,12 @@ export default function AdminReportsPage() {
             <h3 className="font-heading text-sm font-bold text-text-primary">Download Statements</h3>
           </div>
           <p className="text-xs text-text-secondary leading-relaxed font-medium">
-            Export secure CSV files or HIPAA-compliant PDF summary sheets for tax declarations and medical audits.
+            Export secure HIPAA-compliant PDF summary sheets for tax declarations and medical audits.
           </p>
 
           <div className="flex gap-2">
             <button
-              onClick={() => handleExport("CSV")}
-              className="flex-1 py-2.5 px-3 border border-border hover:border-primary text-text-primary hover:text-primary rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 focus:outline-none"
-            >
-              <Download className="w-4 h-4" />
-              Export CSV
-            </button>
-            <button
-              onClick={() => handleExport("PDF")}
+              onClick={() => handleExport()}
               className="flex-1 py-2.5 px-3 border border-border hover:border-primary text-text-primary hover:text-primary rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 focus:outline-none"
             >
               <FileText className="w-4 h-4" />

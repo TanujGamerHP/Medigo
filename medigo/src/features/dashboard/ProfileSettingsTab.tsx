@@ -69,20 +69,11 @@ export function ProfileSettingsTab() {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="settings-lang-select" className="text-xs font-bold text-text-secondary uppercase flex items-center gap-1">
+          <span className="text-xs font-bold text-text-secondary uppercase flex items-center gap-1">
             <Globe className="w-3.5 h-3.5 text-primary shrink-0" />
             Language
-          </label>
-          <select
-            id="settings-lang-select"
-            value={profile.language}
-            onChange={(e) => setProfile({ ...profile, language: e.target.value })}
-            className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
-          >
-            <option value="English">English</option>
-            <option value="Spanish">Español</option>
-            <option value="French">Français</option>
-          </select>
+          </span>
+          <p className="text-sm font-semibold text-text-primary px-1 pt-1">English</p>
         </div>
 
       </div>

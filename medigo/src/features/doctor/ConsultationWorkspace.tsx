@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { ChevronLeft, ShieldAlert, Video, Plus, Check, Printer, FileText, CheckCircle, FileUp, AlertTriangle } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
+import { api } from "@/lib/api";
+import { useRole } from "@/features/shared/RoleProvider";
 
 interface ConsultationWorkspaceProps {
   patientId: string;
@@ -55,8 +57,8 @@ export function ConsultationWorkspace({ patientId, onBack }: ConsultationWorkspa
     window.print();
   };
 
-  // Mock patient dossier based on ID
-  const patientDossier = {
+  const { user } = useRole();
+  const [patientDossier, setPatientDossier] = useState({
     name: "Sarah Miller",
     age: 34,
     gender: "Female",
@@ -73,7 +75,59 @@ export function ConsultationWorkspace({ patientId, onBack }: ConsultationWorkspa
       alt: "24 U/L",
       ast: "19 U/L",
     }
-  };
+  });
+
+  React.useEffect(() => {
+    async function loadPatient() {
+      try {
+        const res = await api.get(`/api/v1/patients/${patientId}`);
+        if (res.success && res.data) {
+          const p = res.data;
+          setPatientDossier(prev => ({
+            ...prev,
+            name: `${p.firstName} ${p.lastName}`,
+            gender: p.gender || prev.gender,
+            height: p.height ? `${p.height} cm` : prev.height,
+            weight: p.weight ? `${p.weight} kg` : prev.weight,
+            // Could calculate real BMI here if we wanted
+          }));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadPatient();
+
+    if (user) {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const sseUrl = `${baseUrl}/api/v1/realtime/events?userId=${user.id}&role=${user.role}`;
+      const eventSource = new EventSource(sseUrl);
+
+      eventSource.onmessage = (event) => {
+        try {
+          const parsed = JSON.parse(event.data);
+          if (parsed.type === "patient.updated" && parsed.payload?.patient) {
+            const p = parsed.payload.patient;
+            if (p.id === patientId) {
+              setPatientDossier(prev => ({
+                ...prev,
+                name: `${p.firstName} ${p.lastName}`,
+                gender: p.gender || prev.gender,
+                height: p.height ? `${p.height} cm` : prev.height,
+                weight: p.weight ? `${p.weight} kg` : prev.weight,
+              }));
+            }
+          }
+        } catch (e) {
+          // Ignore
+        }
+      };
+
+      return () => {
+        eventSource.close();
+      };
+    }
+  }, [patientId, user]);
 
   return (
     <div className="space-y-6">

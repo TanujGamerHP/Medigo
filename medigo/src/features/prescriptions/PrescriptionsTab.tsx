@@ -5,6 +5,7 @@ import { Pill, Calendar, Clock, Download, ArrowRight, CheckCircle2, ShieldCheck,
 import { Button } from "@/components/ui/Button";
 import { useRole } from "@/features/shared/RoleProvider";
 import Link from "next/link";
+import { api } from "@/lib/api";
 
 interface Med {
   id: string;
@@ -21,35 +22,105 @@ export function PrescriptionsTab() {
   const { user } = useRole();
   const [downloading, setDownloading] = useState(false);
   const [refillOrdered, setRefillOrdered] = useState(false);
+  const [activeMeds, setActiveMeds] = useState<Med[]>([]);
 
   const hasMembership = (user?.patient?.memberships?.length || 0) > 0;
 
-  const activeMeds: Med[] = [];
+  React.useEffect(() => {
+    if (!user) return;
+
+    const fetchPrescriptions = async () => {
+      try {
+        const res = await api.get("/api/v1/prescriptions");
+        if (res.success && Array.isArray(res.data)) {
+          const formatted = res.data
+            .filter((p: any) => p.patientId === user?.patient?.id && p.status === 'Active')
+            .map((p: any) => ({
+              id: p.id,
+              name: p.medications || "Unknown Medication",
+              dosage: p.diagnosis || "Standard Dose",
+              frequency: p.instructions || "As directed",
+              refillsRemaining: 1,
+              prescribedBy: p.doctor ? `Dr. ${p.doctor.firstName} ${p.doctor.lastName}` : "Authorized Clinician",
+              datePrescribed: new Date(p.createdAt).toLocaleDateString(),
+              instructions: p.instructions || "No special instructions",
+            }));
+          setActiveMeds(formatted);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchPrescriptions();
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const sseUrl = `${baseUrl}/api/v1/realtime/events?userId=${user.id}&role=${user.role}`;
+    const eventSource = new EventSource(sseUrl);
+
+    eventSource.onmessage = (event) => {
+      try {
+        const parsed = JSON.parse(event.data);
+        if (parsed.event === "prescription.new" && parsed.data?.prescription) {
+          const p = parsed.data.prescription;
+          if (p.patientId === user?.patient?.id) {
+             const newMed = {
+                id: p.id,
+                name: p.medications || "Unknown Medication",
+                dosage: p.diagnosis || "Standard Dose",
+                frequency: p.instructions || "As directed",
+                refillsRemaining: 1,
+                prescribedBy: p.doctor ? `Dr. ${p.doctor.firstName} ${p.doctor.lastName}` : "Authorized Clinician",
+                datePrescribed: new Date(p.createdAt).toLocaleDateString(),
+                instructions: p.instructions || "No special instructions",
+             };
+             setActiveMeds((prev) => [newMed, ...prev]);
+          }
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [user]);
 
   const handleDownloadPdf = () => {
     setDownloading(true);
     setTimeout(() => {
       setDownloading(false);
-      // Simulate file download by creating a fake text anchor
-      const element = document.createElement("a");
-      const file = new Blob([
-        `MEDI GO PRESCRIPTION CARD\n` +
-        `------------------------\n` +
-        `Prescription ID: MG-RX-98210\n` +
-        `Patient Name: Sarah Miller\n` +
-        `Prescribed Date: ${activeMeds[0].datePrescribed}\n` +
-        `Clinician: ${activeMeds[0].prescribedBy}\n` +
-        `Medication: ${activeMeds[0].name}\n` +
-        `Dosage: ${activeMeds[0].dosage} (${activeMeds[0].frequency})\n` +
-        `Instructions: ${activeMeds[0].instructions}\n` +
-        `Refills Remaining: ${activeMeds[0].refillsRemaining}\n` +
-        `Compliance: HIPAA Protected, Certified Pharmacy Dispatch.\n`
-      ], { type: 'text/plain' });
-      element.href = URL.createObjectURL(file);
-      element.download = `medigo_rx_prescription.txt`;
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
+      
+      import("jspdf").then(({ jsPDF }) => {
+        const doc = new jsPDF();
+        
+        doc.setFontSize(22);
+        doc.text("MediGo Prescription Card", 20, 30);
+        
+        doc.setFontSize(12);
+        doc.text("---------------------------------------------------------", 20, 40);
+        doc.text(`Prescription ID: MG-RX-98210`, 20, 50);
+        doc.text(`Patient Name: Sarah Miller`, 20, 60);
+        doc.text(`Prescribed Date: ${activeMeds[0]?.datePrescribed || 'N/A'}`, 20, 70);
+        doc.text(`Clinician: ${activeMeds[0]?.prescribedBy || 'N/A'}`, 20, 80);
+        doc.text(`Medication: ${activeMeds[0]?.name || 'N/A'}`, 20, 90);
+        doc.text(`Dosage: ${activeMeds[0]?.dosage || 'N/A'} (${activeMeds[0]?.frequency || 'N/A'})`, 20, 100);
+        
+        doc.text(`Instructions:`, 20, 110);
+        const splitInstructions = doc.splitTextToSize(activeMeds[0]?.instructions || 'N/A', 170);
+        doc.text(splitInstructions, 20, 120);
+        
+        doc.text(`Refills Remaining: ${activeMeds[0]?.refillsRemaining || 0}`, 20, 140);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text("Compliance: HIPAA Protected, Certified Pharmacy Dispatch.", 20, 160);
+        
+        doc.save(`medigo_rx_prescription.pdf`);
+      }).catch(err => {
+        console.error("Failed to load jsPDF", err);
+      });
     }, 1200);
   };
 

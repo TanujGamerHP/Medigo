@@ -47,7 +47,7 @@ export class AssessmentsService {
       'Maintain a balanced diet and regular physical activity.';
 
     if (bmi >= 30) {
-      result = 'Obese';
+      result = 'Severe Overweight';
       recommendation =
         'Recommended for Wegovy / Mounjaro medical weight management programs.';
     } else if (bmi >= 25) {

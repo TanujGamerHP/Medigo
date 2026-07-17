@@ -1,35 +1,68 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Bell, Trash2, ShieldAlert, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
+import { api } from "@/lib/api";
+import { formatDistanceToNow } from "date-fns";
 
 interface NotificationItem {
-  id: number;
+  id: string;
   text: string;
   time: string;
-  category: "Security" | "Audit" | "System";
+  category: "Security" | "Audit" | "System" | string;
   isRead: boolean;
 }
 
-const initialNotifications: NotificationItem[] = [];
-
 export default function AdminNotificationsPage() {
   const { show } = useToast();
-  const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
-  const [activeCategory, setActiveCategory] = useState<"All" | "Security" | "Audit" | "System">("All");
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [activeCategory, setActiveCategory] = useState<"All" | "Security" | "Audit" | "System" | string>("All");
 
-  const handleMarkAllRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, isRead: true })));
-    show("All administrative notifications marked as read.", "success");
+  const loadNotifications = async () => {
+    try {
+      const res = await api.get('/api/v1/notifications');
+      const dataArray = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+      const formatted = dataArray.map((n: any) => ({
+        id: n.id,
+        text: n.message,
+        time: formatDistanceToNow(new Date(n.createdAt), { addSuffix: true }),
+        category: n.type || "System",
+        isRead: n.isRead,
+      }));
+      setNotifications(formatted);
+    } catch (err) {
+      console.error(err);
+      show("Failed to load notifications", "error");
+    }
   };
 
-  const handleDelete = (id: number) => {
-    setNotifications(notifications.filter(n => n.id !== id));
-    show("Notification dismissed.", "info");
+  useEffect(() => {
+    loadNotifications();
+  }, []);
+
+  const handleMarkAllRead = async () => {
+    try {
+      await api.patch('/api/v1/notifications/read-all', {});
+      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+      show("All administrative notifications marked as read.", "success");
+    } catch (err) {
+      show("Failed to mark all as read.", "error");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await api.delete(`/api/v1/notifications/${id}`);
+      setNotifications(notifications.filter(n => n.id !== id));
+      show("Notification deleted", "success");
+    } catch (err) {
+      console.error("Failed to delete notification");
+      show("Failed to delete notification", "error");
+    }
   };
 
   const filteredNotifications = notifications.filter(n => {
@@ -37,7 +70,7 @@ export default function AdminNotificationsPage() {
     return n.category === activeCategory;
   });
 
-  const categories: ("All" | "Security" | "Audit" | "System")[] = ["All", "Security", "Audit", "System"];
+  const categories: string[] = ["All", "Security", "Audit", "System"];
 
   return (
     <div className="space-y-6">
@@ -110,7 +143,7 @@ export default function AdminNotificationsPage() {
                   <button
                     onClick={() => handleDelete(notif.id)}
                     className="p-1.5 rounded-lg border border-border-light hover:border-red-200 text-text-tertiary hover:text-red-500 transition-colors"
-                    title="Dismiss alert"
+                    title="Delete alert"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

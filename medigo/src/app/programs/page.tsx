@@ -66,7 +66,7 @@ export default function ProgramsPage() {
   ];
 
   const eligibilityChecklist = [
-    "You have a BMI of 30 or greater (Obese classification)",
+    "You have a BMI of 30 or greater (Severe Overweight classification)",
     "You have a BMI of 27 or greater with a weight-related co-morbidity (e.g. hypertension, Type 2 diabetes, high cholesterol)",
     "You do not have a personal or family history of medullary thyroid cancer (MTC)",
     "You do not have Multiple Endocrine Neoplasia syndrome type 2 (MEN 2)",
