@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Video, Calendar, Clock, AlertTriangle, ArrowRight, CheckCircle2, UserCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
 
 interface Appointment {
   id: string;
