@@ -39,6 +39,39 @@ export class MembershipsService {
     ];
   }
 
+  async verifyEligibility(userId: string) {
+    const patient = await this.prisma.patient.findUnique({
+      where: { userId },
+    });
+
+    if (!patient) {
+      throw new NotFoundException('Patient profile not found.');
+    }
+
+    const activeMembership = await this.prisma.membership.findFirst({
+      where: {
+        patientId: patient.id,
+        status: MembershipStatus.Active,
+        expiryDate: { gt: new Date() },
+      },
+      orderBy: { expiryDate: 'desc' },
+    });
+
+    if (activeMembership) {
+      const d = activeMembership.expiryDate;
+      const formattedDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+      
+      return {
+        allowAction: false,
+        currentPlan: activeMembership.planName,
+        expiryDate: formattedDate,
+        message: `You currently have an active ${activeMembership.planName} plan valid until ${formattedDate}. Please wait for your current plan to expire before selecting a new one.`,
+      };
+    }
+
+    return { allowAction: true };
+  }
+
   async subscribe(userId: string, dto: SubscribeDto) {
     const patient = await this.prisma.patient.findUnique({
       where: { userId },
@@ -46,6 +79,30 @@ export class MembershipsService {
 
     if (!patient) {
       throw new NotFoundException('Patient profile not found.');
+    }
+
+    // 1. CHECK CURRENT STATUS
+    const activeMembership = await this.prisma.membership.findFirst({
+      where: {
+        patientId: patient.id,
+        status: MembershipStatus.Active,
+        expiryDate: { gt: new Date() },
+      },
+      orderBy: { expiryDate: 'desc' },
+    });
+
+    // 2. ENFORCE LOCKOUT PERIOD
+    if (activeMembership) {
+      const d = activeMembership.expiryDate;
+      const formattedDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+      
+      // 3. CONSTRUCT RESTRICTION RESPONSE
+      return {
+        allowAction: false,
+        currentPlan: activeMembership.planName,
+        expiryDate: formattedDate,
+        message: `You currently have an active ${activeMembership.planName} plan valid until ${formattedDate}. Please wait for your current plan to expire before selecting a new one.`,
+      };
     }
 
     const startDate = new Date();

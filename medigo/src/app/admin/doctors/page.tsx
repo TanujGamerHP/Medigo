@@ -201,7 +201,7 @@ export default function AdminDoctorsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="pb-4 border-b border-border/60 text-left flex justify-between items-end">
+      <div className="pb-4 border-b border-border/60 text-left flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h2 className="font-heading text-xl font-extrabold text-text-primary">
             Clinical Practitioner Directory

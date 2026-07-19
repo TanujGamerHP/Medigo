@@ -39,8 +39,8 @@ export function MembershipTab() {
       doc.text(`Invoice ID: ${invId}`, 20, 50);
       doc.text(`Billing Date: ${date}`, 20, 60);
       doc.text(`Paid Amount: INR ${amount}.00`, 20, 70);
-      doc.text(`Portal account: Sarah Miller`, 20, 80);
-      doc.text(`Status: SUCCESS / PAID`, 20, 90);
+      doc.text(`Portal account: ${user?.patient?.firstName || ''} ${user?.patient?.lastName || ''}`, 20, 80);
+      doc.text(`Status: Verified & Secure`, 20, 90);
       
       doc.setFontSize(10);
       doc.setTextColor(100);

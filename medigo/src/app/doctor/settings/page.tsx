@@ -69,16 +69,9 @@ export default function DoctorSettingsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in text-left max-w-5xl mx-auto">
       {/* Page Header */}
       <div className="pb-4 border-b border-border/60 text-left">
-        <button
-          onClick={() => router.back()}
-          className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-text-secondary hover:text-primary transition-colors duration-200 group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-          Back
-        </button>
         <h2 className="font-heading text-xl font-extrabold text-text-primary">
           Clinic Settings
         </h2>
@@ -101,17 +94,10 @@ export default function DoctorSettingsPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label htmlFor="set-lang" className="text-xs font-bold text-text-secondary uppercase">Portal Language</label>
-                    <select
-                      id="set-lang"
-                      value={language}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
-                    >
-                      <option value="English">English</option>
-                      <option value="Spanish">Español</option>
-                      <option value="French">Français</option>
-                    </select>
+                    <label className="text-xs font-bold text-text-secondary uppercase">Portal Language</label>
+                    <div className="w-full px-4 py-2.5 rounded-xl border border-border bg-slate-50 text-text-secondary text-xs cursor-not-allowed select-none">
+                      English (Locked)
+                    </div>
                   </div>
 
                   <div className="space-y-1.5">
@@ -150,45 +136,56 @@ export default function DoctorSettingsPage() {
                 </div>
 
                 {/* Notifications Setup */}
-                <div className="border-t border-border-light pt-5 space-y-3">
-                  <span className="text-[10px] text-text-tertiary uppercase font-bold block select-none">Alert Preferences</span>
+                <div className="pt-6 space-y-3">
+                  <span className="text-[10px] text-text-tertiary uppercase font-bold block select-none mb-3">Alert Preferences</span>
                   
-                  <label htmlFor="settings-queue-check" className="flex items-start gap-2.5 cursor-pointer select-none text-xs font-semibold text-text-secondary">
-                    <input
-                      id="settings-queue-check"
-                      type="checkbox"
-                      checked={alertQueue}
-                      onChange={(e) => setAlertQueue(e.target.checked)}
-                      className="w-4.5 h-4.5 text-primary border-border focus:ring-primary/20 shrink-0 mt-0.5"
-                    />
-                    <span>Patient queue alerts (notify when a waiting patient completes intake forms).</span>
-                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <label htmlFor="settings-queue-check" className="flex items-center justify-between p-4 bg-white border border-border rounded-xl cursor-pointer hover:border-primary/50 transition-colors shadow-sm">
+                      <div className="pr-4">
+                        <span className="text-xs font-bold text-text-primary block">Patient Queue Alerts</span>
+                        <span className="text-[10px] text-text-secondary block mt-0.5 leading-relaxed">Notify when a waiting patient completes intake forms.</span>
+                      </div>
+                      <input
+                        id="settings-queue-check"
+                        type="checkbox"
+                        checked={alertQueue}
+                        onChange={(e) => setAlertQueue(e.target.checked)}
+                        className="w-5 h-5 rounded border-border text-primary focus:ring-primary/20 cursor-pointer"
+                      />
+                    </label>
 
-                  <label htmlFor="settings-refills-check" className="flex items-start gap-2.5 cursor-pointer select-none text-xs font-semibold text-text-secondary">
-                    <input
-                      id="settings-refills-check"
-                      type="checkbox"
-                      checked={alertRefills}
-                      onChange={(e) => setAlertRefills(e.target.checked)}
-                      className="w-4.5 h-4.5 text-primary border-border focus:ring-primary/20 shrink-0 mt-0.5"
-                    />
-                    <span>Refill logs updates (notify when pharmacy ships compounding vials).</span>
-                  </label>
+                    <label htmlFor="settings-refills-check" className="flex items-center justify-between p-4 bg-white border border-border rounded-xl cursor-pointer hover:border-primary/50 transition-colors shadow-sm">
+                      <div className="pr-4">
+                        <span className="text-xs font-bold text-text-primary block">Refill Log Updates</span>
+                        <span className="text-[10px] text-text-secondary block mt-0.5 leading-relaxed">Notify when pharmacy ships compounding vials.</span>
+                      </div>
+                      <input
+                        id="settings-refills-check"
+                        type="checkbox"
+                        checked={alertRefills}
+                        onChange={(e) => setAlertRefills(e.target.checked)}
+                        className="w-5 h-5 rounded border-border text-primary focus:ring-primary/20 cursor-pointer"
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 {/* Security Configs */}
-                <div className="border-t border-border-light pt-5 space-y-3">
-                  <span className="text-[10px] text-text-tertiary uppercase font-bold block select-none">EHR Security Clearance</span>
+                <div className="pt-6 space-y-3">
+                  <span className="text-[10px] text-text-tertiary uppercase font-bold block select-none mb-3">EHR Security Clearance</span>
 
-                  <label htmlFor="settings-2fa-clearance" className="flex items-start gap-2.5 cursor-pointer select-none text-xs font-semibold text-text-secondary">
+                  <label htmlFor="settings-2fa-clearance" className="flex items-center justify-between p-4 bg-slate-900 rounded-xl cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
+                    <div className="pr-4">
+                      <span className="text-xs font-bold text-white block">Require Two-Factor (2FA)</span>
+                      <span className="text-[10px] text-slate-400 block mt-0.5 leading-relaxed">Mandate authenticator codes at login for clinical roles.</span>
+                    </div>
                     <input
                       id="settings-2fa-clearance"
                       type="checkbox"
                       checked={twoFactor}
                       onChange={(e) => setTwoFactor(e.target.checked)}
-                      className="w-4.5 h-4.5 text-primary border-border focus:ring-primary/20 shrink-0 mt-0.5"
+                      className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-primary focus:ring-primary/20 cursor-pointer"
                     />
-                    <span>Require two-factor authenticator (2FA) codes at login.</span>
                   </label>
                 </div>
               </div>
@@ -209,15 +206,16 @@ export default function DoctorSettingsPage() {
                 <h3 className="font-heading text-sm font-bold text-text-primary">Update Secure Password</h3>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-4 max-w-md">
                 <div className="space-y-1.5">
                   <label htmlFor="old-pass" className="text-xs font-bold text-text-secondary uppercase">Current Password</label>
                   <input
                     id="old-pass"
                     type="password"
+                    placeholder="Enter current password"
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-white text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -225,19 +223,21 @@ export default function DoctorSettingsPage() {
                   <input
                     id="new-pass"
                     type="password"
+                    placeholder="Create new password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-white text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label htmlFor="confirm-pass" className="text-xs font-bold text-text-secondary uppercase">Confirm New</label>
+                  <label htmlFor="confirm-pass" className="text-xs font-bold text-text-secondary uppercase">Confirm New Password</label>
                   <input
                     id="confirm-pass"
                     type="password"
+                    placeholder="Confirm new password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-white text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
@@ -253,16 +253,24 @@ export default function DoctorSettingsPage() {
 
         {/* Right Column: Danger actions */}
         <div className="lg:col-span-4 space-y-6">
-          <Card padding="md" className="space-y-4">
-            <h3 className="font-heading text-sm font-bold text-text-primary pb-2 border-b border-border-light">
-              Portal Session
-            </h3>
+          <Card padding="lg" className="space-y-6 flex flex-col items-center text-center bg-gradient-to-b from-white to-slate-50">
+            <div className="w-16 h-16 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center shadow-inner">
+              <AlertTriangle className="w-8 h-8" />
+            </div>
+            <div>
+              <h3 className="font-heading text-lg font-black text-text-primary">
+                Active Session
+              </h3>
+              <p className="text-xs text-text-secondary mt-1 leading-relaxed">
+                You are currently logged in with Clinical Practitioner privileges. Closing your session will require re-authentication.
+              </p>
+            </div>
 
             <button
               onClick={handleLogout}
-              className="w-full py-2.5 bg-red-50 hover:bg-primary text-red-600 hover:text-white rounded-xl text-xs font-bold border border-red-200 hover:border-primary flex items-center justify-center gap-1.5 transition-all duration-300 focus:outline-none"
+              className="w-full py-3 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white rounded-xl text-sm font-bold border border-red-200 flex items-center justify-center gap-2 transition-all duration-300 focus:outline-none group shadow-sm hover:shadow-md"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
               Sign Out of Clinic
             </button>
           </Card>

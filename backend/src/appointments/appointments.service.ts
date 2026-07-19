@@ -6,12 +6,14 @@ import {
 import { PrismaService } from '../database/prisma.service';
 import { AppointmentStatus, PrescriptionStatus } from '@prisma/client';
 import { RealtimeService } from '../realtime/realtime.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class AppointmentsService {
   constructor(
     private prisma: PrismaService,
     private realtimeService: RealtimeService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async findAll() {
@@ -253,6 +255,13 @@ export class AppointmentsService {
       meetingLink,
       patientUserId: updated.patient.userId,
     });
+
+    await this.notificationsService.createAndEmitNotification(
+      updated.patient.userId,
+      'Meeting Link Shared',
+      `Your doctor has shared a meeting link for your consultation.`,
+      'appointment'
+    );
 
     return updated;
   }

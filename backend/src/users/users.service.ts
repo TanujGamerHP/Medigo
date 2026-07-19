@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -19,7 +19,18 @@ export class UsersService {
         role: true,
         createdAt: true,
         patient: {
-          include: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            dob: true,
+            gender: true,
+            height: true,
+            weight: true,
+            bloodGroup: true,
+            emergencyContact: true,
+            profileImage: true,
+            status: true,
             memberships: {
               orderBy: { createdAt: 'desc' }
             },
@@ -117,11 +128,28 @@ export class UsersService {
   async purchaseMembership(userId: string, planName: string, price: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { role: true, patient: true },
+      select: { 
+        role: true, 
+        patient: {
+          select: {
+            id: true,
+            memberships: {
+              where: { status: 'Active' },
+              orderBy: { createdAt: 'desc' }
+            }
+          }
+        } 
+      },
     });
 
     if (!user || user.role !== 'Patient' || !user.patient) {
       throw new NotFoundException('Patient account not found');
+    }
+
+    if (user.patient.memberships && user.patient.memberships.length > 0) {
+      const activeMembership = user.patient.memberships[0];
+      const expiry = new Date(activeMembership.expiryDate);
+      throw new BadRequestException(`You already have an active plan. It will expire on ${expiry.toLocaleDateString()}. After this, you can purchase another plan.`);
     }
 
     const startDate = new Date();

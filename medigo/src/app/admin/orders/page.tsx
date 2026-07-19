@@ -60,18 +60,18 @@ export default function AdminOrdersPage() {
           </p>
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+          <div className="relative w-full sm:w-auto">
             <Search className="w-4 h-4 text-text-tertiary absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="search" 
               placeholder="Search by ID or Patient..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 w-64"
+              className="pl-9 pr-4 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 w-full sm:w-64"
             />
           </div>
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="whitespace-nowrap">
             Export CSV
           </Button>
         </div>
@@ -110,9 +110,9 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Orders Table */}
-      <Card className="overflow-hidden p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
+      <Card className="p-0 overflow-hidden w-full max-w-full">
+        <div className="overflow-x-auto w-full max-w-full">
+          <table className="w-full text-left text-sm whitespace-nowrap min-w-[600px]">
             <thead className="bg-slate-50 border-b border-border">
               <tr>
                 <th className="px-6 py-4 font-heading font-bold text-text-secondary uppercase tracking-wider text-xs">Order ID</th>

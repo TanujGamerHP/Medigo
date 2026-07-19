@@ -32,6 +32,23 @@ export class MembershipsController {
     };
   }
 
+  @Get('verify-eligibility')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.Patient)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Verify patient membership eligibility',
+    description: 'Checks if the patient has an active membership that blocks them from purchasing another plan.',
+  })
+  @ApiResponse({ status: 200, description: 'Eligibility check completed.' })
+  async verifyEligibility(@RequestUser('sub') userId: string) {
+    const data = await this.membershipsService.verifyEligibility(userId);
+    return {
+      message: 'Eligibility verified',
+      data,
+    };
+  }
+
   @Post('subscribe')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.Patient)
@@ -50,6 +67,12 @@ export class MembershipsController {
     @Body() dto: SubscribeDto,
   ) {
     const data = await this.membershipsService.subscribe(userId, dto);
+    
+    // If blocked by active subscription rule
+    if (data && 'allowAction' in data && data.allowAction === false) {
+      return data; // Return the exact payload requested
+    }
+
     return {
       message: 'Subscribed to plan successfully',
       data,

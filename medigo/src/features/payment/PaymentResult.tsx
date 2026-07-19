@@ -58,8 +58,8 @@ export function PaymentResult({ status, doctor, date, time, total, mode }: Payme
         doc.setFontSize(12);
         doc.text("---------------------------------------------------------", 20, 40);
         doc.text(`Invoice Reference ID: ${invoiceId || "MG-XXXXX"}`, 20, 50);
-        doc.text(`Patient Name: Sarah Miller`, 20, 60);
-        doc.text(`Clinician: ${doctorName}`, 20, 70);
+        doc.text(`Patient Name: ${user?.patient?.firstName || ''} ${user?.patient?.lastName || ''}`, 20, 60);
+        doc.text(`Transaction Ref: ${paymentId || "TXN-9382-771"}`, 20, 70);
         doc.text(`Appointment: ${date} at ${time} (${mode} mode)`, 20, 80);
         doc.text(`Paid Amount: INR ${total}.00`, 20, 90);
         

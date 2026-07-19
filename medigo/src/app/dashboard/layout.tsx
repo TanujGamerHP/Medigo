@@ -17,7 +17,8 @@ import {
   Menu,
   X,
   Stethoscope,
-  Search
+  Search,
+  Receipt
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import { BackButton } from "@/components/ui/BackButton";
@@ -37,6 +38,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { label: "Prescriptions", href: "/dashboard/prescriptions", icon: Pill },
   { label: "Membership", href: "/dashboard/membership", icon: CreditCard },
   { label: "Orders", href: "/dashboard/orders", icon: ShoppingBag },
+  { label: "Invoices", href: "/dashboard/invoices", icon: Receipt },
   { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { label: "Profile", href: "/dashboard/profile", icon: User },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },

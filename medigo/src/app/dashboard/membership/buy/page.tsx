@@ -50,7 +50,7 @@ export default function BuyMembershipPage() {
       const diffTime = expiry.getTime() - today.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       
-      show(`Your plan is going on and it will expire on ${expiry.toLocaleDateString()} (${diffDays} days left)`, "error");
+      show(`You already have an active plan. It will expire on ${expiry.toLocaleDateString()}. After this, you can purchase another plan.`, "error");
       return;
     }
 
@@ -71,8 +71,8 @@ export default function BuyMembershipPage() {
         } else {
           show("Payment failed. Please try again.", "error");
         }
-      } catch (err) {
-        show("Payment failed. Please try again.", "error");
+      } catch (err: any) {
+        show(err.message || "Payment failed. Please try again.", "error");
       } finally {
         setLoading(false);
       }

@@ -46,7 +46,12 @@ export function LoginUX() {
       // Simulate backend sync for the frontend context
       const randomPatientEmail = firebaseEmail || `user.${Math.floor(Math.random() * 1000)}@medigo.com`;
       
-      const role = randomPatientEmail === "swayam1529.be23@chitkarauniversity.edu.in" ? "Doctor" : "Patient";
+      let role = "Patient";
+      if (randomPatientEmail === "swayam1529.be23@chitkarauniversity.edu.in") {
+        role = "Doctor";
+      } else if (randomPatientEmail === "medigo.connect@gmail.com") {
+        role = "Admin";
+      }
 
       // Auto-register/sync the user to the NestJS backend
       await api.post("/api/v1/auth/register", {
@@ -67,6 +72,12 @@ export function LoginUX() {
 
       if (verifyRes.data) {
         const { accessToken, refreshToken, user } = verifyRes.data;
+        // Force the role to ensure frontend routing is correct during bypasses
+        if (randomPatientEmail === "swayam1529.be23@chitkarauniversity.edu.in") {
+          user.role = "Doctor";
+        } else if (randomPatientEmail === "medigo.connect@gmail.com") {
+          user.role = "Admin";
+        }
         loginUser(accessToken, refreshToken, user);
       }
     } catch (err: any) {
@@ -81,10 +92,13 @@ export function LoginUX() {
 
     setVerifying(true);
     try {
-      // FOR TESTING ONLY: Bypass Firebase for the specific doctor account
-      if (email === "swayam1529.be23@chitkarauniversity.edu.in" && password === "Swayam@30") {
+      // FOR TESTING ONLY: Bypass Firebase for the specific test accounts
+      const isDoctorTest = email === "swayam1529.be23@chitkarauniversity.edu.in" && password === "Swayam@30";
+      const isAdminTest = email === "medigo.connect@gmail.com" && password === "medigo@485611";
+
+      if (isDoctorTest || isAdminTest) {
         show("Logged in via bypass.", "success");
-        await syncWithBackend(email, "Swayam Khanna");
+        await syncWithBackend(email, isDoctorTest ? "Dr. Swayam Khanna" : "System Admin");
         return;
       }
 

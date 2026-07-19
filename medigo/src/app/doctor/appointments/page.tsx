@@ -97,7 +97,7 @@ export default function DoctorAppointmentsPage() {
                 <button
                   key={i}
                   onClick={() => setSelectedDay(d.fullDate)}
-                  className={`p-3 rounded-xl flex flex-col items-center gap-1 transition-all ${
+                  className={`p-1.5 sm:p-3 rounded-xl flex flex-col items-center gap-1 transition-all ${
                     d.fullDate === selectedDay
                       ? "bg-slate-900 text-white font-bold"
                       : "hover:bg-slate-50 text-text-secondary"
