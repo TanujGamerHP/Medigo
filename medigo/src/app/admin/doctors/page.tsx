@@ -364,7 +364,7 @@ export default function AdminDoctorsPage() {
             </div>
           </div>
           <div className="pt-4 flex justify-end gap-2">
-            <Button type="button" variant="neutral" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={isAdding}>
               {isAdding ? "Adding..." : "Add Doctor"}
             </Button>

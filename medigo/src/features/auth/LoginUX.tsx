@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { auth, googleProvider } from "@/lib/firebase";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { motion } from "framer-motion";
 
 export function LoginUX() {
   const router = useRouter();
@@ -136,20 +137,28 @@ export function LoginUX() {
     }
   };
 
-
   return (
-    <div className="bg-background min-h-[60vh] flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-border/60 shadow-xl space-y-6 text-left relative overflow-hidden">
+    <div className="bg-transparent min-h-[60vh] flex items-center justify-center p-4 relative z-10 w-full">
+      <motion.div 
+        initial={{ opacity: 0, y: 30, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="max-w-md w-full bg-white p-8 sm:p-10 rounded-3xl border border-border/40 shadow-2xl space-y-6 text-left relative overflow-hidden"
+      >
         
         <div className="absolute top-4 left-4 z-20">
           <BackButton variant="ghost" size="sm" label="" className="text-text-secondary hover:text-text-primary hover:bg-slate-50" />
         </div>
 
-        {/* Subtle decorative glow */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+        {/* Subtle decorative glows */}
+        <div className="absolute -top-32 -right-32 w-80 h-80 bg-primary/20 rounded-full blur-[80px] pointer-events-none"></div>
+        <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none"></div>
 
-        <div className="space-y-2 text-center relative z-10 pt-2">
-          <h2 className="font-heading font-black text-3xl text-text-primary tracking-tight">Sign In</h2>
+        <div className="space-y-3 text-center relative z-10 pt-4">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary-50 to-primary-100 text-primary mb-2 shadow-sm border border-primary/20 mx-auto">
+            <Lock className="w-7 h-7" />
+          </div>
+          <h2 className="font-heading font-black text-3xl text-text-primary tracking-tight">Welcome Back</h2>
           <p className="text-sm text-text-secondary">Enter credentials to securely log into your MediGo portal.</p>
         </div>
 
@@ -171,8 +180,8 @@ export function LoginUX() {
                   setErrors({});
                 }}
                 placeholder="patient@medigo.com"
-                className={`w-full pl-11 pr-4 py-3 rounded-xl border bg-background text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
-                  errors.email ? "border-error focus:ring-error/20" : "border-border hover:border-primary/50"
+                className={`w-full pl-11 pr-4 py-3.5 rounded-xl border bg-slate-50/50 text-text-primary text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all ${
+                  errors.email ? "border-error focus:ring-error/20" : "border-border/80 hover:border-border-dark"
                 }`}
               />
             </div>
@@ -195,8 +204,8 @@ export function LoginUX() {
                   setErrors({});
                 }}
                 placeholder="••••••••"
-                className={`w-full pl-11 pr-4 py-3 rounded-xl border bg-background text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
-                  errors.password ? "border-error focus:ring-error/20" : "border-border hover:border-primary/50"
+                className={`w-full pl-11 pr-4 py-3.5 rounded-xl border bg-slate-50/50 text-text-primary text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all ${
+                  errors.password ? "border-error focus:ring-error/20" : "border-border/80 hover:border-border-dark"
                 }`}
               />
             </div>
@@ -213,7 +222,7 @@ export function LoginUX() {
             type="submit"
             isLoading={verifying}
             fullWidth
-            className="py-3.5 text-sm font-bold shadow-md hover:shadow-lg transition-all"
+            className="py-4 text-sm font-bold shadow-glow hover:shadow-glow-lg transition-all rounded-xl"
           >
             Secure Sign In
           </Button>
@@ -249,7 +258,7 @@ export function LoginUX() {
             Register Account
           </Link>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
