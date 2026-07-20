@@ -42,7 +42,7 @@ export function LoginUX() {
   };
 
   // Sync Firebase user with our own backend
-  const syncWithBackend = async (firebaseEmail: string | null, firebaseName: string | null) => {
+  const syncWithBackend = async (firebaseEmail: string | null, firebaseName: string | null, isSSO: boolean = false) => {
     try {
       // Simulate backend sync for the frontend context
       const randomPatientEmail = firebaseEmail || `user.${Math.floor(Math.random() * 1000)}@medigo.com`;
@@ -54,14 +54,16 @@ export function LoginUX() {
         role = "Admin";
       }
 
-      // Auto-register/sync the user to the NestJS backend
-      await api.post("/api/v1/auth/register", {
-        email: randomPatientEmail,
-        password: "OAuthSecurePassword123!",
-        role: role,
-        name: firebaseName || "MediGo Portal User",
-        phone: "555-123-4567"
-      }, { silent: true }).catch(() => { /* Ignore if already registered */ });
+      if (isSSO) {
+        // Auto-register/sync the user to the NestJS backend ONLY for SSO
+        await api.post("/api/v1/auth/register", {
+          email: randomPatientEmail,
+          password: "OAuthSecurePassword123!",
+          role: role,
+          name: firebaseName || "MediGo Portal User",
+          phone: "555-123-4567"
+        }, { silent: true }).catch(() => { /* Ignore if already registered */ });
+      }
 
       const otpRes = await api.post("/api/v1/auth/send-otp", { email: randomPatientEmail });
       const code = otpRes.data.simulatedCode;
@@ -99,13 +101,13 @@ export function LoginUX() {
 
       if (isDoctorTest || isAdminTest) {
         show("Logged in via bypass.", "success");
-        await syncWithBackend(email, isDoctorTest ? "Dr. Swayam Khanna" : "System Admin");
+        await syncWithBackend(email, isDoctorTest ? "Dr. Swayam Khanna" : "System Admin", false);
         return;
       }
 
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       show("Successfully logged in securely via Firebase.", "success");
-      await syncWithBackend(userCredential.user.email, userCredential.user.displayName);
+      await syncWithBackend(userCredential.user.email, userCredential.user.displayName, false);
     } catch (err: any) {
       setVerifying(false);
       
@@ -128,7 +130,7 @@ export function LoginUX() {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       show("Successfully authenticated via Google.", "success");
-      await syncWithBackend(result.user.email, result.user.displayName);
+      await syncWithBackend(result.user.email, result.user.displayName, true);
     } catch (err: any) {
       setVerifying(false);
       if (err.code !== 'auth/popup-closed-by-user') {

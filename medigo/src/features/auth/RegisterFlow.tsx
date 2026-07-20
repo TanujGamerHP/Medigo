@@ -156,10 +156,8 @@ export function RegisterFlow() {
       return res;
     } catch (err: any) {
       console.error("Backend Sync Error:", err);
-      if (autoLogin) {
-        throw new Error(err.message || "Could not connect to the server.");
-      }
-      return null;
+      // ALWAYS throw the error so the UI can display it, preventing silent backend registration failures.
+      throw new Error(err.message || "Could not connect to the server.");
     }
   };
 
