@@ -5,7 +5,6 @@ import { Video, Calendar, Clock, AlertTriangle, ArrowRight, CheckCircle2, UserCh
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { api } from "@/lib/api";
-import { useToast } from "@/components/ui/Toast";
 
 interface Appointment {
   id: string;
