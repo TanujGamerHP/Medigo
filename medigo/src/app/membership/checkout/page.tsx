@@ -32,6 +32,7 @@ function MembershipCheckoutContent() {
   const { refreshProfile } = useRole();
   const [isSending, setIsSending] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(true);
+  const [restrictionData, setRestrictionData] = useState<any>(null);
 
   // Read raw plan name, but normalize it
   const rawPlanName = searchParams.get("plan") || "1-month";
@@ -55,6 +56,19 @@ function MembershipCheckoutContent() {
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
     document.body.appendChild(script);
+
+    // Verify Eligibility
+    const verifyPlan = async () => {
+      try {
+        const res = await api.get("/api/v1/membership/verify-eligibility");
+        if (res.data && res.data.allowAction === false) {
+          setRestrictionData(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to verify eligibility", err);
+      }
+    };
+    verifyPlan();
   }, []);
 
   const handleSubscribe = async (e: React.FormEvent) => {
@@ -130,6 +144,38 @@ function MembershipCheckoutContent() {
 
   return (
     <div className="bg-[#fafafa] min-h-screen pt-24 pb-16 font-sans">
+      {/* Restriction Modal */}
+      {restrictionData && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 text-center animate-slide-up">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Lock className="w-8 h-8" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-2">Upgrade Locked</h3>
+            <p className="text-slate-600 text-sm leading-relaxed mb-6">
+              {restrictionData.message}
+            </p>
+            <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 mb-8 text-left">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Current Plan</span>
+                <span className="font-bold text-slate-900">{restrictionData.currentPlan}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Expires On</span>
+                <span className="font-bold text-red-600">{restrictionData.expiryDate}</span>
+              </div>
+            </div>
+            <Button
+              onClick={() => router.push("/dashboard")}
+              fullWidth
+              className="py-3 font-bold bg-slate-900 hover:bg-slate-800 text-white"
+            >
+              Return to Dashboard
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="container-custom max-w-6xl mx-auto px-4">
         
         {/* Header Section */}

@@ -23,20 +23,22 @@ export default function DoctorPatientsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="text-left">
-        <button
-          onClick={() => router.back()}
-          className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-text-secondary hover:text-primary transition-colors duration-200 group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-          Back
-        </button>
-        <h2 className="font-heading text-xl font-extrabold text-text-primary">
-          Clinical Patient Queue
-        </h2>
-        <p className="text-xs text-text-secondary mt-0.5">
-          Select a waiting patient to review their AI assessment file and start their live consultation session.
-        </p>
+      <div className="text-left flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+        <div>
+          <button
+            onClick={() => router.back()}
+            className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-text-secondary hover:text-primary transition-colors duration-200 group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
+            Back
+          </button>
+          <h2 className="font-heading text-xl font-extrabold text-text-primary">
+            Clinical Patient Queue
+          </h2>
+          <p className="text-xs text-text-secondary mt-0.5">
+            Select a waiting patient to review their AI assessment file and start their live consultation session.
+          </p>
+        </div>
       </div>
 
       <PatientQueue onSelectPatient={setSelectedPatientId} />

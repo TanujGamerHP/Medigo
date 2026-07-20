@@ -20,7 +20,8 @@ import {
   Menu,
   X,
   Stethoscope,
-  Search
+  Search,
+  CreditCard
 } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import { api } from "@/lib/api";
@@ -38,6 +39,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { label: "Assessments", href: "/doctor/assessments", icon: FileText },
   { label: "Prescriptions", href: "/doctor/prescriptions", icon: Pill },
   { label: "Availability", href: "/doctor/availability", icon: Clock },
+  { label: "Payments", href: "/doctor/payments", icon: CreditCard },
   { label: "Notifications", href: "/doctor/notifications", icon: Bell },
   { label: "Profile", href: "/doctor/profile", icon: User },
   { label: "Settings", href: "/doctor/settings", icon: Settings },
@@ -95,9 +97,7 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
 
   const handleLogout = () => {
     show("Logging out of clinic portal...", "info");
-    setTimeout(() => {
-      router.push("/login");
-    }, 1000);
+    router.push("/login");
   };
 
   const isActive = (href: string) => {
@@ -124,10 +124,10 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <div className="bg-background min-h-screen flex flex-col pt-16">
+    <div className="bg-background min-h-screen flex flex-col overflow-x-hidden">
       
       {/* Top Header */}
-      <header className="bg-surface border-b border-border/80 h-16 flex items-center justify-between px-6 z-40 fixed top-0 left-0 right-0">
+      <header className="bg-surface border-b border-border/80 h-16 flex items-center justify-between px-4 sm:px-6 z-40 fixed top-0 left-0 right-0">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsSidebarOpen((o) => !o)}
@@ -148,7 +148,7 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
         </div>
 
         {/* Search Bar - Desktop Only */}
-        <div className="hidden md:flex items-center relative w-80">
+        <div className="hidden lg:flex items-center relative w-80">
           <Search className="w-4 h-4 text-text-secondary absolute left-3 pointer-events-none" />
           <input
             type="text"
@@ -182,8 +182,10 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
                 (user?.doctor?.firstName?.[0] || "") + (user?.doctor?.lastName?.[0] || "") || "DR"
               )}
             </div>
-            <div className="hidden sm:block text-left">
-              <p className="text-xs font-bold text-text-primary leading-none">Dr. {user?.doctor?.firstName} {user?.doctor?.lastName}</p>
+            <div className="hidden lg:block text-left">
+              <p className="text-xs font-bold text-text-primary leading-none">
+                {user?.doctor?.firstName?.startsWith('Dr.') ? '' : 'Dr. '}{user?.doctor?.firstName} {user?.doctor?.lastName}
+              </p>
               <p className="text-[10px] text-text-secondary mt-1 leading-none">{user?.doctor?.specialization || "General"}</p>
             </div>
           </div>
@@ -191,7 +193,7 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
       </header>
 
       {/* Main Workspace container */}
-      <div className="flex flex-1 relative">
+      <div className="flex flex-1 relative pt-16">
         
         {/* Desktop Sidebar */}
         <aside className="hidden xl:flex bg-surface border-r border-border/80 w-[280px] flex-col justify-between fixed bottom-0 top-16 left-0 z-30">
@@ -274,8 +276,8 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
         )}
 
         {/* Main Content Area */}
-        <main className="flex-1 xl:pl-[280px] p-6 sm:p-8 overflow-y-auto bg-background min-h-screen">
-          <div className="max-w-7xl mx-auto w-full pb-20 xl:pb-0">
+        <main className="flex-1 xl:pl-[280px] p-4 sm:p-6 lg:p-8 overflow-y-auto overflow-x-hidden bg-background w-full">
+          <div className="max-w-7xl mx-auto w-full pb-20 xl:pb-8">
             {children}
           </div>
         </main>

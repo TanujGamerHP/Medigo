@@ -43,7 +43,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right side form block */}
-      <div className="lg:col-span-7 flex items-center justify-center pt-16 lg:pt-0 bg-white">
+      <div className="lg:col-span-7 flex items-center justify-center pt-16 lg:pt-0 bg-background">
         <div className="w-full">
           <LoginUX />
         </div>

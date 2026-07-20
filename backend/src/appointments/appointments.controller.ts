@@ -7,6 +7,7 @@ import {
   Delete,
   Body,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -269,14 +270,19 @@ export class AppointmentsController {
     @Body() data: any,
     @RequestUser('sub') userId: string,
   ) {
-    const result = await this.appointmentsService.completeConsultation(
-      id,
-      userId,
-      data,
-    );
-    return {
-      message: 'Consultation completed and report submitted successfully',
-      data: result,
-    };
+    try {
+      const result = await this.appointmentsService.completeConsultation(
+        id,
+        userId,
+        data,
+      );
+      return {
+        message: 'Consultation completed and report submitted successfully',
+        data: result,
+      };
+    } catch (error: any) {
+      console.error("COMPLETE_CONSULTATION_ERROR:", error);
+      throw new BadRequestException(`Detailed Error: ${error.message} - ${error.stack}`);
+    }
   }
 }

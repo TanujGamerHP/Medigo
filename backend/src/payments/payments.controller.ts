@@ -5,12 +5,15 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RequestUser } from '../common/decorators/user.decorator';
 import { NotificationsService } from '../notifications/notifications.service';
 
+import { PrismaService } from '../database/prisma.service';
+
 @Controller('api/v1/payments')
 export class PaymentsController {
   constructor(
     private readonly paymentsService: PaymentsService,
     private readonly appointmentsService: AppointmentsService,
     private readonly notificationsService: NotificationsService,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Post('create-order')
@@ -62,6 +65,21 @@ export class PaymentsController {
       `Payment received for appointment ${appointment.id}. Plan Price: Paid.`,
       'Audit'
     );
+
+    // 4. Notify Doctor
+    if (appointmentDetails.doctorId) {
+      const doctor = await this.prisma.doctor.findUnique({
+        where: { id: appointmentDetails.doctorId },
+      });
+      if (doctor && doctor.userId) {
+        await this.notificationsService.createAndEmitNotification(
+          doctor.userId,
+          'Payment Received',
+          `A patient has successfully paid ₹${doctor.consultationFee} for a consultation.`,
+          'Payment'
+        );
+      }
+    }
 
     return {
       success: true,

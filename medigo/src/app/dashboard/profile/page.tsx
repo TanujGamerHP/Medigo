@@ -212,8 +212,9 @@ export default function ProfilePage() {
                     <input
                       id="profile-phone-input"
                       type="text"
+                      maxLength={10}
                       value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
                       className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
@@ -222,56 +223,77 @@ export default function ProfilePage() {
                     <label htmlFor="profile-age-input" className="text-xs font-bold text-text-secondary uppercase">Age</label>
                     <input
                       id="profile-age-input"
-                      type="number"
+                      type="text"
+                      maxLength={3}
                       value={form.age}
-                      onChange={(e) => setForm({ ...form, age: e.target.value })}
+                      onChange={(e) => setForm({ ...form, age: e.target.value.replace(/\D/g, '') })}
                       className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
                   <div className="space-y-1.5">
                     <label htmlFor="profile-gender-input" className="text-xs font-bold text-text-secondary uppercase">Gender</label>
-                    <input
+                    <select
                       id="profile-gender-input"
-                      type="text"
                       value={form.gender}
                       onChange={(e) => setForm({ ...form, gender: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </div>
 
                   <div className="space-y-1.5">
                     <label htmlFor="profile-height-input" className="text-xs font-bold text-text-secondary uppercase">Height</label>
-                    <input
-                      id="profile-height-input"
-                      type="text"
-                      value={form.height}
-                      onChange={(e) => setForm({ ...form, height: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
+                    <div className="relative">
+                      <input
+                        id="profile-height-input"
+                        type="text"
+                        maxLength={6}
+                        value={form.height.replace(/[^\d.]/g, '')}
+                        onChange={(e) => setForm({ ...form, height: e.target.value.replace(/[^\d.]/g, '') })}
+                        className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 pr-8"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-text-secondary font-medium select-none pointer-events-none">cm</span>
+                    </div>
                   </div>
 
                   <div className="space-y-1.5">
                     <label htmlFor="profile-weight-input" className="text-xs font-bold text-text-secondary uppercase">Weight</label>
-                    <input
-                      id="profile-weight-input"
-                      type="text"
-                      value={form.weight}
-                      onChange={(e) => setForm({ ...form, weight: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
+                    <div className="relative">
+                      <input
+                        id="profile-weight-input"
+                        type="text"
+                        maxLength={6}
+                        value={form.weight.replace(/[^\d.]/g, '')}
+                        onChange={(e) => setForm({ ...form, weight: e.target.value.replace(/[^\d.]/g, '') })}
+                        className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 pr-8"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-text-secondary font-medium select-none pointer-events-none">kg</span>
+                    </div>
                   </div>
 
                   <div className="space-y-1.5">
                     <label htmlFor="profile-blood-input" className="text-xs font-bold text-text-secondary uppercase">Blood Group</label>
-                    <input
+                    <select
                       id="profile-blood-input"
-                      type="text"
                       value={form.bloodGroup}
                       onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      placeholder="e.g. O+, A-, B+"
-                    />
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
+                    >
+                      <option value="">Select Group</option>
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                      <option value="O+">O+</option>
+                      <option value="O-">O-</option>
+                    </select>
                   </div>
                 </div>
 

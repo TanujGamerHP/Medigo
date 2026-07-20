@@ -96,21 +96,6 @@ export default function ConsultationRoom() {
         if (isDoctor && res.data.status !== "Completed") {
           api.post(`/api/v1/appointments/${id}/ping`, {}).catch(() => {});
         }
-
-        // Fetch patient medical dossier if user is doctor
-        if (isDoctor && !patientDetails && res.data.patientId) {
-          setLoadingPatient(true);
-          try {
-            const patientRes = await api.get(`/api/v1/doctor/patient/${res.data.patientId}`);
-            if (patientRes.success && patientRes.data) {
-              setPatientDetails(patientRes.data);
-            }
-          } catch (pErr) {
-            console.error("Failed to load patient dossier", pErr);
-          } finally {
-            setLoadingPatient(false);
-          }
-        }
       }
     } catch (err) {
       show("Failed to load consultation room", "error");
@@ -118,6 +103,24 @@ export default function ConsultationRoom() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isDoctor && appointment?.patientId && !patientDetails) {
+      setLoadingPatient(true);
+      api.get(`/api/v1/doctor/patient/${appointment.patientId}`)
+        .then((patientRes) => {
+          if (patientRes.success && patientRes.data) {
+            setPatientDetails(patientRes.data);
+          }
+        })
+        .catch((pErr) => {
+          console.error("Failed to load patient dossier", pErr);
+        })
+        .finally(() => {
+          setLoadingPatient(false);
+        });
+    }
+  }, [isDoctor, appointment?.patientId]);
 
   useEffect(() => {
     fetchDetails();
@@ -504,8 +507,11 @@ export default function ConsultationRoom() {
           
           {/* Main Interaction Room Card */}
           {type.includes("video") && (
-            <Card padding="md" className="border-primary/20 shadow-md bg-slate-50/50 flex flex-col items-center justify-center min-h-[250px] text-center">
-              <Video className="w-10 h-10 text-primary mb-4" />
+            <Card padding="md" className="border-primary/40 shadow-xl shadow-primary/5 bg-gradient-to-b from-white to-primary-50/20 flex flex-col items-center justify-center min-h-[250px] text-center relative overflow-hidden">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary-400 to-primary-600"></div>
+              <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mb-5 shadow-inner">
+                <Video className="w-7 h-7 text-primary" />
+              </div>
               <h2 className="text-base font-bold text-text-primary mb-1">Secure Video Room</h2>
               <p className="text-xs text-text-secondary max-w-sm mb-6">
                 {isDoctor 
@@ -514,28 +520,28 @@ export default function ConsultationRoom() {
               </p>
 
               {isDoctor ? (
-                <div className="flex gap-2 w-full max-w-md">
+                <div className="flex flex-col sm:flex-row gap-2 w-full max-w-md">
                   <input
                     type="url"
                     placeholder="https://meet.google.com/..."
                     value={meetingLink}
                     onChange={(e) => setMeetingLink(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-xl border border-border focus:border-primary outline-none text-xs"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-border focus:border-primary outline-none text-xs bg-white shadow-sm transition-all focus:ring-2 focus:ring-primary/20"
                   />
-                  <Button onClick={handleUpdateLink} size="sm" disabled={!meetingLink}>
-                    Share
+                  <Button onClick={handleUpdateLink} size="sm" disabled={!meetingLink} className="py-2.5 shadow-md">
+                    Share Link
                   </Button>
                 </div>
               ) : (
                 <div>
                   {appointment.meetingLink ? (
                     <a href={appointment.meetingLink} target="_blank" rel="noopener noreferrer">
-                      <Button size="sm" className="font-bold">
+                      <Button size="sm" className="font-bold shadow-md shadow-primary/20">
                         Join Meeting Now
                       </Button>
                     </a>
                   ) : (
-                    <Badge variant="neutral">Waiting for link...</Badge>
+                    <Badge variant="neutral" className="py-1.5 px-4">Waiting for link...</Badge>
                   )}
                 </div>
               )}
@@ -619,18 +625,18 @@ export default function ConsultationRoom() {
               ) : patientDetails ? (
                 <div className="space-y-4">
                   {/* Demographics */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs border-b border-border-light pb-3">
-                    <div>
-                      <span className="text-[9px] text-text-tertiary uppercase block">Gender / Age</span>
-                      <span className="font-bold text-text-primary">{patientDetails.gender || "Not specified"} / {patientDetails.dob ? `${Math.floor((new Date().getTime() - new Date(patientDetails.dob).getTime()) / 3.15576e+10)} yrs` : "N/A"}</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs border-b border-border-light pb-4">
+                    <div className="p-2.5 bg-slate-50 border border-border-light rounded-xl">
+                      <span className="text-[9px] text-text-tertiary uppercase font-bold block mb-0.5">Gender / Age</span>
+                      <span className="font-extrabold text-text-primary">{patientDetails.gender || "Not specified"} / {patientDetails.dob ? `${Math.floor((new Date().getTime() - new Date(patientDetails.dob).getTime()) / 3.15576e+10)} yrs` : "N/A"}</span>
                     </div>
-                    <div>
-                      <span className="text-[9px] text-text-tertiary uppercase block">Height / Weight</span>
-                      <span className="font-bold text-text-primary">{patientDetails.height ? `${patientDetails.height} cm` : "N/A"} / {patientDetails.weight ? `${patientDetails.weight} kg` : "N/A"}</span>
+                    <div className="p-2.5 bg-slate-50 border border-border-light rounded-xl">
+                      <span className="text-[9px] text-text-tertiary uppercase font-bold block mb-0.5">Height / Weight</span>
+                      <span className="font-extrabold text-text-primary">{patientDetails.height ? `${patientDetails.height} cm` : "N/A"} / {patientDetails.weight ? `${patientDetails.weight} kg` : "N/A"}</span>
                     </div>
-                    <div>
-                      <span className="text-[9px] text-text-tertiary uppercase block">Blood Group</span>
-                      <span className="font-bold text-text-primary">{patientDetails.bloodGroup || "N/A"}</span>
+                    <div className="p-2.5 bg-slate-50 border border-border-light rounded-xl">
+                      <span className="text-[9px] text-text-tertiary uppercase font-bold block mb-0.5">Blood Group</span>
+                      <span className="font-extrabold text-text-primary">{patientDetails.bloodGroup || "N/A"}</span>
                     </div>
                   </div>
 
@@ -696,217 +702,235 @@ export default function ConsultationRoom() {
         {/* RIGHT COLUMN: DOCTOR CONSULTATION REPORT FORM & PRESCRIPTION BUILDER */}
         {isDoctor && (
           <div className="xl:col-span-7">
-            <Card padding="md">
-              <form onSubmit={handleCompleteConsultation} className="space-y-5">
-                <div className="pb-3 border-b border-border flex items-center justify-between">
+            <form onSubmit={handleCompleteConsultation} className="space-y-6">
+              
+              {/* Card 1: Case Overview */}
+              <Card padding="md" className="border-t-4 border-t-primary shadow-md">
+                <div className="pb-4 mb-4 border-b border-border flex items-center justify-between">
                   <div>
-                    <h2 className="font-heading text-base font-extrabold text-text-primary">Clinical Consultation Report</h2>
-                    <p className="text-[10px] text-text-secondary mt-0.5">Please fill all required clinical metrics to complete session</p>
+                    <h2 className="font-heading text-lg font-extrabold text-text-primary">Clinical Consultation Report</h2>
+                    <p className="text-[11px] text-text-secondary mt-0.5">Please fill all required clinical metrics to complete the session</p>
                   </div>
-                  <ShieldAlert className="w-5 h-5 text-primary shrink-0" />
+                  <ShieldAlert className="w-6 h-6 text-primary shrink-0" />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Chief Complaint */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-xs font-bold text-text-secondary uppercase">Chief Complaint *</label>
+                    <label className="text-xs font-bold text-text-secondary uppercase tracking-wide">Chief Complaint *</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Weight loss assistance, metabolic health review"
                       value={chiefComplaint}
                       onChange={(e) => setChiefComplaint(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-slate-50 text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-colors"
                     />
                   </div>
 
-                  {/* Diagnosis */}
                   <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-xs font-bold text-text-secondary uppercase">Clinical Diagnosis *</label>
+                    <label className="text-xs font-bold text-text-secondary uppercase tracking-wide">Clinical Diagnosis *</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Obesity (BMI 31.0), metabolic syndrome risk"
                       value={diagnosis}
                       onChange={(e) => setDiagnosis(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-slate-50 text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-colors"
                     />
                   </div>
 
-                  {/* Clinical Findings */}
                   <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-xs font-bold text-text-secondary uppercase">Clinical Findings / Notes *</label>
+                    <label className="text-xs font-bold text-text-secondary uppercase tracking-wide">Clinical Findings / Notes *</label>
                     <textarea
                       rows={3}
                       required
                       placeholder="Enter detailed clinical findings, symptoms, and physiological indicators..."
                       value={clinicalFindings}
                       onChange={(e) => setClinicalFindings(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-slate-50 text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-colors"
                     />
                   </div>
 
-                  {/* Treatment recommendation */}
                   <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-xs font-bold text-text-secondary uppercase">Treatment Recommendation Status *</label>
+                    <label className="text-xs font-bold text-text-secondary uppercase tracking-wide">Treatment Recommendation Status *</label>
                     <select
                       value={treatmentRecommendation}
                       onChange={(e) => setTreatmentRecommendation(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none focus:ring-1 focus:ring-primary font-semibold"
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-slate-50 text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-colors font-semibold appearance-none"
                     >
                       <option value="Approved for Treatment">Approved for Treatment</option>
                       <option value="Requires Further Evaluation">Requires Further Evaluation</option>
                       <option value="Treatment Rejected">Treatment Rejected</option>
                     </select>
                   </div>
+                </div>
+              </Card>
 
-                  {/* Prescription builder */}
-                  <div className="p-4 border border-primary/20 rounded-2xl bg-primary-50/10 sm:col-span-2 space-y-4">
-                    <h3 className="text-xs font-bold text-primary uppercase tracking-wider pb-1.5 border-b border-primary/10">
-                      Prescription Builder
-                    </h3>
+              {/* Card 2: Prescription Builder */}
+              <Card padding="md" className="border-t-4 border-t-emerald-500 shadow-md">
+                <div className="pb-3 mb-4 border-b border-border-light flex items-center gap-2">
+                  <Clipboard className="w-5 h-5 text-emerald-600" />
+                  <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">
+                    Prescription Builder
+                  </h3>
+                </div>
 
-                    {/* Added medicines list */}
-                    <div className="space-y-2">
-                      {prescriptionList.length > 0 ? (
-                        prescriptionList.map((med, idx) => (
-                          <div key={idx} className="flex justify-between items-center p-2 rounded-lg bg-white border border-border text-[10px]">
-                            <div>
-                              <span className="font-bold text-text-primary">{med.name} ({med.dosage})</span>
-                              <span className="text-text-secondary block">{med.duration} • {med.instructions}</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveMedicine(idx)}
-                              className="text-error hover:text-red-700 p-1"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                <div className="space-y-5">
+                  {/* Added medicines list */}
+                  <div className="space-y-3">
+                    {prescriptionList.length > 0 ? (
+                      prescriptionList.map((med, idx) => (
+                        <div key={idx} className="flex justify-between items-start p-3.5 rounded-xl bg-emerald-50/30 border border-emerald-100 shadow-sm relative overflow-hidden">
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-400"></div>
+                          <div className="ml-2">
+                            <span className="font-bold text-sm text-emerald-950 block mb-1">{med.name} <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md ml-1">{med.dosage}</span></span>
+                            <span className="text-xs text-text-secondary block"><strong>Duration:</strong> {med.duration} &nbsp;&bull;&nbsp; <strong>Notes:</strong> {med.instructions}</span>
                           </div>
-                        ))
-                      ) : (
-                        <p className="text-[10px] text-text-tertiary text-center py-2">No medications added yet.</p>
-                      )}
-                    </div>
-
-                    {/* Inputs */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <span className="text-[9px] font-bold text-text-secondary uppercase block">Medicine Name</span>
-                        <input
-                          type="text"
-                          placeholder="e.g. Semaglutide"
-                          value={medName}
-                          onChange={(e) => setMedName(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-white text-xs outline-none"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-[9px] font-bold text-text-secondary uppercase block">Dosage</span>
-                        <input
-                          type="text"
-                          placeholder="e.g. 0.25mg weekly"
-                          value={medDosage}
-                          onChange={(e) => setMedDosage(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-white text-xs outline-none"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-[9px] font-bold text-text-secondary uppercase block">Duration</span>
-                        <input
-                          type="text"
-                          placeholder="e.g. 4 weeks"
-                          value={medDuration}
-                          onChange={(e) => setMedDuration(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-white text-xs outline-none"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-[9px] font-bold text-text-secondary uppercase block">Instructions</span>
-                        <input
-                          type="text"
-                          placeholder="e.g. Inject subcutaneously"
-                          value={medInstructions}
-                          onChange={(e) => setMedInstructions(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-white text-xs outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <Button type="button" onClick={handleAddMedicine} size="sm" variant="outline" className="w-full text-xs font-bold">
-                      <Plus className="w-3.5 h-3.5 mr-1" /> Add Medication to List
-                    </Button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveMedicine(idx)}
+                            className="text-error hover:text-red-700 p-2 bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-text-tertiary text-center py-4 bg-slate-50 rounded-xl border border-dashed border-border">No medications added yet.</p>
+                    )}
                   </div>
 
+                  {/* Inputs */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 border border-border-light rounded-xl mt-2">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold text-text-secondary uppercase block tracking-wide">Medicine Name</span>
+                      <input
+                        type="text"
+                        placeholder="e.g. Semaglutide"
+                        value={medName}
+                        onChange={(e) => setMedName(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-white text-xs outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold text-text-secondary uppercase block tracking-wide">Dosage</span>
+                      <input
+                        type="text"
+                        placeholder="e.g. 0.25mg weekly"
+                        value={medDosage}
+                        onChange={(e) => setMedDosage(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-white text-xs outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold text-text-secondary uppercase block tracking-wide">Duration</span>
+                      <input
+                        type="text"
+                        placeholder="e.g. 4 weeks"
+                        value={medDuration}
+                        onChange={(e) => setMedDuration(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-white text-xs outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold text-text-secondary uppercase block tracking-wide">Instructions</span>
+                      <input
+                        type="text"
+                        placeholder="e.g. Inject subcutaneously"
+                        value={medInstructions}
+                        onChange={(e) => setMedInstructions(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-white text-xs outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+                      />
+                    </div>
+                    <div className="sm:col-span-2 pt-2">
+                      <Button type="button" onClick={handleAddMedicine} size="sm" variant="outline" className="w-full text-xs font-bold border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300">
+                        <Plus className="w-4 h-4 mr-1.5" /> Add Medication to List
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Card 3: Advice & Follow Up */}
+              <Card padding="md" className="border-t-4 border-t-amber-400 shadow-md">
+                <div className="pb-3 mb-4 border-b border-border-light flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-amber-600" />
+                  <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">
+                    Advice & Follow-Up
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {/* Advice Section */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-text-secondary uppercase">Diet Recommendation</label>
+                    <label className="text-xs font-bold text-text-secondary uppercase tracking-wide">Diet Recommendation</label>
                     <textarea
                       rows={2}
                       placeholder="e.g. High protein, calorie deficit"
                       value={dietRecommendation}
                       onChange={(e) => setDietRecommendation(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-slate-50 text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-colors"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-text-secondary uppercase">Exercise Recommendation</label>
+                    <label className="text-xs font-bold text-text-secondary uppercase tracking-wide">Exercise Recommendation</label>
                     <textarea
                       rows={2}
                       placeholder="e.g. 150 mins cardio weekly"
                       value={exerciseRecommendation}
                       onChange={(e) => setExerciseRecommendation(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-slate-50 text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-colors"
                     />
                   </div>
 
                   <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-xs font-bold text-text-secondary uppercase">Lifestyle & Behavioral Advice</label>
+                    <label className="text-xs font-bold text-text-secondary uppercase tracking-wide">Lifestyle & Behavioral Advice</label>
                     <textarea
                       rows={2}
                       placeholder="e.g. 7-8 hours sleep, stress management codes"
                       value={lifestyleAdvice}
                       onChange={(e) => setLifestyleAdvice(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-slate-50 text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-colors"
                     />
                   </div>
 
                   {/* Follow up date */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-text-secondary uppercase">Follow Up Date</label>
+                    <label className="text-xs font-bold text-text-secondary uppercase tracking-wide">Follow Up Date</label>
                     <input
                       type="date"
                       value={followUpDate}
                       onChange={(e) => setFollowUpDate(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-slate-50 text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-colors"
                     />
                   </div>
 
                   {/* Additional notes */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-text-secondary uppercase">Additional Notes</label>
+                    <label className="text-xs font-bold text-text-secondary uppercase tracking-wide">Additional Notes</label>
                     <input
                       type="text"
                       placeholder="Private clinical logs"
                       value={additionalNotes}
                       onChange={(e) => setAdditionalNotes(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-text-primary text-xs focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-slate-50 text-text-primary text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-colors"
                     />
                   </div>
                 </div>
+              </Card>
 
-                <div className="pt-4 border-t border-border-light">
-                  <Button
-                    type="submit"
-                    isLoading={isSubmitting}
-                    fullWidth
-                    className="py-3 font-bold gradient-cta text-white"
-                  >
-                    Complete Consultation & Transmit Report
-                  </Button>
-                </div>
-              </form>
-            </Card>
+              {/* Submit CTA */}
+              <div className="pt-2 sticky bottom-4 z-20">
+                <Button
+                  type="submit"
+                  isLoading={isSubmitting}
+                  fullWidth
+                  className="py-4 text-sm font-extrabold shadow-xl shadow-primary/25 gradient-cta text-white hover:scale-[1.01] transition-transform"
+                >
+                  <CheckCircle2 className="w-5 h-5 mr-2" /> Complete Consultation & Transmit Report
+                </Button>
+              </div>
+            </form>
           </div>
         )}
 

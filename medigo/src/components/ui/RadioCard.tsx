@@ -65,12 +65,12 @@ export function RadioCard({
                 <Icon className="w-5 h-5" />
               </div>
             )}
-            <div className="flex-1 space-y-1 pr-6">
-              <span className="block text-xs font-bold text-text-primary leading-tight">
+            <div className="flex-1 min-w-0 space-y-1 pr-6">
+              <span className="block text-xs font-bold text-text-primary leading-tight truncate whitespace-normal break-words">
                 {opt.label}
               </span>
               {opt.description && (
-                <span className="block text-[11px] text-text-secondary leading-relaxed">
+                <span className="block text-[11px] text-text-secondary leading-relaxed break-words whitespace-normal">
                   {opt.description}
                 </span>
               )}

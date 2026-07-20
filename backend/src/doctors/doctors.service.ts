@@ -59,17 +59,34 @@ export class DoctorsService {
         doctorId: doctor.id,
         status: 'Active',
       },
+      select: { patientId: true }
+    });
+
+    const appointments = await this.prisma.appointment.findMany({
+      where: {
+        doctorId: doctor.id,
+        deletedAt: null,
+      },
+      select: { patientId: true }
+    });
+
+    const patientIds = Array.from(new Set([
+      ...connections.map(c => c.patientId),
+      ...appointments.map(a => a.patientId)
+    ]));
+
+    const patients = await this.prisma.patient.findMany({
+      where: {
+        id: { in: patientIds },
+        deletedAt: null,
+      },
       include: {
-        patient: {
-          include: {
-            user: true,
-            memberships: true,
-          }
-        }
+        user: true,
+        memberships: true,
       }
     });
 
-    return connections.map(conn => conn.patient);
+    return patients;
   }
 
   async getAvailability() {

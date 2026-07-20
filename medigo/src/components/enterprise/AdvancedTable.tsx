@@ -299,9 +299,9 @@ export function AdvancedTable<T>({
                       onChange={() => handleSelectRow(keyVal)}
                       className="rounded border-border text-primary focus:ring-primary h-4.5 w-4.5 mt-0.5"
                     />
-                    <div className="flex-1 pl-3 space-y-2">
+                    <div className="flex-1 pl-3 space-y-2 min-w-0">
                       {columns.map((col) => (
-                        <div key={col.label} className="text-xs">
+                        <div key={col.label} className="text-xs break-words">
                           <span className="text-text-tertiary block mb-0.5 font-bold uppercase tracking-wider">
                             {col.label}
                           </span>

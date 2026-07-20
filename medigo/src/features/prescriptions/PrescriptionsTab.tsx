@@ -41,7 +41,7 @@ export function PrescriptionsTab() {
               dosage: p.diagnosis || "Standard Dose",
               frequency: p.instructions || "As directed",
               refillsRemaining: 1,
-              prescribedBy: p.doctor ? `Dr. ${p.doctor.firstName} ${p.doctor.lastName}` : "Authorized Clinician",
+              prescribedBy: p.doctor ? `${p.doctor.firstName.startsWith('Dr.') ? '' : 'Dr. '}${p.doctor.firstName} ${p.doctor.lastName}` : "Authorized Clinician",
               datePrescribed: new Date(p.createdAt).toLocaleDateString(),
               instructions: p.instructions || "No special instructions",
             }));
@@ -70,7 +70,7 @@ export function PrescriptionsTab() {
                 dosage: p.diagnosis || "Standard Dose",
                 frequency: p.instructions || "As directed",
                 refillsRemaining: 1,
-                prescribedBy: p.doctor ? `Dr. ${p.doctor.firstName} ${p.doctor.lastName}` : "Authorized Clinician",
+                prescribedBy: p.doctor ? `${p.doctor.firstName.startsWith('Dr.') ? '' : 'Dr. '}${p.doctor.firstName} ${p.doctor.lastName}` : "Authorized Clinician",
                 datePrescribed: new Date(p.createdAt).toLocaleDateString(),
                 instructions: p.instructions || "No special instructions",
              };
@@ -101,7 +101,7 @@ export function PrescriptionsTab() {
         doc.setFontSize(12);
         doc.text("---------------------------------------------------------", 20, 40);
         doc.text(`Prescription ID: MG-RX-98210`, 20, 50);
-        doc.text(`Patient Name: Sarah Miller`, 20, 60);
+        doc.text(`Patient Name: ${user?.patient?.firstName || ''} ${user?.patient?.lastName || ''}`, 20, 60);
         doc.text(`Prescribed Date: ${activeMeds[0]?.datePrescribed || 'N/A'}`, 20, 70);
         doc.text(`Clinician: ${activeMeds[0]?.prescribedBy || 'N/A'}`, 20, 80);
         doc.text(`Medication: ${activeMeds[0]?.name || 'N/A'}`, 20, 90);

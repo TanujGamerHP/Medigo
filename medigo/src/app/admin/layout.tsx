@@ -197,10 +197,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="bg-background min-h-screen flex flex-col pt-16">
+    <div className="bg-background min-h-screen flex flex-col overflow-x-hidden">
       
       {/* Top Header */}
-      <header className="bg-surface border-b border-border/80 h-16 flex items-center justify-between px-6 z-40 fixed top-0 left-0 right-0">
+      <header className="bg-surface border-b border-border/80 h-16 flex items-center justify-between px-4 sm:px-6 z-40 fixed top-0 left-0 right-0">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsSidebarOpen((o) => !o)}
@@ -287,7 +287,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </header>
 
       {/* Main Workspace container */}
-      <div className="flex flex-1 relative">
+      <div className="flex flex-1 relative pt-16">
         
         {/* Desktop Sidebar */}
         <aside className="hidden xl:flex bg-surface border-r border-border/80 w-[280px] flex-col justify-between fixed bottom-0 top-16 left-0 z-30">
@@ -370,8 +370,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
 
         {/* Main Content Area */}
-        <main className="flex-1 xl:pl-[280px] p-6 sm:p-8 overflow-y-auto bg-background min-h-screen">
-          <div className="max-w-7xl mx-auto w-full pb-20 xl:pb-0">
+        <main className="flex-1 xl:pl-[280px] p-4 sm:p-6 lg:p-8 overflow-y-auto overflow-x-hidden bg-background w-full">
+          <div className="max-w-7xl mx-auto w-full pb-20 xl:pb-8">
             {children}
           </div>
         </main>

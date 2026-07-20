@@ -6,6 +6,7 @@ import { CheckCircle2, AlertTriangle, Clock, RefreshCw, Calendar, Download, Arro
 import { Button } from "@/components/ui/Button";
 import { api } from "@/lib/api";
 import Link from "next/link";
+import { useRole } from "@/features/shared/RoleProvider";
 
 interface PaymentResultProps {
   status: "success" | "failed" | "pending";
@@ -18,6 +19,7 @@ interface PaymentResultProps {
 
 export function PaymentResult({ status, doctor, date, time, total, mode }: PaymentResultProps) {
   const router = useRouter();
+  const { user } = useRole();
   const [downloading, setDownloading] = useState(false);
 
   const [doctorName, setDoctorName] = useState("Clinical Specialist");
@@ -58,8 +60,8 @@ export function PaymentResult({ status, doctor, date, time, total, mode }: Payme
         doc.setFontSize(12);
         doc.text("---------------------------------------------------------", 20, 40);
         doc.text(`Invoice Reference ID: ${invoiceId || "MG-XXXXX"}`, 20, 50);
-        doc.text(`Patient Name: Sarah Miller`, 20, 60);
-        doc.text(`Clinician: ${doctorName}`, 20, 70);
+        doc.text(`Patient Name: ${user?.patient?.firstName || ''} ${user?.patient?.lastName || ''}`, 20, 60);
+        doc.text(`Transaction Ref: ${invoiceId || "TXN-9382-771"}`, 20, 70);
         doc.text(`Appointment: ${date} at ${time} (${mode} mode)`, 20, 80);
         doc.text(`Paid Amount: INR ${total}.00`, 20, 90);
         

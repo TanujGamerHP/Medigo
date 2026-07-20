@@ -155,19 +155,19 @@ export function AssessmentWizard() {
     <div className="space-y-8">
       
       {/* Stepper progress tracker */}
-      <div className="flex justify-between items-center px-4 relative max-w-2xl mx-auto">
-        <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-border -translate-y-1/2 z-0" />
+      <div className="flex justify-between items-center px-1 sm:px-4 relative w-full max-w-2xl mx-auto">
+        <div className="absolute top-1/2 left-2 right-2 sm:left-4 sm:right-4 h-0.5 bg-border -translate-y-1/2 z-0" />
         {STEPS.map((step, idx) => {
           const isCompleted = idx < currentStepIdx;
           const isActive = idx === currentStepIdx;
           return (
             <div key={step.id} className="relative z-10 flex flex-col items-center gap-2">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all border ${
+                className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all border ${
                   isCompleted
                     ? "bg-primary border-primary text-white"
                     : isActive
-                    ? "bg-white border-primary text-primary ring-4 ring-primary/10"
+                    ? "bg-white border-primary text-primary ring-2 sm:ring-4 ring-primary/10"
                     : "bg-white border-border text-text-tertiary"
                 }`}
               >
@@ -190,7 +190,7 @@ export function AssessmentWizard() {
       </div>
 
       {/* Main card box */}
-      <div className="bg-white rounded-3xl border border-border/50 shadow-md p-6 md:p-10 max-w-2xl mx-auto min-h-[380px] flex flex-col justify-between">
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-border/50 shadow-md p-5 sm:p-6 md:p-10 w-full max-w-2xl mx-auto min-h-[380px] flex flex-col justify-between">
         
         <div className="space-y-6">
           
@@ -529,7 +529,7 @@ export function AssessmentWizard() {
             disabled={currentStepIdx === 0 || activeStepId === "result"}
             onClick={handleBack}
             leftIcon={<ArrowLeft className="w-4 h-4" />}
-            className="py-3 text-xs font-bold"
+            className="py-3 px-3 sm:px-6 text-[11px] sm:text-xs font-bold shrink-0"
           >
             Back
           </Button>
@@ -554,8 +554,8 @@ export function AssessmentWizard() {
               id="assess-next-btn"
               onClick={handleNext}
               isLoading={isSaving}
-              className="py-3 text-xs font-bold gradient-cta text-white"
-              rightIcon={<ArrowRight className="w-4 h-4" />}
+              className="py-3 px-4 sm:px-6 text-[11px] sm:text-xs font-bold gradient-cta text-white whitespace-normal text-center leading-tight"
+              rightIcon={<ArrowRight className="w-4 h-4 shrink-0" />}
             >
               {currentStepIdx === STEPS.length - 2 ? "Generate AI Result" : "Continue"}
             </Button>

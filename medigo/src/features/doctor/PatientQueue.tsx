@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import { AdvancedTable, TableColumn } from "@/components/enterprise/AdvancedTable";
 import { Users, Clock, AlertTriangle, ArrowRight, Star } from "lucide-react";
+import Image from "next/image";
 
 export interface QueuePatient {
   id: string;
@@ -73,7 +74,7 @@ export function PatientQueue({ onSelectPatient }: { onSelectPatient: (patientId:
       render: (row) => (
         <div className="flex items-center gap-3">
           {row.profileImage ? (
-            <img src={row.profileImage} alt={row.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+            <Image src={row.profileImage} alt={row.name} width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" loading="lazy" />
           ) : (
             <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-[10px] flex items-center justify-center shrink-0">
               {row.name.charAt(0)}
@@ -178,8 +179,8 @@ export function PatientQueue({ onSelectPatient }: { onSelectPatient: (patientId:
         </div>
       </div>
 
-      <div className="bg-white p-5 border border-border rounded-2xl shadow-sm">
-        <div className="flex items-center gap-2 pb-3 border-b border-border mb-5 select-none">
+      <div className="bg-white p-3 sm:p-5 border border-border rounded-2xl shadow-sm">
+        <div className="flex items-center gap-2 pb-3 border-b border-border mb-3 sm:mb-5 select-none">
           <Users className="w-5 h-5 text-primary-600" />
           <h3 className="font-heading text-sm font-bold text-text-primary">
             Active Doctor Queue

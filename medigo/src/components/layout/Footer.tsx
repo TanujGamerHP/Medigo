@@ -147,7 +147,7 @@ export function Footer() {
 
           <form
             id="footer-newsletter-form"
-            className="flex w-full max-w-md"
+            className="flex flex-col sm:flex-row w-full max-w-md gap-3 sm:gap-0"
             onSubmit={(e) => e.preventDefault()}
           >
             <label htmlFor="footer-email" className="sr-only">
@@ -158,12 +158,12 @@ export function Footer() {
               type="email"
               placeholder="Enter your email"
               required
-              className="flex-1 min-w-0 rounded-l-full px-5 py-3 bg-white/10 border border-white/20 text-white placeholder:text-white/40 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+              className="flex-1 min-w-0 rounded-full sm:rounded-r-none px-5 py-3 bg-white/10 border border-white/20 text-white placeholder:text-white/40 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
             />
             <button
               id="footer-subscribe-btn"
               type="submit"
-              className="gradient-cta text-white text-sm font-semibold rounded-r-full px-6 py-3 flex items-center gap-2 transition-all duration-300 hover:shadow-glow hover:brightness-110 shrink-0"
+              className="w-full sm:w-auto gradient-cta text-white text-sm font-semibold rounded-full sm:rounded-l-none px-6 py-3 flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-glow hover:brightness-110 shrink-0"
             >
               Subscribe
               <ArrowRight className="h-4 w-4" />
@@ -214,7 +214,7 @@ export function Footer() {
         </div>
 
         {/* Columns 2-4 — Links */}
-        <div className="w-full lg:w-3/5 grid grid-cols-3 gap-2 sm:gap-8 lg:gap-10">
+        <div className="w-full lg:w-3/5 grid grid-cols-2 sm:grid-cols-3 gap-10 sm:gap-8 lg:gap-10">
           {FOOTER_COLUMNS.map((col) => (
             <div key={col.title} suppressHydrationWarning>
               <h4 className="text-xs sm:text-sm font-heading font-semibold uppercase tracking-wider text-white/80 mb-4">
@@ -240,7 +240,7 @@ export function Footer() {
 
     {/* ---- Bottom Bar ---- */}
     <div className="border-t border-white/10" suppressHydrationWarning>
-      <div className="container-custom flex flex-col sm:flex-row items-center justify-between gap-4 py-6 text-xs text-white/40" suppressHydrationWarning>
+      <div className="container-custom flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 pb-24 sm:pb-6 text-xs text-white/40" suppressHydrationWarning>
         <p>&copy; {currentYear} MediGo. All rights reserved.</p>
         <p className="flex items-center gap-1">
           Made with <span className="text-red-400">❤️</span> for better health

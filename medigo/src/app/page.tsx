@@ -149,8 +149,8 @@ function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm font-semibold text-primary-700 mb-6">
-              <HeartPulse className="w-4 h-4" />
+            <span className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full glass text-xs sm:text-sm font-semibold text-primary-700 mb-6 w-fit">
+              <HeartPulse className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               Doctor-Led Weight Management Platform
             </span>
           </motion.div>
@@ -159,17 +159,17 @@ function HeroSection() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] text-text-primary"
+            className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] text-text-primary"
           >
             Your weight loss journey{" "}
-            <span className="gradient-text">guided by GLP-1 Experts</span>
+            <span className="gradient-text block sm:inline">guided by GLP-1 Experts</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="mt-6 text-lg md:text-xl text-text-secondary max-w-xl leading-relaxed"
+            className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl text-text-secondary max-w-xl leading-relaxed"
           >
             Get personalized GLP-1 treatment plans from board-certified doctors.
             AI-powered assessments, expert consultations, and ongoing support —
@@ -180,20 +180,20 @@ function HeroSection() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="mt-8 flex flex-col sm:flex-row gap-4"
+            className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto"
           >
             <Link
               href="/assessment"
               id="hero-cta-primary"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full gradient-cta text-white font-semibold text-lg shadow-glow hover:shadow-glow-lg hover:scale-[1.03] active:scale-[0.98] transition-all duration-300"
+              className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full gradient-cta text-white font-semibold text-base sm:text-lg shadow-glow hover:shadow-glow-lg hover:scale-[1.03] active:scale-[0.98] transition-all duration-300"
             >
               Start Free Assessment
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
             <Link
               href="/how-it-works"
               id="hero-cta-secondary"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white border border-border text-text-primary font-semibold text-lg shadow-sm hover:shadow-md hover:border-primary/30 hover:scale-[1.02] transition-all duration-300"
+              className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-white border border-border text-text-primary font-semibold text-base sm:text-lg shadow-sm hover:shadow-md hover:border-primary/30 hover:scale-[1.02] transition-all duration-300"
             >
               See How It Works
             </Link>
@@ -204,7 +204,7 @@ function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 1.2 }}
-            className="mt-12 flex flex-wrap gap-8"
+            className="mt-10 sm:mt-12 grid grid-cols-2 md:flex md:flex-wrap gap-6 sm:gap-8"
           >
             {[
               { value: "500+", label: "Board-Certified Doctors" },
@@ -212,10 +212,10 @@ function HeroSection() {
               { value: "94%", label: "Success Rate" },
             ].map((stat) => (
               <div key={stat.label} className="flex flex-col">
-                <span className="text-2xl md:text-3xl font-bold gradient-text">
+                <span className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text">
                   {stat.value}
                 </span>
-                <span className="text-sm text-text-secondary mt-1">
+                <span className="text-xs sm:text-sm text-text-secondary mt-1">
                   {stat.label}
                 </span>
               </div>

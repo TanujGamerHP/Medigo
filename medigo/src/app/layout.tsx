@@ -68,6 +68,7 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${plusJakarta.variable} h-full antialiased`}
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
     >
       <head />
       <body className="min-h-full flex flex-col bg-background text-text-primary font-body" suppressHydrationWarning>

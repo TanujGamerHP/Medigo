@@ -14,7 +14,7 @@ export default function AssessmentPage() {
   }, []);
 
   return (
-    <div className="bg-background min-h-screen pt-24 pb-12 relative">
+    <div className="bg-background min-h-screen pt-24 pb-12 relative overflow-x-hidden">
       <div className="absolute top-24 left-4 md:left-8 z-10 hidden md:block">
         <BackButton variant="outline" size="sm" />
       </div>
